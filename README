@@ -1,0 +1,9 @@
+VCDM
+
+Includes drafts of:
+- CDMI server 
+- CMDI clients (.Net, Java, curl, python)
+- buildbot conf
+- docs
+
+Each should get its own git repo.

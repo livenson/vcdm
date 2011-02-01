@@ -1,0 +1,2 @@
+#!/bin/bash
+curl --user aaa:aaa --digest http://localhost:8080/mq/$1

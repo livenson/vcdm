@@ -1,0 +1,27 @@
+[general]
+# options: aws, local, azure, cdmi
+blob.backend = aws
+# options: local, aws, azure
+mq.backend = aws
+# local, azure
+ds.backend = local
+
+# external clouds
+[aws]
+credentials_source = static
+credentials.username = ACCESSKEYID
+credentials.password = SECRETACCESSKEY
+
+credentials_source = static
+credentials.account = ACCOUNTNAME
+credentials.password = SECRETACCESSKEY
+credentials.blob_url = blob.core.windows.net
+credentials.table_url = table.core.windows.net
+credentials.queue_url = queue.core.windows.net
+
+[cdmi]
+credentials_source = static
+credentials.username = aaa
+credentials.password = aaa
+cdmi.blob_url = http://localhost:8082/blob
+cdmi.queue_url = http://localhost:8082/mq
