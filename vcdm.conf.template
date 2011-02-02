@@ -1,8 +1,8 @@
 [general]
 # options: aws, local, azure, cdmi
-blob.backend = aws
+blob.backend = local
 # options: local, aws, azure
-mq.backend = aws
+mq.backend = local
 # local, azure
 ds.backend = local
 
