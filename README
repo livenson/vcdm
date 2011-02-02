@@ -8,3 +8,28 @@ Includes drafts of:
 - sample server credentials (!!! never use them in production !!!)
 
 Each should get its own git repo.
+
+
+=== SETUP ===
+
+1) Get the contents of the repository.
+	- git clone git://github.com/livenson/vcdm.git
+	- wget -O vcdm.zip --no-check-certificate https://github.com/livenson/vcdm/zipball/master && unzip vcdm.zip
+	- browse to https://github.com/livenson/vcdm, click on Downloads
+
+2) For a completely local installation:
+	- install required Python packages:
+		- Zope.Interface: http://pypi.python.org/pypi/zope.interface
+		- Twisted: http://twistedmatrix.com
+		- Boto: http://code.google.com/p/boto/
+		- CouchDB-Python: http://code.google.com/p/couchdb-python/
+		- py-amqplib: http://barryp.org/software/py-amqplib/
+	- install RabbitMQ: http://www.rabbitmq.com/
+	- install CouchDB: http://couchdb.apache.org/
+	
+3) Copy vcdm.conf.template to vcdm.conf.
+
+4) Run start-server.sh/start-server.bat.
+	- by default, ports 8080-8083 will be accessible.
+
+ 
