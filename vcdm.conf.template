@@ -12,6 +12,7 @@ credentials_source = static
 credentials.username = ACCESSKEYID
 credentials.password = SECRETACCESSKEY
 
+[azure]
 credentials_source = static
 credentials.account = ACCOUNTNAME
 credentials.password = SECRETACCESSKEY
