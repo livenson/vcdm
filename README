@@ -26,10 +26,17 @@ Each should get its own git repo.
 		- py-amqplib: http://barryp.org/software/py-amqplib/
 	- install RabbitMQ: http://www.rabbitmq.com/
 	- install CouchDB: http://couchdb.apache.org/
+
+If you are using Ubuntu: 
+	- apt-get install python-zope.interface python-twisted python-boto python-couchdb python-amqplib rabbitmq-server couchdb
+
+
 	
 3) Copy vcdm.conf.template to vcdm.conf.
 
 4) Run start-server.sh/start-server.bat.
 	- by default, ports 8080-8083 will be accessible.
+
+
 
  
