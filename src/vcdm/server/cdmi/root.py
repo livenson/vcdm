@@ -1,11 +1,14 @@
 from twisted.web import resource, http
 
-import blob, queue
+import blob, queue, container
 from cdmi_content_types import CDMI_DATA, CDMI_QUEUE
 from vcdm.server.cdmi.cdmi_exit_codes import BAD_REQUEST
+from vcdm.server.cdmi.cdmi_content_types import CDMI_CONTAINER
+
 
 cdmi_objects = {CDMI_QUEUE: queue.Queue,
-                CDMI_DATA: blob.Blob}
+                CDMI_DATA: blob.Blob,
+                CDMI_CONTAINER: container.Container}
 
 CDMI_VERSION = '1.0'
 
