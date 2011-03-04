@@ -4,6 +4,7 @@ Venus-C Data Management module
 # read in configuration
 import ConfigParser
 config = ConfigParser.RawConfigParser()
+# TODO: if no vcdm.conf available -> assume default values?
 config.read('vcdm.conf')
 
 # load backends
@@ -26,4 +27,4 @@ datastore_backends = {'local': datastore.couchdb_store,
 
 
 # import exit codes
-from vcdm.server.cdmi.cdmi_exit_codes import *
+from vcdm.server.http_status_codes import *

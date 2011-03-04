@@ -7,7 +7,7 @@ class Container(resource.Resource):
     allowMethods = ('PUT', 'GET', 'DELETE')
 
     def render_GET(self, request):
-        # parse the request
+        # parse the request        
         fnm = '/' + request.postpath[0]
         # contact the backend
         status, data = container.read(fnm)
@@ -17,6 +17,8 @@ class Container(resource.Resource):
         return "%s" % data
     
     def render_PUT(self, request):
+        containers = request.postpath[0].split('/')
+        print containers
         fnm = '/' + request.postpath[0]
         request.content.seek(0, 0)
         d = request.content.read()

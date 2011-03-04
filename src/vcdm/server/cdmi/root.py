@@ -1,30 +1,46 @@
 from twisted.web import resource, http
+from vcdm.server.http_status_codes import BAD_REQUEST
+
+CDMI_VERSION = '1.0'
 
 import blob, queue, container
-from cdmi_content_types import CDMI_DATA, CDMI_QUEUE
-from vcdm.server.cdmi.cdmi_exit_codes import BAD_REQUEST
-from vcdm.server.cdmi.cdmi_content_types import CDMI_CONTAINER
-
+from cdmi_content_types import CDMI_DATA, CDMI_QUEUE, CDMI_CONTAINER, CDMI_OBJECT
 
 cdmi_objects = {CDMI_QUEUE: queue.Queue,
                 CDMI_DATA: blob.Blob,
                 CDMI_CONTAINER: container.Container}
 
-CDMI_VERSION = '1.0'
-
 class RootCDMIResource(resource.Resource):
     """
-    A root resource which is protected by guard and requires authentication in order to access.
+    A root CDMI resource. Handles initial request parsing and decides on the specific request processor.
     """
     def getChild(self, path, request):     
-        content = request.getHeader('content-type')
-        accept_field = request.getHeader('accept')
+        content = request.getHeader('content-type')        
         version = request.getHeader('x-cdmi-specification-version')
-        ## Request validation. 
-        # TODO: possibly move to a separate function            
-        if content != accept_field or CDMI_VERSION not in version or content not in cdmi_objects.keys():
-            return BAD_REQUEST               
-        return cdmi_objects[content]()            
+        accept = request.getHeader('accept') 
+        
+        ## == Request validation. == 
+        # TODO: possibly move to a separate function      
+        ## Current CDMI version is a bit inconsistent wrt to accept/content-types. Picking a processing object 
+        ## is not an obvious step. For now, we abuse the specification and require some of the optional fields to be present.    
+        if CDMI_VERSION not in version:
+            return BAD_REQUEST
+        
+        # decide on the object to be used for processing the request
+        if content ==  CDMI_DATA and accept == CDMI_DATA \
+            or accept == CDMI_DATA and content == CDMI_OBJECT:  # create | update | delete
+            return cdmi_objects[CDMI_DATA]()
+        
+        # for queues            
+        if content ==  CDMI_QUEUE and accept == CDMI_QUEUE:
+            return cdmi_objects[CDMI_QUEUE]()
+        
+        # for containers
+        if content == CDMI_OBJECT and accept == CDMI_CONTAINER \
+            or content == CDMI_CONTAINER and accept == CDMI_CONTAINER:
+            return cdmi_objects[CDMI_CONTAINER]()       
+        
+        return "Unknown object requested: %s, %s" %(content, accept) # if nothing matches            
 
     def render(self, request):
         return "Unforeseen error for request: %s", request

@@ -1,7 +1,18 @@
+"""
+Process blob-specific CDMI request.
+Parse and decode 
+"""
+
 from twisted.web import resource, server
 from vcdm import blob
 from vcdm.server.cdmi.cdmi_content_types import CDMI_DATA, CDMI_OBJECT
-from vcdm.server.cdmi.root import CDMI_VERSION
+
+from root import CDMI_VERSION
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 class Blob(resource.Resource):
     isLeaf = True # data items cannot be nested
