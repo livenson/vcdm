@@ -42,7 +42,6 @@ def main():
     # 1-way SSL for production
     from twisted.internet import ssl
     sslContext = ssl.DefaultOpenSSLContextFactory('server_credentials/key.pem','server_credentials/cert.pem')
-    
     reactor.listenSSL(8081, server.Site(resource=wrapper), contextFactory = sslContext)
     
     # another connector without authorization requirements

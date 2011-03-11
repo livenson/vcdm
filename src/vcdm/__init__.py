@@ -3,28 +3,37 @@ Venus-C Data Management module
 """
 # read in configuration
 import ConfigParser
+from backends.mq.amqp import AMQPMQ
+from backends.mq.aws_sqs import AWSSQSMessageQueue
+from backends.mq.azure import AzureQueue
+from backends.mq.cdmi import CDMIQueue
+
 config = ConfigParser.RawConfigParser()
 # TODO: if no vcdm.conf available -> assume default values?
 config.read('vcdm.conf')
 
+
+def c(group, field):
+    """Shorthand for getting configuration values"""
+    return config.get(group, field)
+
+
 # load backends
-import backends.blob
+
 blob_backends = {'local': backends.blob.localdisk, 
                  'aws': backends.blob.aws_s3,
                  'azure': backends.blob.azure,
                  'cdmi': backends.blob.cdmi
                  }
 
-import backends.mq
-mq_backends = {'local': backends.mq.amqp,
-               'aws': backends.mq.aws_sqs,
-               'azure': backends.mq.azure
+mq_backends = {'local': AMQPMQ,
+               'aws': AWSSQSMessageQueue,
+               'azure': AzureQueue,
+               'cdmi': CDMIQueue
                }
 
-import datastore
-datastore_backends = {'local': datastore.couchdb_store,
-                      'azure': datastore.azure_store}
-
+datastore_backends = {'local': backends.datastore.couchdb_store,
+                      'azure': backends.datastore.azure_store}
 
 # import exit codes
 from vcdm.server.http_status_codes import *

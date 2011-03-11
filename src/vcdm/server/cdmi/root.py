@@ -15,9 +15,9 @@ class RootCDMIResource(resource.Resource):
     A root CDMI resource. Handles initial request parsing and decides on the specific request processor.
     """
     def getChild(self, path, request):     
-        content = request.getHeader('content-type')        
-        version = request.getHeader('x-cdmi-specification-version')
-        accept = request.getHeader('accept') 
+        content = request.getHeader('Content-Type')        
+        version = request.getHeader('X-CDMI-Specification-Version')
+        accept = request.getHeader('Accept') 
         
         ## == Request validation. == 
         # TODO: possibly move to a separate function      

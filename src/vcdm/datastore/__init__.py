@@ -1,2 +1,0 @@
-import couchdb_store
-import azure_store

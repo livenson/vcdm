@@ -1,5 +1,4 @@
-# TODO
-backend_type = 'cdmi'
+from interfaces.blob import IBlob
 
 from twisted.internet.defer import Deferred
 from twisted.internet.protocol import Protocol
@@ -7,36 +6,42 @@ from pprint import pformat
 
 import vcdm
 
-from vcdm.client import cdmi_request 
+# TODO: not working at the moment
+from vcdm.client import cdmi_request
 
-def read(fnm, rng=None):
-    username = vcdm.config.get('cdmi', 'credentials.username') 
-    password = vcdm.config.get('cdmi', 'credentials.password')
-    hostname = vcdm.config.get('cdmi', 'cdmi.blob_url')
-    return cdmi_request.request(cbRequest, 'GET', '%s/%s' % (hostname, fnm), username, password)
+class CDMIBlob(IBlob):
+    
+    backend_type = 'cdmi'    
 
-def write(fnm, content):
-    username = vcdm.config.get('cdmi', 'credentials.username') 
-    password = vcdm.config.get('cdmi', 'credentials.password')
-    hostname = vcdm.config.get('cdmi', 'cdmi.blob_url')
-    return cdmi_request.request('PUT', '%s/%s' % (hostname, fnm), username, password, content)
-
-def delete(fnm):
-    username = vcdm.config.get('cdmi', 'credentials.username') 
-    password = vcdm.config.get('cdmi', 'credentials.password')
-    hostname = vcdm.config.get('cdmi', 'cdmi.blob_url')
-    return cdmi_request.request('DELETE', '%s/%s' % (hostname, fnm), username, password)
-
-def cbRequest(response):
-    print 'Response version:', response.version
-    print 'Response code:', response.code
-    print 'Response phrase:', response.phrase
-    print 'Response headers:'
-    print pformat(list(response.headers.getAllRawHeaders()))
-    finished = Deferred()
-    response.deliverBody(BeginningPrinter(finished))
-    return finished
-
+    def read(self, fnm, rng=None):
+        username = vcdm.config.get('cdmi', 'credentials.username') 
+        password = vcdm.config.get('cdmi', 'credentials.password')
+        hostname = vcdm.config.get('cdmi', 'cdmi.blob_url')
+        return cdmi_request.request(self._cbRequest, 'GET', '%s/%s' % (hostname, fnm), username, password)
+    
+    def create(self, fnm, content):
+        username = vcdm.config.get('cdmi', 'credentials.username') 
+        password = vcdm.config.get('cdmi', 'credentials.password')
+        hostname = vcdm.config.get('cdmi', 'cdmi.blob_url')
+        cdmi_request.request('PUT', '%s/%s' % (hostname, fnm), username, password, content)
+    
+    
+    def delete(self, fnm):
+        username = vcdm.config.get('cdmi', 'credentials.username') 
+        password = vcdm.config.get('cdmi', 'credentials.password')
+        hostname = vcdm.config.get('cdmi', 'cdmi.blob_url')
+        cdmi_request.request('DELETE', '%s/%s' % (hostname, fnm), username, password)
+    
+    def _cbRequest(self, response):
+        print 'Response version:', response.version
+        print 'Response code:', response.code
+        print 'Response phrase:', response.phrase
+        print 'Response headers:'
+        print pformat(list(response.headers.getAllRawHeaders()))
+        finished = Deferred()
+        response.deliverBody(BeginningPrinter(finished))
+        return finished
+    
 class BeginningPrinter(Protocol):
     def __init__(self, finished):
         self.finished = finished

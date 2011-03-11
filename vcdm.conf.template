@@ -6,7 +6,13 @@ mq.backend = local
 # local, azure
 ds.backend = local
 
-# external clouds
+# storage backends
+[local]
+datadir = /path/to/data/dir
+mq.endpoint = localhost:5672
+mq.username = guest
+mq.password = guest
+
 [aws]
 credentials_source = static
 credentials.username = ACCESSKEYID

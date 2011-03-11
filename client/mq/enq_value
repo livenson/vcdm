@@ -1,2 +1,0 @@
-#!/bin/bash
-curl --user aaa:aaa --digest -d "value=$2" http://localhost:8080/mq/$1

@@ -7,7 +7,10 @@ Python ABS (Python 2.6+).
 """
 from errors import InternalError
 
-class MessageQueue():
+class IMessageQueue():
+    
+    backend_type = 'unknown'
+    
     def create(self, queuename):
         """Create queue with a specified name"""
         raise InternalError("Not implemented.")

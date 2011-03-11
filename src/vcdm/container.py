@@ -3,11 +3,6 @@ import vcdm
 
 ds = vcdm.datastore_backends[vcdm.config.get('general', 'ds.backend')]
 
-def create(path):
-    docid = ds.write({'container_name': path, 
-		              'creation_data': str(datetime.datetime.now())})
-    return docid
-
 def read(fnm): 
     """ Return contents of a file."""
     uid = ds.find_uid(fnm)
@@ -15,8 +10,8 @@ def read(fnm):
     return (vcdm.OK, None)  
 
 
-def write(fnm, content, metadata = None):
-    """Write or update container."""
+def create_or_update(fnm, content, metadata = None):
+    """Create or update a container."""
     try:
         uid = ds.find_uid(fnm)
         print "uid is now: ", uid
