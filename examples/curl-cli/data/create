@@ -1,0 +1,2 @@
+#!/bin/bash
+curl --user aaa:aaa --digest  -T $1 http://localhost:8080/blob/$1
