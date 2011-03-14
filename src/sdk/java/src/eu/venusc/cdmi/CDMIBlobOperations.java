@@ -124,35 +124,30 @@ public class CDMIBlobOperations implements BlobOperations {
 
 			response = httpclient.execute(httpget);
 
-			 
-			
 			Header[] hdr = response.getAllHeaders();
 			System.out.println("Headers : " + hdr.length);
 			for (int i = 0; i < hdr.length; i++) {
 				System.out.println(hdr[i]);
 			}
 
-			
-			
 			Gson gson = new Gson();
-			System.out.println(response.getEntity().getContent().read());
-			
-			
-			URL url = new URL(remoteFNM);
-			
-			file = new File(System.getProperty("user.home") + url.getFile());
-		    bw = new BufferedWriter(new FileWriter(file));
-		    
-		    //bw.write(content);
-		    bw.close();
-		    System.out.println("Your file has been written");
- 
-			}catch (IOException io){
-				io.printStackTrace();
-			}
-			return 0;
-	}
+			String content = gson.fromJson("\"value\"", String.class);
 
+			URL url = new URL(remoteFNM);
+
+			file = new File(System.getProperty("user.home") + url.getFile());
+			bw = new BufferedWriter(new FileWriter(file));
+
+			bw.write(content);
+			bw.close();
+			System.out.println("Your file has been written");
+
+		} catch (IOException io) {
+			io.printStackTrace();
+		}
+		return 0;
+
+	}
 
 	@Override
 	public List<Blob> list(String remoteContainer) {
