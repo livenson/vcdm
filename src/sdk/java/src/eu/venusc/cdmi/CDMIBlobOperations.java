@@ -130,11 +130,6 @@ public class CDMIBlobOperations implements BlobOperations {
 
 			Header[] hdr = response.getAllHeaders();
 
-			System.out.println("Headers : " + hdr.length);
-			for (int i = 0; i < hdr.length; i++) {
-				System.out.println(hdr[i]);
-			}
-		
 			InputStream respStream = response.getEntity().getContent();
 			Gson gson = new Gson();
 			BlobReadResponse responseBody = gson.fromJson(Utils

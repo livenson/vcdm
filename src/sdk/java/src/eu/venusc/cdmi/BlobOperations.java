@@ -1,6 +1,4 @@
 package eu.venusc.cdmi;
-import java.io.File;
-import java.io.OutputStream;
 import java.util.List;
 
 public interface BlobOperations  {
