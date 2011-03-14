@@ -16,7 +16,7 @@ public class CDMIClient {
 			//cd.create(localfile, remoteFNM);
 			//cd.delete(remoteFNM);
 			//cd.update(localfile, remoteFNM);
-			int a=  cd.readFile(remoteFNM);
+			int a = cd.readFile(remoteFNM);
 			 
 			 
 		} catch (Exception e) {
