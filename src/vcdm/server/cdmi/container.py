@@ -22,7 +22,7 @@ class Container(resource.Resource):
         fnm = '/' + request.postpath[0]
         request.content.seek(0, 0)
         d = request.content.read()
-        status, uid = container.write(fnm, d)
+        status, uid = container.create_or_update(fnm, d, None)
         request.setResponseCode(status)
         return "saving content into %s, uid = %s" % (fnm, str(uid))
 

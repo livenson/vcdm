@@ -6,9 +6,10 @@ from twisted.python import log
 from twisted.internet import reactor
 from twisted.web import server, resource, guard
 from twisted.cred.portal import IRealm, Portal
-from twisted.cred.checkers import FilePasswordDB, InMemoryUsernamePasswordDatabaseDontUse 
+from twisted.cred.checkers import FilePasswordDB 
 
 import vcdm
+from vcdm import c
 from vcdm.server.cdmi import RootCDMIResource
 
 class SimpleRealm(object):
@@ -25,16 +26,17 @@ class SimpleRealm(object):
 def main():
     log.startLogging(sys.stdout)
     
-    # Start datastore
-    ds = vcdm.datastore_backends[vcdm.config.get('general', 'ds.backend')]
-    ds.init()
-    
+    # initialize backends
+    vcdm.env['ds'] = vcdm.datastore_backends[c('general', 'ds.backend')]()
+    vcdm.env['blob'] = vcdm.blob_backends[c('general', 'blob.backend')]()
+    vcdm.env['mq'] = vcdm.mq_backends[c('general', 'mq.backend')]()
+        
     # for now just a small list of 
     checkers = [FilePasswordDB('users.db')]
     
     wrapper = guard.HTTPAuthSessionWrapper(
         Portal(SimpleRealm(), checkers),
-        [guard.DigestCredentialFactory('md5', 'localhost:8080')])
+        [guard.DigestCredentialFactory('md5', c('general', 'server.endpoint'))])
     
     # unencrypted connection for testing/development
     reactor.listenTCP(8080, server.Site(resource=wrapper))

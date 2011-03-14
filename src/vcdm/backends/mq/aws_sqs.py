@@ -1,4 +1,4 @@
-from interfaces.mq import IMessageQueue
+from vcdm.interfaces.mq import IMessageQueue
 
 
 import boto

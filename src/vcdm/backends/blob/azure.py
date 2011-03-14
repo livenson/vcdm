@@ -1,4 +1,4 @@
-from interfaces.blob import IBlob
+from vcdm.interfaces.blob import IBlob
 
 
 from lib import winazurestorage
@@ -18,9 +18,12 @@ class AzureBlob(IBlob):
     def read(self, fnm, rng=None):
         return self.conn.get_blob(u'vcdm', unicode(fnm))
     
-    def write(self, fnm, content):
+    def create(self, fnm, content):
         self.conn.put_blob(u'vcdm', unicode(fnm), content, 'text/plain')
     
+    def update(self, fnm, content):
+        self.create(fnm, content)
+        
     def delete(self, fnm):
         try:
             self.conn.delete_blob(u'vcdm', unicode(fnm))

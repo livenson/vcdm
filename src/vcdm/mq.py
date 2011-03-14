@@ -1,7 +1,7 @@
 import vcdm 
 
-backend=vcdm.mq_backends[vcdm.config.get('general', 'mq.backend')]
-ds=vcdm.datastore_backends[vcdm.config.get('general', 'ds.backend')]
+backend = vcdm.env['mq']
+ds = vcdm.env['ds']
 
 def create(qnm):
     backend.create(qnm)

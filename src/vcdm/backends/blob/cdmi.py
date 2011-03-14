@@ -13,18 +13,20 @@ class CDMIBlob(IBlob):
     
     backend_type = 'cdmi'    
 
+    def create(self, fnm, content):
+        username = vcdm.config.get('cdmi', 'credentials.username') 
+        password = vcdm.config.get('cdmi', 'credentials.password')
+        hostname = vcdm.config.get('cdmi', 'cdmi.blob_url')
+        cdmi_request.request('PUT', '%s/%s' % (hostname, fnm), username, password, content)    
+    
     def read(self, fnm, rng=None):
         username = vcdm.config.get('cdmi', 'credentials.username') 
         password = vcdm.config.get('cdmi', 'credentials.password')
         hostname = vcdm.config.get('cdmi', 'cdmi.blob_url')
         return cdmi_request.request(self._cbRequest, 'GET', '%s/%s' % (hostname, fnm), username, password)
     
-    def create(self, fnm, content):
-        username = vcdm.config.get('cdmi', 'credentials.username') 
-        password = vcdm.config.get('cdmi', 'credentials.password')
-        hostname = vcdm.config.get('cdmi', 'cdmi.blob_url')
-        cdmi_request.request('PUT', '%s/%s' % (hostname, fnm), username, password, content)
-    
+    def update(self, fnm, content):
+        self.create(fnm, content)
     
     def delete(self, fnm):
         username = vcdm.config.get('cdmi', 'credentials.username') 

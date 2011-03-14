@@ -5,7 +5,7 @@ TODO: At the moment we'd like to limit the number of dependencies. A more reliab
 way would be to implement interfaces using Zope.Interfaces (extra-dependency) or
 Python ABS (Python 2.6+).
 """
-from errors import InternalError
+from vcdm.errors import InternalError
 
 class IMessageQueue():
     

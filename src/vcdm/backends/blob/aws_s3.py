@@ -1,4 +1,4 @@
-from interfaces.blob import IBlob
+from vcdm.interfaces.blob import IBlob
 
 import boto
 from boto.s3.key import Key

@@ -1,4 +1,4 @@
-from interfaces.mq import IMessageQueue
+from vcdm.interfaces.mq import IMessageQueue
 
 from amqplib import client_0_8 as amqp
 

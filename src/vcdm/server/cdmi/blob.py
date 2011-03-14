@@ -3,7 +3,7 @@ Process blob-specific CDMI request.
 Parse and decode 
 """
 
-from twisted.web import resource, server
+from twisted.web import resource
 from vcdm import blob
 from vcdm.server.cdmi.cdmi_content_types import CDMI_DATA, CDMI_OBJECT
 
@@ -31,16 +31,36 @@ class Blob(resource.Resource):
         request.setHeader('Content-Type', CDMI_OBJECT)
         request.setHeader('X-CDMI-Specification-Version', CDMI_VERSION)
         request.setHeader('Accept', CDMI_DATA)
+        
+        # TODO: encode body into json
         return "%s" % d
 
     def render_PUT(self, request):
-        # TODO: once we have a normal folder system, remove this hack
-        fnm = '/' + request.postpath[0]
+        # TODO: once we have a normal folder system, remove this hack        
+        fullpath = request.path
+        tmp = fullpath.split('/')
+        container_path = tmp[:-1]
+        filename = tmp[-1]        
+        length = int(request.getHeader('Content-Length'))        
         request.content.seek(0, 0)
-        d = request.content.read()
-        status, uid = blob.write(fnm, d)
+        body = json.loads(request.content.read(length))
+        
+        #container_path, fullpath,
+        status, uid = blob.write(filename, body['value'])
         request.setResponseCode(status)        
-        return "saving content into %s, uid = %s" % (fnm, str(uid))
+        request.setResponseCode(status)
+        request.setHeader('Content-Type', CDMI_OBJECT)
+        request.setHeader('X-CDMI-Specification-Version', CDMI_VERSION)
+        response_body = {'objectID': uid,
+                         'objectURI': request.uri,
+                         'domainURI': request.host[1] + ":" + str(request.host[2]),
+                         'parentURI': request.uri + container_path[-1],
+                         'capabilitiesURI': None, 
+                         'completionStatus': 'Complete',
+                         'mimetype': body['mimetype'], 
+                         'metadata': None,
+                         }  
+        return json.dumps(response_body)
         
 
     def render_DELETE(self, request):

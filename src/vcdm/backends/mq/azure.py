@@ -1,4 +1,4 @@
-from interfaces.mq import IMessageQueue
+from vcdm.interfaces.mq import IMessageQueue
 
 ## TODO: reformat lib into a reasonable one
 from lib import winazurestorage

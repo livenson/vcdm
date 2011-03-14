@@ -5,13 +5,15 @@ blob.backend = local
 mq.backend = local
 # local, azure
 ds.backend = local
+server.endpoint = localhost:8080
 
 # storage backends
 [local]
-datadir = /path/to/data/dir
+blob.datadir = /path/to/data/dir
 mq.endpoint = localhost:5672
 mq.username = guest
 mq.password = guest
+datastore.endpoint = http://localhost:5984/
 
 [aws]
 credentials_source = static
