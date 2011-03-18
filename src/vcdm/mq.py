@@ -1,5 +1,9 @@
 import vcdm 
 
+
+# TODO: write queue metadata into DS
+# 
+
 backend = vcdm.env['mq']
 ds = vcdm.env['ds']
 

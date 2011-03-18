@@ -1,4 +1,4 @@
-from interfaces.blob import IBlob
+from vcdm.interfaces.blob import IBlob
 
 from twisted.internet.defer import Deferred
 from twisted.internet.protocol import Protocol

@@ -55,20 +55,27 @@ class CouchDBStore(IDatastore):
                       list(self.db.query(dirn_fun)))
         return reslist
     
-    def find_uid(self, fnm):
+    def find_uid(self, fnm, fields = None):
+        
+        fields = 'null'
+        if fields is not None:
+            fields = '[' + ','.join(['doc.' + f for f in fields]) + ']'
+                    
         fnm_fun = '''function(doc) {
-            if (doc.filename == "%s") {
-                emit(doc.id, null);            
+            if (doc.fullpath == "%s") {
+                emit(doc.id, %s);            
             }
         } 
-        ''' %fnm
+        ''' % (fnm, fields)
         res = self.db.query(fnm_fun)
         if len(res) == 0:
             return None
         elif len(res) > 1:
             raise InternalError("Namespace collision: more than one UID corresponds to a filename.")
         else:
-            return list(res)[0].id
+            # XXX: change into an elegant retrieval
+            tmp_res = list(res)[0]
+            return  (tmp_res.key, tmp_res.value)
         
     def get_total_stats(self):
         sizes = '''function(doc) {       
@@ -80,3 +87,18 @@ class CouchDBStore(IDatastore):
             return (None, None)
         else: 
             return (len(res), sum([s['key'] for s in list(res)]))
+        
+    def find_path_uids(self, paths):
+        """Return a list of IDs of container objects that correspond to the specified path."""
+        comparision_string = ['doc.fullpath == "' + p + '"' for p in paths]
+        fnm_fun = '''function(doc) {
+            if (doc.object == 'container' && (%s)) {
+                emit(doc.id, null);            
+            }
+        } 
+        ''' % ' || '.join(comparision_string)
+        res = self.db.query(fnm_fun)
+        if len(res) == 0:
+            return None        
+        else:
+            return list(res)

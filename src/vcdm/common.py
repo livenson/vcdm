@@ -64,4 +64,3 @@ def crc16(s):
         tmp=crcValue^(ord(ch)) 
         crcValue=(crcValue>> 8)^crc16tab[(tmp & 0xff)] 
     return crcValue
-

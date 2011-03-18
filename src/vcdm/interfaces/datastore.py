@@ -29,10 +29,14 @@ class IDatastore():
         """Delete document from the store."""
         raise InternalError("Not implemented.")
 
-    def find_uid(self, fnm):
-        """Find document uid by a document name."""
+    def find_uid(self, fnm, fields = None):
+        """Find document uid by a document name. Additionally retrieve specified fields. """
         raise InternalError("Not implemented.")
 
     def get_total_stats(self):
         """Get total statistics for a items indexed by a datastore."""
+        raise InternalError("Not implemented.")
+    
+    def find_path_uids(self, paths):
+        """Find all uids corresponding to provided paths"""
         raise InternalError("Not implemented.")
