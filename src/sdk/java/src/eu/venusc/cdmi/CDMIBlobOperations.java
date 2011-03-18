@@ -53,7 +53,7 @@ public class CDMIBlobOperations implements BlobOperations {
 			respStr = respStr + "\"value\" : \""
 					+ Utils.getContents(new File(localFNM)) + "\"\n";
 			respStr = respStr + "}\n";
-			System.out.println(respStr);
+
 			StringEntity entity = new StringEntity(respStr);
 			httpput.setEntity(entity);
 
@@ -151,6 +151,7 @@ public class CDMIBlobOperations implements BlobOperations {
 
 		} catch (IOException io) {
 			io.printStackTrace();
+			return -1;
 		}
 		return 0;
 	}

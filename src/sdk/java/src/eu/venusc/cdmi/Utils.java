@@ -47,6 +47,12 @@ public class Utils {
 		return contents.toString();
 	}
 
+	/*   
+	 * TODO: 1. support for characters such as #¤¤% $ / {[ ... is needed 
+	 *       2. seperatos for lines are needed to be added 
+	 * 
+	 * 
+	 * */
 	public static String convertStreamToString(InputStream is)
 			throws IOException {
 		/*
@@ -60,8 +66,7 @@ public class Utils {
 
 			char[] buffer = new char[1024];
 			try {
-				Reader reader = new BufferedReader(new InputStreamReader(is,
-						"UTF-8"));
+				Reader reader = new BufferedReader(new InputStreamReader(is));
 				int n;
 				while ((n = reader.read(buffer)) != -1) {
 					writer.write(buffer, 0, n);
