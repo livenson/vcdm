@@ -5,6 +5,7 @@ from vcdm.interfaces.datastore import IDatastore
 from vcdm import c
 from vcdm.errors import InternalError
 
+
 class CouchDBStore(IDatastore):
 
     db = None
@@ -41,39 +42,47 @@ class CouchDBStore(IDatastore):
     def delete(self, docid):
         del self.db[docid]
     
-    def find_uid_match(self, dirn):
+    def find_uid_match(self, pattern):
+        """ Return UIDs that correspond to a objects with a path matching the pattern """
+        
         dirn_fun = '''
         function(doc) {
-           if (doc.filename.match(/^%s/)) {
-               emit(doc.id, { filename: doc.filename, acl: doc.acl });
+           if (doc.fullpath.match(/^%s/)) {
+               emit(doc.id, doc.fullpath);
            }
         }
-        ''' % dirn.replace("/", "\\/")
-         
-        reslist = map(lambda r: (r.value['filename'], 
-                                 { 'acl':  r.value['acl'] }, 0), 
-                      list(self.db.query(dirn_fun)))
-        return reslist
-    
-    def find_uid(self, fnm, fields = None):
+        ''' % pattern.replace("/", "\\/")
+                  
+        return list(self.db.query(dirn_fun))
         
-        fields = 'null'
+    
+    def find_by_path(self, path, object_type = None, fields = None):
+        """ Find an object at a given path.
+        
+        - object_type - optional filter by the type of an object (e.g. blob, container, ...)
+        - fields - fields to retrieve from the database. By default only gets UID of an object
+        """
+        comparision_string = 'true'
+        if object_type is not None:
+            comparision_string = 'doc.object == "%s"' % object_type
+        
+        fields = 'null' 
         if fields is not None:
-            fields = '[' + ','.join(['doc.' + f for f in fields]) + ']'
-                    
+            fields = '[' + ','.join(['doc.' + f for f in fields]) + ']'            
+                            
         fnm_fun = '''function(doc) {
-            if (doc.fullpath == "%s") {
+            if (doc.fullpath == "%s" && %s ) {
                 emit(doc.id, %s);            
             }
-        } 
-        ''' % (fnm, fields)
+        }         
+        ''' % (path, comparision_string, fields)
         res = self.db.query(fnm_fun)
         if len(res) == 0:
-            return None
+            return (None, None)
         elif len(res) > 1:
-            raise InternalError("Namespace collision: more than one UID corresponds to a filename.")
+            # XXX: does CDMI allow this in case of references/...?
+            raise InternalError("Namespace collision: more than one UID corresponds to an object.")
         else:
-            # XXX: change into an elegant retrieval
             tmp_res = list(res)[0]
             return  (tmp_res.key, tmp_res.value)
         
@@ -102,3 +111,4 @@ class CouchDBStore(IDatastore):
             return None        
         else:
             return list(res)
+    

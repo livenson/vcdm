@@ -1,11 +1,10 @@
 """
 Process blob-specific CDMI request.
-Parse and decode 
 """
 
 from twisted.web import resource
 from vcdm import blob
-from vcdm.server.cdmi.cdmi_content_types import CDMI_DATA, CDMI_OBJECT
+from vcdm.server.cdmi.cdmi_content_types import CDMI_OBJECT
 
 from root import CDMI_VERSION
 
@@ -57,7 +56,6 @@ class Blob(resource.Resource):
         mimetype = body['mimetype'] if body['mimetype'] is not None else 'text/plain'
         metadata = body['metadata']
                 
-        #container_path, fullpath,
         status, uid = blob.write(container_path, filename, mimetype, metadata, body['value'])
         request.setResponseCode(status)
         request.setHeader('Content-Type', CDMI_OBJECT)
