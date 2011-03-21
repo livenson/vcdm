@@ -44,7 +44,6 @@ class Container(resource.Resource):
         fullpath = request.path
         tmp = fullpath.split('/')
         container_path = tmp[:-1]
-        filename = tmp[-1]
         
         length = int(request.getHeader('Content-Length'))        
         request.content.seek(0, 0)

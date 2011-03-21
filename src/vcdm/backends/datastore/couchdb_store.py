@@ -10,11 +10,11 @@ class CouchDBStore(IDatastore):
 
     db = None
     
-    def __init__(self):
+    def __init__(self, initialize = False):
         server = couchdb.Server(c('local', 'datastore.endpoint'))
-        try:
+        if initialize:
             self.db = server.create('meta')
-        except:
+        else:
             # already created?
             self.db = server['meta']          
     
@@ -64,20 +64,23 @@ class CouchDBStore(IDatastore):
         """
         comparision_string = 'true'
         if object_type is not None:
-            comparision_string = 'doc.object == "%s"' % object_type
-        
-        fields = 'null' 
+            comparision_string = "doc.object == '%s'" % object_type
+                 
         if fields is not None:
-            fields = '[' + ','.join(['doc.' + f for f in fields]) + ']'            
+            fields = '{' + ','.join([f + ': doc.' + f for f in fields]) + '}'
+        else:
+            fields = 'null'    
                             
         fnm_fun = '''function(doc) {
-            if (doc.fullpath == "%s" && %s ) {
+            if (doc.fullpath == '%s' && %s ) {
                 emit(doc.id, %s);            
             }
         }         
         ''' % (path, comparision_string, fields)
-        res = self.db.query(fnm_fun)
+        res = self.db.query(fnm_fun)        
+        print list(self.db.query("function (doc) {emit(doc.id, null)}"))[0].key
         if len(res) == 0:
+            print "Nothing found?" ...
             return (None, None)
         elif len(res) > 1:
             # XXX: does CDMI allow this in case of references/...?

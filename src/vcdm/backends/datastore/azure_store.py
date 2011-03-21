@@ -7,6 +7,7 @@ from vcdm.interfaces.datastore import IDatastore
 class AzureStore(IDatastore):
     ts = None
     table_name = 'meta'
+    
     def init(self):
         if self.ts is None:
             ts = winazurestorage.TableStorage()
