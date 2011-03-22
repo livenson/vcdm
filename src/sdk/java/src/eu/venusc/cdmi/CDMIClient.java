@@ -12,11 +12,12 @@ public class CDMIClient {
 	 */
 	public static void main(String[] args) {
 		String remoteFNM = "http://localhost:2364/hello.txt";
-		String localfile = "/home/venus/workspace/venus-c/src/hello.txt";
+		String localfile = "/home/venus/venus-c/vcdm/src/sdk/java/src/hello.txt";
 		Map map = new HashMap();
 		
 		CDMIBlobOperations cd = new CDMIBlobOperations();
-		//CDMIMQOperations mq = new CDMIMQOperations();
+
+		
 		try {
 			cd.delete(remoteFNM);
 			cd.create(localfile, remoteFNM, map);
