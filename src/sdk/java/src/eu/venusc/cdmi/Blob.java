@@ -1,59 +1,65 @@
 package eu.venusc.cdmi;
 
-import java.net.URI;
 import java.util.Date;
 
-/***
- * 
- * Data abstraction for a blob object.
- *
- */
 
-public class Blob {
-
-	private String filename;
-	private Date creationTime;
-	private String uid;
-	private URI location;
+public class Blob{
+	
+	public String name;
+	public String data;
+	public Date createDate;
+	public Date updateDate;
 	
 	
-	public String getFilename() {
-		return filename;
+	public Blob() {
+	
 	}
-	public void setFilename(String filename) {
-		this.filename = filename;
+	
+	public String getName() {
+		return name;
 	}
-	public Date getCreationTime() {
-		return creationTime;
+	
+	public void setName(String name) {
+		this.name = name;
 	}
-	public void setCreationTime(Date creationTime) {
-		this.creationTime = creationTime;
+	
+	public String getData() {
+		return data;
 	}
-	public String getUid() {
-		return uid;
+	
+	public void setData(String data) {
+		this.data = data;
 	}
-	public void setUid(String uid) {
-		this.uid = uid;
+	
+	public Date getCreateDate() {
+		return createDate;
 	}
-	public URI getLocation() {
-		return location;
+	
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
 	}
-	public void setLocation(URI location) {
-		this.location = location;
+	
+	public Date getUpdateDate() {
+		return updateDate;
 	}
+	
+	public void setUpdateDate(Date updateDate) {
+		this.updateDate = updateDate;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-				+ ((creationTime == null) ? 0 : creationTime.hashCode());
+				+ ((createDate == null) ? 0 : createDate.hashCode());
+		result = prime * result + ((data == null) ? 0 : data.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
-				+ ((filename == null) ? 0 : filename.hashCode());
-		result = prime * result
-				+ ((location == null) ? 0 : location.hashCode());
-		result = prime * result + ((uid == null) ? 0 : uid.hashCode());
+				+ ((updateDate == null) ? 0 : updateDate.hashCode());
 		return result;
 	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -63,29 +69,33 @@ public class Blob {
 		if (getClass() != obj.getClass())
 			return false;
 		Blob other = (Blob) obj;
-		if (creationTime == null) {
-			if (other.creationTime != null)
+		if (createDate == null) {
+			if (other.createDate != null)
 				return false;
-		} else if (!creationTime.equals(other.creationTime))
+		} else if (!createDate.equals(other.createDate))
 			return false;
-		if (filename == null) {
-			if (other.filename != null)
+		if (data == null) {
+			if (other.data != null)
 				return false;
-		} else if (!filename.equals(other.filename))
+		} else if (!data.equals(other.data))
 			return false;
-		if (location == null) {
-			if (other.location != null)
+		if (name == null) {
+			if (other.name != null)
 				return false;
-		} else if (!location.equals(other.location))
+		} else if (!name.equals(other.name))
 			return false;
-		if (uid == null) {
-			if (other.uid != null)
+		if (updateDate == null) {
+			if (other.updateDate != null)
 				return false;
-		} else if (!uid.equals(other.uid))
+		} else if (!updateDate.equals(other.updateDate))
 			return false;
 		return true;
 	}
-
 	
+	@Override
+	public String toString() {
+		return "Blob [name=" + name + ", data=" + data + ", createDate="
+				+ createDate + ", updateDate=" + updateDate + "]";
+	}
 	
 }

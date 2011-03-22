@@ -1,8 +1,9 @@
 package eu.venusc.cdmi;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -12,47 +13,25 @@ import java.io.Writer;
 
 public class Utils {
 
-	/**
-	 * Fetch the entire contents of a text file, and return it in a String. This
-	 * style of implementation does not throw Exceptions to the caller. As shown
-	 * in: http://www.javapractices.com/topic/TopicAction.do?Id=42
-	 * 
-	 * @param aFile
-	 *            is a file which already exists and can be read.
-	 */
-	static public String getContents(File aFile) {
-		// ...checks on aFile are elided
-		StringBuilder contents = new StringBuilder();
-
+	static public String getContents(File file) throws IOException{
+		
+		StringBuilder sb = new StringBuilder();
 		try {
-			// use buffering, reading one line at a time
-			// FileReader always assumes default encoding is OK!
-			BufferedReader input = new BufferedReader(new FileReader(aFile));
+		    DataInputStream in = new DataInputStream(new FileInputStream(file));
 
-			try {
-				String line = null;
-
-				while ((line = input.readLine()) != null) {
-					contents.append(line);
-					// TO BE FIXED THE LINE SEPERATOR!!!!!
-					// contents.append(System.getProperty("line.separator"));
-				}
-			} finally {
-				input.close();
-			}
-		} catch (IOException ex) {
-			ex.printStackTrace();
+		    BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-16"));
+		    String strLine;
+		    
+		    while ((strLine = br.readLine()) != null)
+		        sb.append(strLine);
+		      in.close();
+		      }catch (IOException e){
+		        e.printStackTrace();
+		      }
+		    return sb.toString();
 		}
 
-		return contents.toString();
-	}
-
-	/*   
-	 * TODO: 1. support for characters such as #¤¤% $ / {[ ... is needed 
-	 *       2. seperatos for lines are needed to be added 
-	 * 
-	 * 
-	 * */
+	
 	public static String convertStreamToString(InputStream is)
 			throws IOException {
 		/*

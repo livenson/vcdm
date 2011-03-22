@@ -1,5 +1,9 @@
 package eu.venusc.cdmi;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class CDMIClient {
 
@@ -8,26 +12,25 @@ public class CDMIClient {
 	 */
 	public static void main(String[] args) {
 		String remoteFNM = "http://localhost:2364/hello.txt";
-		String localfile = "/home/venus/venus-c/vcdm-new/vcdm/src/sdk/java/src/hello.txt";
+		String localfile = "/home/venus/workspace/venus-c/src/hello.txt";
+		Map map = new HashMap();
 		
 		CDMIBlobOperations cd = new CDMIBlobOperations();
 		//CDMIMQOperations mq = new CDMIMQOperations();
-		
-		
 		try {
-			cd.create(localfile, remoteFNM);
-			//cd.delete(remoteFNM);
-			//cd.update(localfile, remoteFNM);
-			//int a = cd.readFile(remoteFNM);
-			//mq.createQueueObj(remoteFNM);	
-
+			cd.delete(remoteFNM);
+			cd.create(localfile, remoteFNM, map);
+			cd.update(localfile, remoteFNM, map);
+			File f = cd.readFile(remoteFNM);
+			
+			
+			for (String s: cd.getChildren("http://localhost:2364/mydata")) {
+				System.out.println(s);
+			}
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-
 	}
-
 }
-;
