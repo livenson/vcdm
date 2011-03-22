@@ -8,6 +8,7 @@ import java.util.Date;
  * Data abstraction for a blob object.
  *
  */
+
 public class Blob {
 
 	private String filename;
