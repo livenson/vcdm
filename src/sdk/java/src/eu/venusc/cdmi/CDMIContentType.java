@@ -12,4 +12,5 @@ public class CDMIContentType {
 	public static String CDMI_DOMAIN = "application/vnd.org.snia.cdmi.domain+json";
 	public static String CDMI_OBJECT = "application/vnd.org.snia.cdmi.object+json";
 	public static String CDMI_QUEUE = "application/vnd.org.snia.cdmi.queue+json";
+	public static String CDMI_SPEC_VERSION = "1.0";
 }

@@ -3,14 +3,14 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="bin"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/home/venus/Downloads/google-gson-1.6/gson-1.6.jar"/>
+	<classpathentry kind="lib" path="/home/venus/Downloads/google-gson-1.6/gson-1.6-javadoc.jar"/>
+	<classpathentry kind="lib" path="/home/venus/Downloads/google-gson-1.6/gson-1.6-sources.jar"/>
 	<classpathentry kind="lib" path="/home/venus/Downloads/httpcomponents-client-4.1/lib/commons-codec-1.4.jar"/>
 	<classpathentry kind="lib" path="/home/venus/Downloads/httpcomponents-client-4.1/lib/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="/home/venus/Downloads/httpcomponents-client-4.1/lib/httpclient-4.1.jar"/>
 	<classpathentry kind="lib" path="/home/venus/Downloads/httpcomponents-client-4.1/lib/httpclient-cache-4.1.jar"/>
 	<classpathentry kind="lib" path="/home/venus/Downloads/httpcomponents-client-4.1/lib/httpcore-4.1.jar"/>
 	<classpathentry kind="lib" path="/home/venus/Downloads/httpcomponents-client-4.1/lib/httpmime-4.1.jar"/>
-	<classpathentry kind="lib" path="/home/venus/Downloads/google-gson-1.6/gson-1.6.jar"/>
-	<classpathentry kind="lib" path="/home/venus/Downloads/google-gson-1.6/gson-1.6-javadoc.jar"/>
-	<classpathentry kind="lib" path="/home/venus/Downloads/google-gson-1.6/gson-1.6-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -13,13 +13,13 @@ public class CDMIMQOperations implements MQOperations {
 	@Override
 	public void createQueueObj(String queueName)
 			throws Exception {
-		// TODO Auto-generated method stub
+
 		HttpClient httpclient = new DefaultHttpClient();
 		try {
 			HttpResponse response = null;
 
 			HttpPut httpput = new HttpPut(queueName);
-			// TODO: convert to constants from CDMIContentTypes
+
 			httpput.setHeader("Content-Type",
 					"application/vnd.org.snia.cdmi.queue+json");
 			httpput.setHeader("Accept",

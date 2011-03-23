@@ -9,7 +9,8 @@ import java.net.URL;
 import java.util.Map;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
@@ -17,34 +18,50 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import com.google.gson.Gson;
+import com.sun.swing.internal.plaf.metal.resources.metal;
 
 public class CDMIBlobOperations {
-
-	public CDMIBlobOperations() {
+	
+	Credentials creds = null; 
+	URL endpoint = null;
+	
+	public CDMIBlobOperations(Credentials creds, URL endpoint) {
+		this.creds = creds;
+		this.endpoint = endpoint;
 	}
 
-	public int create(URI local, URI remote, Map parameters) throws Exception {
+	public int create(URI local, String remote, Map parameters) throws Exception {
 
-		HttpClient httpclient = new DefaultHttpClient();
+		DefaultHttpClient httpclient = new DefaultHttpClient();
 
+		httpclient.getCredentialsProvider().setCredentials(new AuthScope(endpoint.getHost(),endpoint.getPort()), creds);
+		
 		HttpResponse response = null;
-
-		HttpPut httpput = new HttpPut(remote);
+		HttpPut httpput = new HttpPut(endpoint+remote);
 
 		httpput.setHeader("Content-Type", CDMIContentType.CDMI_DATA);
 		httpput.setHeader("Accept", CDMIContentType.CDMI_DATA);
-		httpput.setHeader("X-CDMI-Specification-Version", "1.0");
+		httpput.setHeader("X-CDMI-Specification-Version", CDMIContentType.CDMI_SPEC_VERSION);
+		
+		BlobCreateRequest create = new BlobCreateRequest();
+		create.mimetype = parameters.get("mimetype") != null ? (String) parameters.get("mimetype") : "text/plain";
+		create.metadata= parameters.get("metadata") != null ? (MetadataField) parameters.get("metadata"): null;
+		create.domainURI= parameters.get("domainURI") != null ? (String) parameters.get("domainURI"): null;
+		create.value = parameters.get("value") != null ? (String)parameters.get("value"): Utils.getContents(new File(local.getPath()));
+		create.copy= parameters.get("copy") != null ? (String) parameters.get("copy"): null;
+		create.deserialize= parameters.get("deserialize") != null ? (String) parameters.get("deserialize"): null;
+		create.serialize= parameters.get("serialize") != null ? (String) parameters.get("serialize"): null;
+		create.move = parameters.get("move") != null ? (String) parameters.get("move"): null;
+		create.objectID =parameters.get("objectID") != null ? (String) parameters.get("objectID"): null;
+		create.objectURI = parameters.get("objectURI") != null ? (String) parameters.get("objectURI"): null;
+		create.reference = parameters.get("reference") != null ? (String) parameters.get("reference"): null;
 
-		String respStr = "{\n";
-		respStr = respStr + "\"mimetype\" : \"" + "text/plain" + "\",\n";
-		respStr = respStr + "\"value\" : \""
-				+ Utils.getContents(new File(local.getPath())) + "\"\n";
-		respStr = respStr + "}\n";
+		Gson gson = new Gson(); 
 
-		StringEntity entity = new StringEntity(respStr);
+		StringEntity entity = new StringEntity(gson.toJson(create));
 		httpput.setEntity(entity);
-
 		response = httpclient.execute(httpput);
+
 		int responseCode = response.getStatusLine().getStatusCode();
 
 		switch (responseCode) {
@@ -55,21 +72,21 @@ public class CDMIBlobOperations {
 
 		case 400:
 			throw new CDMIOperationException(
-					"Invalid parameter of field names in the request: ",
+					"Invalid parameter of field names in the request: " +endpoint+remote,
 					responseCode);
 		case 401:
 			throw new CDMIOperationException(
-					"Incorrect or missing authentication credentials: ",
+					"Incorrect or missing authentication credentials: " +endpoint+ remote,
 					responseCode);
 		case 403:
 			throw new CDMIOperationException(
-					"Client lacks the proper authorization to perform this request: ",
+					"Client lacks the proper authorization to perform this request: "+endpoint+remote,
 					responseCode);
 
 		case 409:
 			throw new CDMIOperationException(
-					"The operation conflicts with a non-CDMI access protocol lock, or could cause a state transition error on the server or he data object cannot be deleted.",
-					responseCode);
+					"The operation conflicts with a non-CDMI access protocol lock, or could cause a state transition error on the server or he data object cannot be deleted."
+					+endpoint+remote,responseCode);
 		}
 		return responseCode;
 
@@ -77,27 +94,29 @@ public class CDMIBlobOperations {
 
 	public int create(String localFNM, String remoteFNM, Map parameters)
 			throws Exception {
-		return create(new URI(localFNM), new URI(remoteFNM), parameters);
+		return create(new URI(localFNM), remoteFNM, parameters);
 	}
 
 	public int update(String localFNM, String remoteFNM, Map parameters)
 			throws Exception {
-		HttpClient httpclient = new DefaultHttpClient();
+		DefaultHttpClient httpclient = new DefaultHttpClient();
+		httpclient.getCredentialsProvider().setCredentials(new AuthScope(endpoint.getHost(),endpoint.getPort()), creds);
+
 		HttpResponse response = null;
-		HttpPut httpput = new HttpPut(remoteFNM);
+		HttpPut httpput = new HttpPut(endpoint+remoteFNM);
 
 		httpput.setHeader("Content-Type", CDMIContentType.CDMI_DATA);
 		httpput.setHeader("Accept", CDMIContentType.CDMI_DATA);
-		httpput.setHeader("X-CDMI-Specification-Version", "1.0");
-
-		String respStr = "{\n";
-		respStr = respStr + "\"mimetype\" : \"" + "text/plain" + "\",\n";
-
-		respStr = respStr + "\"value\" : \""
-				+ Utils.getContents(new File(localFNM)) + "\"\n";
-		respStr = respStr + "}\n";
-
-		StringEntity entity = new StringEntity(respStr);
+		httpput.setHeader("X-CDMI-Specification-Version", CDMIContentType.CDMI_SPEC_VERSION);
+		
+		BlobUpdateRequest update = new BlobUpdateRequest();
+		update.mimetype = parameters.get("mimetype") != null ? (String) parameters.get("mimetype") : "text/plain";
+		update.metadata= parameters.get("metadata") != null ? (MetadataField) parameters.get("metadata"): null;
+		update.domainURI= parameters.get("domainURI") != null ? (String) parameters.get("domainURI"): null;
+		update.value = Utils.getContents(new File(localFNM));
+		Gson gson = new Gson(); 
+		
+		StringEntity entity = new StringEntity(gson.toJson(update));
 		httpput.setEntity(entity);
 
 		response = httpclient.execute(httpput);
@@ -111,39 +130,42 @@ public class CDMIBlobOperations {
 			break;
 		case 302:
 			throw new CDMIOperationException(
-					"The URI is a reference to another URI: " + remoteFNM,
+					"The URI is a reference to another URI: " +endpoint+remoteFNM,
 					responseCode);
 		case 400:
 			throw new CDMIOperationException(
 					"Invalid parameter of field names in the request: "
-							+ remoteFNM, responseCode);
+					+endpoint+remoteFNM, responseCode);
 		case 401:
 			throw new CDMIOperationException(
 					"Incorrect or missing authentication credentials: "
-							+ remoteFNM, responseCode);
+					+endpoint+ remoteFNM, responseCode);
 		case 403:
 			throw new CDMIOperationException(
 					"Client lacks the proper authorization to perform this request: "
-							+ remoteFNM, responseCode);
+					+endpoint+ remoteFNM, responseCode);
 		case 404:
 			throw new CDMIOperationException(
 					"An update was attempted on an object that does not exist: "
-							+ remoteFNM, responseCode);
+					+endpoint+ remoteFNM, responseCode);
 		case 409:
 			throw new CDMIOperationException(
 					"The operation conflicts with a non-CDMI access protocol lock, or could cause a state transition error on the server or he data object cannot be deleted."
-							+ remoteFNM, responseCode);
+					+endpoint+ remoteFNM, responseCode);
 		}
 
 		return responseCode;
 	}
 
 	public void delete(String remoteFNM) throws Exception {
-		HttpClient httpclient = new DefaultHttpClient();
-		HttpDelete httpdelete = new HttpDelete(remoteFNM);
+
+		DefaultHttpClient httpclient = new DefaultHttpClient();
+		httpclient.getCredentialsProvider().setCredentials(new AuthScope(endpoint.getHost(),endpoint.getPort()), creds);
+
+		HttpDelete httpdelete = new HttpDelete(endpoint+remoteFNM);
 		httpdelete.setHeader("Content-Type", CDMIContentType.CDMI_DATA);
 		httpdelete.setHeader("Accept", CDMIContentType.CDMI_DATA);
-		httpdelete.setHeader("X-CDMI-Specification-Version", "1.0");
+		httpdelete.setHeader("X-CDMI-Specification-Version", CDMIContentType.CDMI_SPEC_VERSION);
 
 		HttpResponse response = httpclient.execute(httpdelete);
 
@@ -164,15 +186,15 @@ public class CDMIBlobOperations {
 		case 403:
 			throw new CDMIOperationException(
 					"Client lacks the proper authorization to perform this request: "
-							+ remoteFNM, responseCode);
+					+endpoint+ remoteFNM, responseCode);
 		case 404:
 			throw new CDMIOperationException(
-					"The resource specified was not found: " + remoteFNM,
+					"The resource specified was not found: "+ endpoint +remoteFNM,
 					responseCode);
 		case 409:
 			throw new CDMIOperationException(
 					"The operation conflicts with a non-CDMI access protocol lock, or could cause a state transition error on the server or he data object cannot be deleted: "
-							+ remoteFNM, responseCode);
+					+endpoint+ remoteFNM, responseCode);
 		}
 	}
 
@@ -180,13 +202,14 @@ public class CDMIBlobOperations {
 
 		File file = null;
 		BufferedWriter bw = null;
-		HttpClient httpclient = new DefaultHttpClient();
+		DefaultHttpClient httpclient = new DefaultHttpClient();
+		httpclient.getCredentialsProvider().setCredentials(new AuthScope(endpoint.getHost(),endpoint.getPort()), creds);
 
-		HttpGet httpget = new HttpGet(remoteFNM);
+		HttpGet httpget = new HttpGet(endpoint+remoteFNM);
 
 		httpget.setHeader("Accept", CDMIContentType.CDMI_DATA);
 		httpget.setHeader("Content-Type", CDMIContentType.CDMI_OBJECT);
-		httpget.setHeader("X-CDMI-Specification-Version", "1.0");
+		httpget.setHeader("X-CDMI-Specification-Version", CDMIContentType.CDMI_SPEC_VERSION);
 
 		HttpResponse response = httpclient.execute(httpget);
 
@@ -199,28 +222,28 @@ public class CDMIBlobOperations {
 			break;
 		case 302:
 			throw new CDMIOperationException(
-					"The URI is a reference to another URI: " + remoteFNM,
+					"The URI is a reference to another URI: " + endpoint + remoteFNM,
 					responseCode);
 		case 400:
 			throw new CDMIOperationException(
 					"Invalid parameter of field names in the request: "
-							+ remoteFNM, responseCode);
+							+ endpoint + remoteFNM, responseCode);
 		case 401:
 			throw new CDMIOperationException(
 					"Incorrect or missing authentication credentials: "
-							+ remoteFNM, responseCode);
+					+ endpoint + remoteFNM, responseCode);
 		case 403:
 			throw new CDMIOperationException(
 					"Client lacks the proper authorization to perform this request: "
-							+ remoteFNM, responseCode);
+					+ endpoint + remoteFNM, responseCode);
 		case 404:
 			throw new CDMIOperationException(
 					"An update was attempted on an object that does not exist: "
-							+ remoteFNM, responseCode);
+					+ endpoint + remoteFNM, responseCode);
 		case 406:
 			throw new CDMIOperationException(
 					"The server is unable to provide the object in the content-type specified in the Accept header: "
-							+ remoteFNM, responseCode);
+					+ endpoint + remoteFNM, responseCode);
 		}
 
 		InputStream respStream = response.getEntity().getContent();
@@ -231,7 +254,7 @@ public class CDMIBlobOperations {
 
 
 		if (responseBody.mimetype.equals("text/plain")) {
-			URL url = new URL(remoteFNM);
+			URL url = new URL(endpoint+remoteFNM);
 
 			file = new File(System.getProperty("user.home") + url.getFile());
 			bw = new BufferedWriter(new FileWriter(file));
@@ -243,13 +266,14 @@ public class CDMIBlobOperations {
 
 	public String[] getChildren(String remoteContainer) throws Exception {
 
-		HttpClient httpclient = new DefaultHttpClient();
+		DefaultHttpClient httpclient = new DefaultHttpClient();
+		httpclient.getCredentialsProvider().setCredentials(new AuthScope(endpoint.getHost(),endpoint.getPort()), creds);
 
 		HttpResponse response = null;
-		HttpGet httpget = new HttpGet(remoteContainer);
+		HttpGet httpget = new HttpGet(endpoint+remoteContainer);
 		httpget.setHeader("Content-Type", CDMIContentType.CDMI_CONTAINER);
 		httpget.setHeader("Accept", CDMIContentType.CDMI_OBJECT);
-		httpget.setHeader("X-CDMI-Specification-Version", "1.0");
+		httpget.setHeader("X-CDMI-Specification-Version", CDMIContentType.CDMI_SPEC_VERSION);
 		response = httpclient.execute(httpget);
 
 		int responseCode = response.getStatusLine().getStatusCode();
@@ -261,28 +285,28 @@ public class CDMIBlobOperations {
 			break;
 		case 302:
 			throw new CDMIOperationException(
-					"The URI is a reference to another URI: " + remoteContainer,
+					"The URI is a reference to another URI: " + endpoint+remoteContainer,
 					responseCode);
 		case 400:
 			throw new CDMIOperationException(
 					"Invalid parameter of field names in the request	: "
-							+ remoteContainer, responseCode);
+					+endpoint+ remoteContainer, responseCode);
 		case 401:
 			throw new CDMIOperationException(
 					"Incorrect or missing authentication credentials: "
-							+ remoteContainer, responseCode);
+					+endpoint+  remoteContainer, responseCode);
 		case 403:
 			throw new CDMIOperationException(
 					"Client lacks the proper authorization to perform this request: "
-							+ remoteContainer, responseCode);
+					+endpoint+  remoteContainer, responseCode);
 		case 404:
 			throw new CDMIOperationException(
 					"A container was not found at the specified URI: "
-							+ remoteContainer, responseCode);
+					+endpoint+ remoteContainer, responseCode);
 		case 406:
 			throw new CDMIOperationException(
 					"The server is unable to provide the object in the content-type specified in the Accept header: "
-							+ remoteContainer, responseCode);
+					+endpoint+ remoteContainer, responseCode);
 		}
 
 		InputStream respStream = response.getEntity().getContent();

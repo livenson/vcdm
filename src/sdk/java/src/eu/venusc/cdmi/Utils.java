@@ -19,7 +19,7 @@ public class Utils {
 		try {
 		    DataInputStream in = new DataInputStream(new FileInputStream(file));
 
-		    BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-16"));
+		    BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
 		    String strLine;
 		    
 		    while ((strLine = br.readLine()) != null)
