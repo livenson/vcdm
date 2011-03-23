@@ -3,6 +3,13 @@ from vcdm.server.cdmi.cdmi_content_types import CDMI_CAPABILITY, CDMI_DATA
 from vcdm.server.cdmi.root import CDMI_VERSION
 from vcdm.server.http_status_codes import BAD_REQUEST, OK
 
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
+
+
 class Capability(resource.Resource):
     isLeaf = True 
     allowedMethods = ('GET') 
@@ -17,4 +24,6 @@ class Capability(resource.Resource):
         request.setHeader('Content-Type', CDMI_CAPABILITY)
         request.setHeader('X-CDMI-Specification-Version', CDMI_VERSION)
         request.setHeader('Accept', CDMI_DATA)
-        return "%s" % "result"
+        # XXX return corresponding capability
+        #return json.dumps(...)
+        

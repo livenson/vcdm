@@ -2,7 +2,7 @@
 # sample python client
 import vcdm
 
-vcdm.init(endpoint, credentials)
+conn = vcdm.CDMIConnection(endpoint, credentials)
 
 # blob operations
 vcdm.blob.write(local_file, remote_path)
