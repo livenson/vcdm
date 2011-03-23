@@ -19,6 +19,7 @@ public class CDMIClient {
 		String remoteFNM = "hello.txt";
 		URL endpoint = new URL("http://localhost:2364/");
 		String localfile = "/home/venus/venus-c/vcdm/src/sdk/java/src/hello.txt";
+		String localfile2 = "hello2.txt";
 		Map map = new HashMap();
 		map.put("mimetype", "multipart/alternative");
 		Credentials creds = new UsernamePasswordCredentials("username", "password");
@@ -30,7 +31,7 @@ public class CDMIClient {
 		cd.create(localfile, remoteFNM, map);
 		cd.update(localfile, remoteFNM, map);
 
-		File f = cd.readFile(remoteFNM);
+		File f = cd.readFile(remoteFNM, localfile2);
 
 			for (String s: cd.getChildren("mydata")) {
 				System.out.println(s);
