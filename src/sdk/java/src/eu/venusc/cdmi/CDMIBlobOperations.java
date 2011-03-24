@@ -8,8 +8,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
@@ -18,9 +18,9 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 
 import com.google.gson.Gson;
-import com.sun.swing.internal.plaf.metal.resources.metal;
 
 public class CDMIBlobOperations {
 
@@ -35,7 +35,7 @@ public class CDMIBlobOperations {
 		httpclient.getCredentialsProvider().setCredentials(
 				new AuthScope(endpoint.getHost(), endpoint.getPort()), creds);
 
-	}
+	}	
 
 	public int create(URI local, String remote, Map parameters)
 			throws Exception {
@@ -52,33 +52,26 @@ public class CDMIBlobOperations {
 		create.mimetype = parameters.get("mimetype") != null ? (String) parameters
 				.get("mimetype") : "text/plain";
 
-		// XXX perhaps set via introspection?
-		if (parameters.get("metadata") != null)
 			create.metadata = (MetadataField) parameters.get("metadata");
-		if (parameters.get("domainURI") != null)
 			create.domainURI = (String) parameters.get("domainURI");
-		if (parameters.get("copy") != null)
 			create.copy = (String) parameters.get("copy");
-		if (parameters.get("deserialize") != null)
 			create.deserialize = (String) parameters.get("deserialize");
-		if (parameters.get("serialize") != null)
 			create.serialize = (String) parameters.get("serialize");
-		if (parameters.get("move") != null)
 			create.move = (String) parameters.get("move");
-		if (parameters.get("objectID") != null)
 			create.objectID = (String) parameters.get("objectID");
-		if (parameters.get("objectURI") != null)
 			create.objectURI = (String) parameters.get("objectURI");
-		if (parameters.get("reference") != null)
 			create.reference = (String) parameters.get("reference");
 
 		Gson gson = new Gson();
 		StringEntity entity = new StringEntity(gson.toJson(create));
 		httpput.setEntity(entity);
 		response = httpclient.execute(httpput);
-
+		
+		
 		int responseCode = response.getStatusLine().getStatusCode();
-
+		HttpEntity ent = response.getEntity();
+        EntityUtils.consume(ent);
+						
 		switch (responseCode) {
 
 		case 201:
@@ -102,6 +95,7 @@ public class CDMIBlobOperations {
 					"The operation conflicts with a non-CDMI access protocol lock, or could cause a state transition error on the server or he data object cannot be deleted."
 							+ endpoint + remote, responseCode);
 		}
+		
 		return responseCode;
 
 	}
@@ -124,9 +118,7 @@ public class CDMIBlobOperations {
 		BlobUpdateRequest update = new BlobUpdateRequest();
 		update.mimetype = parameters.get("mimetype") != null ? (String) parameters
 				.get("mimetype") : "text/plain";
-		if (parameters.get("metadata") != null)
 			update.metadata = (MetadataField) parameters.get("metadata");
-		if (parameters.get("domainURI") != null)
 			update.domainURI = (String) parameters.get("domainURI");
 
 		update.value = Utils.getContents(new File(localFNM));
@@ -134,11 +126,13 @@ public class CDMIBlobOperations {
 
 		StringEntity entity = new StringEntity(gson.toJson(update));
 		httpput.setEntity(entity);
-
+		
 		response = httpclient.execute(httpput);
-
 		int responseCode = response.getStatusLine().getStatusCode();
 
+		HttpEntity ent = response.getEntity();
+        EntityUtils.consume(ent);
+		
 		switch (responseCode) {
 
 		case 200:
@@ -185,6 +179,9 @@ public class CDMIBlobOperations {
 
 		int responseCode = response.getStatusLine().getStatusCode();
 
+		HttpEntity entity = response.getEntity();
+        EntityUtils.consume(entity);
+		   
 		switch (responseCode) {
 
 		case 200:
@@ -231,6 +228,8 @@ public class CDMIBlobOperations {
 
 		int responseCode = response.getStatusLine().getStatusCode();
 
+
+				
 		switch (responseCode) {
 
 		case 200:
@@ -267,7 +266,10 @@ public class CDMIBlobOperations {
 		BlobReadResponse responseBody = gson
 				.fromJson(Utils.convertStreamToString(respStream),
 						BlobReadResponse.class);
-
+		
+		HttpEntity ent = response.getEntity();
+        EntityUtils.consume(ent);
+		
 		if (responseBody.mimetype.equals("text/plain")) {
 			URL url = new URL(endpoint + remoteFNM);
 
@@ -290,7 +292,7 @@ public class CDMIBlobOperations {
 		response = httpclient.execute(httpget);
 
 		int responseCode = response.getStatusLine().getStatusCode();
-
+		
 		switch (responseCode) {
 
 		case 200:
@@ -328,7 +330,9 @@ public class CDMIBlobOperations {
 		ContainerReadRequest responseBody = gson.fromJson(
 				Utils.convertStreamToString(respStream),
 				ContainerReadRequest.class);
-
+		
+		HttpEntity ent = response.getEntity();
+        EntityUtils.consume(ent);
 		return responseBody.children;
 	}
 

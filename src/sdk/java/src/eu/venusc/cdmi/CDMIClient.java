@@ -29,6 +29,7 @@ public class CDMIClient {
 
 		cd.delete(remoteFNM);
 		cd.create(localfile, remoteFNM, map);
+
 		cd.update(localfile, remoteFNM, map);
 
 		File f = cd.readFile(remoteFNM, localfile2);
@@ -36,7 +37,6 @@ public class CDMIClient {
 			for (String s: cd.getChildren("mydata")) {
 				System.out.println(s);
 			}
-	
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
