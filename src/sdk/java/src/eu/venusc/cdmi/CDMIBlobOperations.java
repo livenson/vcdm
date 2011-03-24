@@ -3,10 +3,12 @@ package eu.venusc.cdmi;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
@@ -22,22 +24,21 @@ import com.sun.swing.internal.plaf.metal.resources.metal;
 
 public class CDMIBlobOperations {
 
-	Credentials creds = null;
-	URL endpoint = null;
+	private Credentials creds = null;
+	private URL endpoint = null;
+	private DefaultHttpClient httpclient;
 
 	public CDMIBlobOperations(Credentials creds, URL endpoint) {
 		this.creds = creds;
 		this.endpoint = endpoint;
+		httpclient = new DefaultHttpClient();
+		httpclient.getCredentialsProvider().setCredentials(
+				new AuthScope(endpoint.getHost(), endpoint.getPort()), creds);
+
 	}
 
 	public int create(URI local, String remote, Map parameters)
 			throws Exception {
-
-		DefaultHttpClient httpclient = new DefaultHttpClient();
-
-		httpclient.getCredentialsProvider().setCredentials(
-				new AuthScope(endpoint.getHost(), endpoint.getPort()), creds);
-
 		HttpResponse response = null;
 		HttpPut httpput = new HttpPut(endpoint + remote);
 
@@ -49,19 +50,27 @@ public class CDMIBlobOperations {
 		BlobCreateRequest create = new BlobCreateRequest();
 		create.value = Utils.getContents(new File(local.getPath()));
 		create.mimetype = parameters.get("mimetype") != null ? (String) parameters
-				.get("mimetype")
-				: "text/plain";
+				.get("mimetype") : "text/plain";
 
 		// XXX perhaps set via introspection?
-		create.metadata = parameters.get("metadata");
-		create.domainURI = parameters.get("domainURI");
-		create.copy = parameters.get("copy");
-		create.deserialize = parameters.get("deserialize");
-		create.serialize = parameters.get("serialize");
-		create.move = parameters.get("move");
-		create.objectID = parameters.get("objectID");
-		create.objectURI = parameters.get("objectURI");
-		create.reference = parameters.get("reference");
+		if (parameters.get("metadata") != null)
+			create.metadata = (MetadataField) parameters.get("metadata");
+		if (parameters.get("domainURI") != null)
+			create.domainURI = (String) parameters.get("domainURI");
+		if (parameters.get("copy") != null)
+			create.copy = (String) parameters.get("copy");
+		if (parameters.get("deserialize") != null)
+			create.deserialize = (String) parameters.get("deserialize");
+		if (parameters.get("serialize") != null)
+			create.serialize = (String) parameters.get("serialize");
+		if (parameters.get("move") != null)
+			create.move = (String) parameters.get("move");
+		if (parameters.get("objectID") != null)
+			create.objectID = (String) parameters.get("objectID");
+		if (parameters.get("objectURI") != null)
+			create.objectURI = (String) parameters.get("objectURI");
+		if (parameters.get("reference") != null)
+			create.reference = (String) parameters.get("reference");
 
 		Gson gson = new Gson();
 		StringEntity entity = new StringEntity(gson.toJson(create));
@@ -104,10 +113,6 @@ public class CDMIBlobOperations {
 
 	public int update(String localFNM, String remoteFNM, Map parameters)
 			throws Exception {
-		DefaultHttpClient httpclient = new DefaultHttpClient();
-		httpclient.getCredentialsProvider().setCredentials(
-				new AuthScope(endpoint.getHost(), endpoint.getPort()), creds);
-
 		HttpResponse response = null;
 		HttpPut httpput = new HttpPut(endpoint + remoteFNM);
 
@@ -118,11 +123,12 @@ public class CDMIBlobOperations {
 
 		BlobUpdateRequest update = new BlobUpdateRequest();
 		update.mimetype = parameters.get("mimetype") != null ? (String) parameters
-				.get("mimetype")
-				: "text/plain";
-		update.metadata = parameters.get("metadata");
-		update.domainURI = parameters.get("domainURI");
-		
+				.get("mimetype") : "text/plain";
+		if (parameters.get("metadata") != null)
+			update.metadata = (MetadataField) parameters.get("metadata");
+		if (parameters.get("domainURI") != null)
+			update.domainURI = (String) parameters.get("domainURI");
+
 		update.value = Utils.getContents(new File(localFNM));
 		Gson gson = new Gson();
 
@@ -168,10 +174,6 @@ public class CDMIBlobOperations {
 	}
 
 	public void delete(String remoteFNM) throws Exception {
-
-		DefaultHttpClient httpclient = new DefaultHttpClient();
-		httpclient.getCredentialsProvider().setCredentials(
-				new AuthScope(endpoint.getHost(), endpoint.getPort()), creds);
 
 		HttpDelete httpdelete = new HttpDelete(endpoint + remoteFNM);
 		httpdelete.setHeader("Content-Type", CDMIContentType.CDMI_DATA);
@@ -262,26 +264,22 @@ public class CDMIBlobOperations {
 
 		InputStream respStream = response.getEntity().getContent();
 		Gson gson = new Gson();
-		BlobReadResponse responseBody = gson.fromJson(Utils
-				.convertStreamToString(respStream), BlobReadResponse.class);
+		BlobReadResponse responseBody = gson
+				.fromJson(Utils.convertStreamToString(respStream),
+						BlobReadResponse.class);
 
 		if (responseBody.mimetype.equals("text/plain")) {
 			URL url = new URL(endpoint + remoteFNM);
 
-			
 			file = new File(localFNM);
 			bw = new BufferedWriter(new FileWriter(file));
 			bw.write(responseBody.value);
 			bw.close();
-		}
+		} else throw new IOException(responseBody.mimetype +" is not handled");
 		return file;
 	}
 
 	public String[] getChildren(String remoteContainer) throws Exception {
-
-		DefaultHttpClient httpclient = new DefaultHttpClient();
-		httpclient.getCredentialsProvider().setCredentials(
-				new AuthScope(endpoint.getHost(), endpoint.getPort()), creds);
 
 		HttpResponse response = null;
 		HttpGet httpget = new HttpGet(endpoint + remoteContainer);
@@ -327,8 +325,9 @@ public class CDMIBlobOperations {
 		InputStream respStream = response.getEntity().getContent();
 		Gson gson = new Gson();
 
-		ContainerReadRequest responseBody = gson.fromJson(Utils
-				.convertStreamToString(respStream), ContainerReadRequest.class);
+		ContainerReadRequest responseBody = gson.fromJson(
+				Utils.convertStreamToString(respStream),
+				ContainerReadRequest.class);
 
 		return responseBody.children;
 	}
