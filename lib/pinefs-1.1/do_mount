@@ -1,1 +1,0 @@
-mount -t nfs -o noac 127.0.0.1:/ /mnt/nfs
