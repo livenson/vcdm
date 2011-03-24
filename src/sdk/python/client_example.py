@@ -1,22 +1,31 @@
+# sample client of a CDMI service
 
-# sample python client
-import vcdm
+from vcdm import cdmi
 
-conn = vcdm.CDMIConnection(endpoint, credentials)
+endpoint = "http://localhost:2364/"
+credentials = {'user': 'aaa',
+               'password': 'aaa'}
+
+localfile = 'test_file.txt'
+remoteblob = 'test_file.txt'
+remoteblob2 = '/mydata/text_file.txt'
+
+remote_container = '/mydata'
+remote_container2 = '/mydata/more'
+
+conn = cdmi.CDMIConnection(endpoint, credentials)
 
 # blob operations
-vcdm.blob.write(local_file, remote_path)
-vcdm.blob.read(remote_file_url)
-vcdm.blob.read(remote_file_UID)
-vcdm.blob.delete(remote_file, path)
-vcdm.blob.update(local_file, remote_path)
+conn.create_blob(localfile, remoteblob, mimetype='text/plain')
+conn.update_blob(localfile, remoteblob, mimetype='text/plain')
 
-# mq operations
-vcdm.mq.put(m, channel)
-m = vcdm.mq.get(channel)
+value = conn.read_blob(remoteblob)
+print "=== Value ==\n%s\n" % value
 
-# searching
-vcdm.blob.find(pattern, path)
-vcdm.blob.find(user)
-vcdm.blob.find(filesize)
+conn.delete_blob(remoteblob)
 
+# container operations
+conn.create_container(remote_container)
+print conn.read_container('/')
+conn.delete_container(remote_container)
+print conn.read_container('/')
