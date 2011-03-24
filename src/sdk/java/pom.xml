@@ -1,0 +1,62 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>eu.venusc.cdmi</groupId>
+  <version>1.0</version>
+  <artifactId>libcdmi</artifactId>
+  <packaging>jar</packaging>
+
+  <name>libcdmi</name>
+  <url>http://maven.apache.org</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+      <version>4.1</version>
+      <scope>compile</scope>
+   </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.1.1</version>
+      <scope>compile</scope>
+   </dependency>
+      <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>1.6</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+  
+   <repositories>
+    <repository>
+      <id>m1.dev.java.net</id>
+      <url>http://download.java.net/maven/1</url>
+      <layout>legacy</layout>
+    </repository>
+    <repository>
+      <id>m2.dev.java.net</id>
+      <url>http://download.java.net/maven/2</url>
+      <layout>default</layout>
+    </repository>
+
+  <repository>
+      <id>gson</id>
+      <url>http://google-gson.googlecode.com/svn/mavenrepo</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </repository>
+
+  </repositories>
+</project>
