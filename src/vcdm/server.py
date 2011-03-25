@@ -38,20 +38,21 @@ def main():
         Portal(SimpleRealm(), checkers),
         [guard.DigestCredentialFactory('md5', c('general', 'server.endpoint'))])
     
-    # unencrypted connection for testing/development
-    reactor.listenTCP(8080, server.Site(resource=wrapper))
+    # TODO: configure reactor to use
+    # http://twistedmatrix.com/documents/current/core/howto/choosing-reactor.html
+    
+    # unencrypted/unprotected connection for testing/development        
+    reactor.listenTCP(int(c('general', 'server.debug_port')), server.Site(resource=RootCDMIResource()))
     
     # 1-way SSL for production
     from twisted.internet import ssl
     sslContext = ssl.DefaultOpenSSLContextFactory('server_credentials/key.pem','server_credentials/cert.pem')
-    reactor.listenSSL(8081, server.Site(resource=wrapper), contextFactory = sslContext)
-    
-    # another connector without authorization requirements
-    reactor.listenTCP(8082, server.Site(resource = RootCDMIResource()))
-    
+    reactor.listenSSL(int(c('general', 'server.endpoint').split(":")[1]), server.Site(resource=wrapper), contextFactory = sslContext)
+        
     # connector for providing quick metainfo
     from vcdm.server.meta.info import InfoResource
-    reactor.listenTCP(8083, server.Site(resource = InfoResource()))
+    # TODO: fix InfoResource
+    #reactor.listenTCP(8083, server.Site(resource = InfoResource()))
     
     reactor.run()
 

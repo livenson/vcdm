@@ -1,4 +1,4 @@
-from twisted.web import resource, http
+from twisted.web import resource
 from vcdm.server.http_status_codes import BAD_REQUEST
 
 CDMI_VERSION = '1.0'

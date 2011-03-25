@@ -77,28 +77,18 @@ class CouchDBStore(IDatastore):
             }
         }         
         ''' % (path, comparision_string, fields)
-        res = self.db.query(fnm_fun)        
-        print list(self.db.query("function (doc) {emit(doc.id, null)}"))[0].key
+        res = self.db.query(fnm_fun)
+        print res        
+        #print list(self.db.query("function (doc) {emit(doc.id, null)}"))[0].key
         if len(res) == 0:
-            print "Nothing found?" ...
+            print "Nothing found?" 
             return (None, None)
         elif len(res) > 1:
             # XXX: does CDMI allow this in case of references/...?
             raise InternalError("Namespace collision: more than one UID corresponds to an object.")
         else:
             tmp_res = list(res)[0]
-            return  (tmp_res.key, tmp_res.value)
-        
-    def get_total_stats(self):
-        sizes = '''function(doc) {       
-               emit(doc.size, null);
-        }
-        ''' 
-        res = self.db.query(sizes)
-        if len(res) == 0:
-            return (None, None)
-        else: 
-            return (len(res), sum([s['key'] for s in list(res)]))
+            return  (tmp_res.key, tmp_res.value)    
         
     def find_path_uids(self, paths):
         """Return a list of IDs of container objects that correspond to the specified path."""
