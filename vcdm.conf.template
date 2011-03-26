@@ -6,6 +6,7 @@ mq.backend = local
 # local, azure
 ds.backend = local
 server.endpoint = localhost:8080
+server.debug_port = 2364
 
 # storage backends
 [local]
@@ -32,5 +33,4 @@ credentials.queue_url = queue.core.windows.net
 credentials_source = static
 credentials.username = aaa
 credentials.password = aaa
-cdmi.blob_url = http://localhost:8082/blob
-cdmi.queue_url = http://localhost:8082/mq
+cdmi.endpoint = http://localhost:8082/

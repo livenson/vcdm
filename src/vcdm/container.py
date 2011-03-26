@@ -19,7 +19,6 @@ def create_or_update(container_path, path, metadata = None):
     uid, vals = vcdm.env['ds'].find_by_path(path, object_type = 'container', fields = ['children', 'parent_container'])
     
     # XXX duplication of checks with blob (vcdm). Refactor.
-    
     if uid is not None and parent_container != vals['parent_container']:
         raise InternalError("Inconsistent information about the object! path: %s, parent_container in db: %s") % (fullpath, vals['parent_container'])
     
@@ -68,6 +67,7 @@ def delete(path):
 
 def check_path(container_path):
     # for a top-level container - all is good
+    print "Cont path:", container_path
     if container_path == ['']:
         return True
     

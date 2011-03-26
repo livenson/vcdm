@@ -1,4 +1,4 @@
-from twisted.web import resource, http
+from twisted.web import resource
 
 import vcdm
 
@@ -17,9 +17,7 @@ class InfoResource(resource.Resource):
         
         <h4>General data</h4>
         """
-        stats = vcdm.datastore_backends[vcdm.config.get('general', 'ds.backend')].get_total_stats()        
-        res += "<p><b>Number of files:</b>  %s " % stats[0]
-        res += "<p><b>Total space used:</b> %s</p>" % stats[1]        
+                
         res += "<p><b>Cost per month:</b> $3.99 (TODO: frontend to accounting stats)</p>"
         res += "<p><a href=\"http://localhost:5984/_utils/\">Datastore management</a></p>"
         
@@ -28,7 +26,7 @@ class InfoResource(resource.Resource):
         """
         for i in vcdm.blob_backends.keys():
             current = ""
-            if i == vcdm.config.get('general', 'blob.backend'):
+            if i == vcdm.c('general', 'blob.backend'):
                 current = "<b>current</b>"
             res += "<li>%s: <a href=\"#\">description</a> | <a href=\"#\">test results</a> %s</li>" %(i, current)
         res += """
@@ -38,7 +36,7 @@ class InfoResource(resource.Resource):
         """
         for i in vcdm.mq_backends.keys():
             current = ""
-            if i == vcdm.config.get('general', 'mq.backend'):
+            if i == vcdm.c('general', 'mq.backend'):
                 current = "<b>current</b>"
             res += "<li>%s: <a href=\"#\">description</a> | <a href=\"#\">test results</a> %s</li>" %(i, current)
         res += """
