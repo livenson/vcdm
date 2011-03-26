@@ -1,4 +1,5 @@
 import couchdb
+import datetime
 from uuid import uuid4
 from vcdm.interfaces.datastore import IDatastore
 
@@ -16,7 +17,15 @@ class CouchDBStore(IDatastore):
             self.db = server.create('meta')
         else:
             # already created?
-            self.db = server['meta']          
+            self.db = server['meta']
+        # make sure we have a top-level folder
+        if self.find_by_path('/', 'container')[0] is None:
+            self.write({
+                        'object': 'container',            
+                        'fullpath': '/',
+                        'parent_container': '/', 
+                        'children': [],
+                        'ctime': str(datetime.datetime.now())}, None)
     
     def read(self, docid):        
         return self.db[docid]
@@ -78,9 +87,9 @@ class CouchDBStore(IDatastore):
         }         
         ''' % (path, comparision_string, fields)
         res = self.db.query(fnm_fun)        
-        print list(self.db.query("function (doc) {emit(doc.id, null)}"))[0].key
+        #print list(self.db.query("function (doc) {emit(doc.id, null)}"))[0].key
         if len(res) == 0:
-            print "Nothing found?" ...
+            print "Nothing found?" 
             return (None, None)
         elif len(res) > 1:
             # XXX: does CDMI allow this in case of references/...?

@@ -16,9 +16,12 @@ class Container(resource.Resource):
     def render_GET(self, request):
         """GET operation corresponds to reading container's data"""
         # parse the request        
-        fullpath = request.path
+        fullpath = request.path.rstrip('/')         
         tmp = fullpath.split('/')
-        container_path = tmp[:-1]
+        if len(tmp) != 1: # if it's not a top-level container
+            container_path = tmp[:-1]
+        else:
+            container_path = ['']
         
         # contact the backend
         status, uid, children, metadata = container.read(fullpath)
