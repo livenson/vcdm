@@ -2,7 +2,8 @@ from  twisted.web import resource
 
 from  vcdm import container
 from vcdm.server.cdmi.cdmi_content_types import CDMI_CONTAINER
-from vcdm.server.cdmi.root import CDMI_VERSION
+from vcdm.server.cdmi.root import CDMI_VERSION, CDMI_SERVER_HEADER
+from vcdm.server.http_status_codes import OK
 
 try:
     import json
@@ -30,21 +31,24 @@ class Container(resource.Resource):
         request.setResponseCode(status)
         request.setHeader('Content-Type', CDMI_CONTAINER)
         request.setHeader('X-CDMI-Specification-Version', CDMI_VERSION)
+        request.setHeader('Server', CDMI_SERVER_HEADER)
         
         # and a body
-        response_body = {'objectURI': request.uri,
+        server = request.host[1] + ":" + str(request.host[2])
+        
+        response_body = {'objectURI': server + request.uri,
                          'objectID': uid,                         
-                         'domainURI': request.host[1] + ":" + str(request.host[2]),
-                         'parentURI': request.uri + container_path[-1],
+                         'domainURI': server,
+                         'parentURI': server + "/".join(container_path),
                          'capabilitiesURI': None, 
                          'completionStatus': 'Complete', 
                          'metadata': metadata,
                          'children': children
-                         }  
+                         } #XXX not sure what to do if status in not ok. if status == OK else {}  
         return json.dumps(response_body)
     
     def render_PUT(self, request):        
-        fullpath = request.path
+        fullpath = request.path.rstrip('/') 
         tmp = fullpath.split('/')
         container_path = tmp[:-1]
         
@@ -55,17 +59,19 @@ class Container(resource.Resource):
         body = json.loads(request.content.read(length))        
         metadata = body['metadata']
                 
-        status, uid, children = container.create_or_update(container_path, fullpath, metadata)
+        status, uid, children = container.create_or_update(container_path, tmp[-1], metadata)
         
         request.setResponseCode(status)
         request.setHeader('Content-Type', CDMI_CONTAINER)
         request.setHeader('X-CDMI-Specification-Version', CDMI_VERSION)
+        request.setHeader('Server', CDMI_SERVER_HEADER)
          
          # and a body
-        response_body = {'objectURI': request.uri,
+        server = request.host[1] + ":" + str(request.host[2])
+        response_body = {'objectURI': server + request.uri,
                          'objectID': uid,                         
-                         'domainURI': request.host[1] + ":" + str(request.host[2]),
-                         'parentURI': request.uri + container_path[-1],
+                         'domainURI': server,
+                         'parentURI': server + "/".join(container_path),
                          'capabilitiesURI': None, 
                          'completionStatus': 'Complete', 
                          'metadata': metadata,
@@ -76,6 +82,7 @@ class Container(resource.Resource):
     def render_DELETE(self, request):
         fullpath = request.path
         status = container.delete(fullpath)
-        request.setResponseCode(status)                   
+        request.setResponseCode(status)
+        request.setHeader('Server', CDMI_SERVER_HEADER)   
         return ""
 

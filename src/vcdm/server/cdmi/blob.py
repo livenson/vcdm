@@ -7,6 +7,7 @@ from vcdm import blob
 from vcdm.server.cdmi.cdmi_content_types import CDMI_OBJECT
 
 from root import CDMI_VERSION
+from vcdm.server.cdmi.root import CDMI_SERVER_HEADER
 
 try:
     import json
@@ -20,20 +21,22 @@ class Blob(resource.Resource):
     def render_GET(self, request):
         """GET operation corresponds to reading of the blob object"""
         # process path and extract potential containers/fnm
-        fullpath = request.path
+        fullpath = request.path.rstrip('/')
         tmp = fullpath.split('/')
         container_path = tmp[:-1]                    
-        status, content, uid, metadata, mimetype = blob.read(fullpath)
+        status, content, uid, mimetype, metadata = blob.read(fullpath)
         
         # construct response
         request.setResponseCode(status)
         request.setHeader('Content-Type', CDMI_OBJECT)
         request.setHeader('X-CDMI-Specification-Version', CDMI_VERSION)
+        request.setHeader('Server', CDMI_SERVER_HEADER)
         
+        server = request.host[1] + ":" + str(request.host[2])
         response_body = {'objectURI': request.uri,
                          'objectID': uid,                         
-                         'domainURI': request.host[1] + ":" + str(request.host[2]),
-                         'parentURI': request.uri + container_path[-1],
+                         'domainURI': server,
+                         'parentURI': server + "/".join(container_path),
                          'capabilitiesURI': None, 
                          'completionStatus': 'Complete',
                          'mimetype': mimetype, 
@@ -45,7 +48,7 @@ class Blob(resource.Resource):
     def render_PUT(self, request):
         """PUT corresponds to a create/update operation on a blob"""
         # process path and extract potential containers/fnm
-        fullpath = request.path
+        fullpath = request.path.rstrip('/')
         tmp = fullpath.split('/')
         container_path = tmp[:-1]
         filename = tmp[-1]
@@ -57,13 +60,18 @@ class Blob(resource.Resource):
         metadata = body['metadata']
                 
         status, uid = blob.write(container_path, filename, mimetype, metadata, body['value'])
+        
         request.setResponseCode(status)
         request.setHeader('Content-Type', CDMI_OBJECT)
         request.setHeader('X-CDMI-Specification-Version', CDMI_VERSION)
+        request.setHeader('Server', CDMI_SERVER_HEADER)
+        
+        # TODO: refactor common body elements into a separate function
+        server = request.host[1] + ":" + str(request.host[2])
         response_body = {'objectID': uid,
                          'objectURI': request.uri,
-                         'domainURI': request.host[1] + ":" + str(request.host[2]),
-                         'parentURI': request.uri + container_path[-1],
+                         'domainURI': server,
+                         'parentURI': server + "/".join(container_path),
                          'capabilitiesURI': None, 
                          'completionStatus': 'Complete',
                          'mimetype': mimetype, 
@@ -74,7 +82,8 @@ class Blob(resource.Resource):
 
     def render_DELETE(self, request):
         """DELETE operations corresponds to the blob deletion operation"""
-        fullpath = request.path
+        fullpath = request.path.rstrip('/')
         status = blob.delete(fullpath)
-        request.setResponseCode(status)                   
+        request.setResponseCode(status)
+        request.setHeader('Server', CDMI_SERVER_HEADER)                   
         return ""

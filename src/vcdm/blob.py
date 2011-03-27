@@ -9,8 +9,10 @@ from vcdm.container import append_child, remove_child
 def write(container_path, filename, mimetype, metadata, content):
     """Write or update content of a blob"""
     parent_container = '/'.join(container_path)
-    fullpath = parent_container + filename
-    
+    if parent_container == '':
+        parent_container = '/' # a small hack for the top-level container
+    fullpath = parent_container + '/' + filename
+        
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', fields = 'parent_container')
     # assert that we have a consistency in case of an existig blob
     if uid is not None and parent_container != vals['parent_container']:
@@ -24,6 +26,7 @@ def write(container_path, filename, mimetype, metadata, content):
     if uid is None:        
         uid = vcdm.env['ds'].write({
                         'object': 'blob',
+                        'path': filename,
                         'fullpath': fullpath,
                         'mimetype': mimetype,
                         'metadata': metadata, 
@@ -35,7 +38,7 @@ def write(container_path, filename, mimetype, metadata, content):
                         'backend_type': vcdm.env['blob'].backend_type}, 
                         uid)
         # update the parent container as well
-        append_child(parent_container, uid)
+        append_child(parent_container, uid, filename)
         
         vcdm.env['blob'].create(uid, content)
         return (vcdm.CREATED, uid)
@@ -46,20 +49,17 @@ def write(container_path, filename, mimetype, metadata, content):
                         'mtime': str(datetime.datetime.now()), 
                         'size': len(content),
                         'backend_type': vcdm.env['blob'].backend_type}, 
-                        uid)
-        # update the parent container as well
-        append_child(parent_container, uid)
+                        uid)        
         vcdm.env['blob'].update(uid, content)
         return (vcdm.OK, uid)
 
 def read(fullpath, range = None):
     """ Return contents of a blob."""
-    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', fields = ['metadata', 'mimetype', 'parent_container'])    
+    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', fields = ['metadata', 'mimetype'])    
     if uid is None:
-        return (vcdm.NOT_FOUND, None, None)
-    else:
-        bd = Blob(uid, vals['parent_container'], fullpath, vals['mimetype'], vals['metadata'])
-        return (vcdm.OK, vcdm.env['blob'].read(uid, range), bd)
+        return (vcdm.NOT_FOUND, None, None, None, None)
+    else:        
+        return (vcdm.OK, vcdm.env['blob'].read(uid, range), uid, vals['mimetype'], vals['metadata'])
 
 def delete(fullpath):
     """ Delete a blob. """

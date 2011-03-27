@@ -19,7 +19,7 @@ def create_or_update(container_path, path, metadata = None):
     parent_container = '/'.join(container_path)
     if parent_container == '':
         parent_container = '/' # a small hack for the top-level container
-    fullpath = parent_container + path
+    fullpath = parent_container + '/' + path
     
     log.msg("Container create/update: parent_container = %s, path = %s, fullpath = %s" %(parent_container, path, fullpath))
         
@@ -74,15 +74,20 @@ def delete(path):
 
 def check_path(container_path):
     # for a top-level container - all is good
-    print "Cont path:", container_path
     if container_path == ['']:
         return True
     
+    log.msg("Checking paths: %s" % container_path)
     # XXX: probably not the best way to do the search, but seems to work
     # construct all possible fullpaths of containers and do a search for them
     all_paths = []
-    for i in range(len(container_path)):
-        all_paths.append('/'.join(container_path[0:i]))
+    for i, value in enumerate(container_path):
+        if i == 0: # top-level
+            all_paths.append('/') 
+        else:
+            all_paths.append(all_paths[i-1].rstrip('/') + '/' + value) # concat with the previous + remove possible extra slash
+    
+    log.msg("Checking paths: %s" % all_paths)
     # For now ignore all the permissions/etc. Just make sure that all path are there
     # TODO: add permission checking, probably would mean changing a query a bit to return more information    
     if len(vcdm.env['ds'].find_path_uids(all_paths)) != len(container_path):
