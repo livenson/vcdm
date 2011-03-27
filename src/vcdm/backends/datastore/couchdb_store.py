@@ -23,8 +23,9 @@ class CouchDBStore(IDatastore):
             self.write({
                         'object': 'container',            
                         'fullpath': '/',
+                        'path': '/',
                         'parent_container': '/', 
-                        'children': [],
+                        'children': {},
                         'ctime': str(datetime.datetime.now())}, None)
     
     def read(self, docid):        
@@ -32,17 +33,17 @@ class CouchDBStore(IDatastore):
     
     def write(self, data, docid = None):
         doc = None
+        print "writing data to uid %s\n%s" %(docid, data)
         if docid is None:
             docid = uuid4().hex
+            data['_id'] = docid
+            self.db.save(data)
         else:
             doc = self.db[docid]
-        data['_id'] = docid 
-        #XXX: it seems there's a bug in python couchdb. For same odd case it 
-        # raises Conflict if rev is not defined for an existing document.
-        # For now: load the whole document and take its revision (should be the last one)
-        if doc is not None:
-            data['_rev'] = doc.rev
-        self.db.save(data)
+            doc.update(data)
+            print "new data\n", doc
+            self.db.save(doc)
+                                 
         return docid
     
     def exists(self, docid):
@@ -88,14 +89,13 @@ class CouchDBStore(IDatastore):
         ''' % (path, comparision_string, fields)
         res = self.db.query(fnm_fun)
         if len(res) == 0:
-            print "Nothing found?" 
             return (None, None)
         elif len(res) > 1:
             # XXX: does CDMI allow this in case of references/...?
             raise InternalError("Namespace collision: more than one UID corresponds to an object.")
         else:
             tmp_res = list(res)[0]
-            return  (tmp_res.key, tmp_res.value)    
+            return  (tmp_res.id, tmp_res.value)    
         
     def find_path_uids(self, paths):
         """Return a list of IDs of container objects that correspond to the specified path."""

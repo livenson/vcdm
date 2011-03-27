@@ -13,11 +13,12 @@ def read(fullpath):
 
 def create_or_update(container_path, path, metadata = None):
     """Create or update a container."""
+    
     parent_container = '/'.join(container_path)
     fullpath = parent_container + path
+    print "Container update: parent_container = %s, path = %s, fullpath = %s" %(parent_container, path, fullpath)
     
-    uid, vals = vcdm.env['ds'].find_by_path(path, object_type = 'container', fields = ['children', 'parent_container'])
-    
+    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'container', fields = ['children', 'parent_container'])
     # XXX duplication of checks with blob (vcdm). Refactor.
     if uid is not None and parent_container != vals['parent_container']:
         raise InternalError("Inconsistent information about the object! path: %s, parent_container in db: %s") % (fullpath, vals['parent_container'])
@@ -29,21 +30,22 @@ def create_or_update(container_path, path, metadata = None):
     if uid is None:
         # if uid is None, it shall create a new entry, update otherwise        
         uid = vcdm.env['ds'].write({
-                        'object': 'container',            
-                        'fullpath': path,
-                        'parent_container': parent_container,
-                        'children': [],
+                        'object': 'container',         
+                        'metadata': metadata,   
+                        'fullpath': fullpath,
+                        'path': path,
+                        'parent_container': parent_container if parent_container != '' else '/', # a small hack for the top-level container
+                        'children': {},
                         'ctime': str(datetime.datetime.now())},                        
                         uid)
         # update the parent container as well, unless it's a top-level container
         if fullpath != '/':
-            append_child(parent_container, uid)
+            append_child(parent_container, uid, path)
         return (vcdm.CREATED, uid, [])
     else:
         # update container
         uid = vcdm.env['ds'].write({
                         'metadata': metadata,
-                        'parent_container': parent_container,
                         'mtime': str(datetime.datetime.now())},
                         uid)        
         return (vcdm.OK, uid, vals['children'])
@@ -83,15 +85,19 @@ def check_path(container_path):
     else:
         return True
 
-def append_child(container_path, child_uid):
-    # a small hack for the first-level containers    
+def append_child(container_path, child_uid, child_name):
+    
+    # a small hack for the top-level containers    
     if container_path == '':
         container_path = '/'
-        
+    
+    print "appending child", child_uid, child_name, container_path    
+    
     cuid, cvals = vcdm.env['ds'].find_by_path(container_path, object_type = 'container', fields = ['children'])
-    print "====", cuid, cvals['children']
+    # append a new uid-pathname pair    
+    cvals['children'][unicode(child_uid)] = unicode(child_name)
     vcdm.env['ds'].write({
-                    'children': cvals['children'].append(child_uid)},
+                    'children': cvals['children']},
                     cuid)
     
 def remove_child(container_path, child_uid):
@@ -100,7 +106,8 @@ def remove_child(container_path, child_uid):
         container_path = '/'
         
     cuid, cvals = vcdm.env['ds'].find_by_path(container_path, object_type = 'container', fields = ['children'])
+    del cvals['children'][child_uid]
     vcdm.env['ds'].write({
-                    'children': cvals['children'].remove(child_uid)},
+                    'children': cvals['children']},
                     cuid)
     
