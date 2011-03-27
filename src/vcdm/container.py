@@ -2,6 +2,8 @@ import datetime
 import vcdm
 from vcdm.errors import ProtocolError, InternalError
 
+from twisted.python import log
+
 def read(fullpath): 
     """ Read a specified container."""
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'container', fields = ['children', 'metadata'])
@@ -15,9 +17,12 @@ def create_or_update(container_path, path, metadata = None):
     """Create or update a container."""
     
     parent_container = '/'.join(container_path)
+    if parent_container == '':
+        parent_container = '/' # a small hack for the top-level container
     fullpath = parent_container + path
-    print "Container update: parent_container = %s, path = %s, fullpath = %s" %(parent_container, path, fullpath)
     
+    log.msg("Container create/update: parent_container = %s, path = %s, fullpath = %s" %(parent_container, path, fullpath))
+        
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'container', fields = ['children', 'parent_container'])
     # XXX duplication of checks with blob (vcdm). Refactor.
     if uid is not None and parent_container != vals['parent_container']:
@@ -34,7 +39,7 @@ def create_or_update(container_path, path, metadata = None):
                         'metadata': metadata,   
                         'fullpath': fullpath,
                         'path': path,
-                        'parent_container': parent_container if parent_container != '' else '/', # a small hack for the top-level container
+                        'parent_container': parent_container,
                         'children': {},
                         'ctime': str(datetime.datetime.now())},                        
                         uid)
@@ -85,26 +90,18 @@ def check_path(container_path):
     else:
         return True
 
-def append_child(container_path, child_uid, child_name):
-    
-    # a small hack for the top-level containers    
-    if container_path == '':
-        container_path = '/'
-    
-    print "appending child", child_uid, child_name, container_path    
+def append_child(container_path, child_uid, child_name):    
+    log.msg("Appending child %s:%s to a container %s" %(child_uid, child_name, container_path))    
     
     cuid, cvals = vcdm.env['ds'].find_by_path(container_path, object_type = 'container', fields = ['children'])
     # append a new uid-pathname pair    
-    cvals['children'][unicode(child_uid)] = unicode(child_name)
+    cvals['children'][unicode(child_uid)] = unicode(child_name)    
     vcdm.env['ds'].write({
                     'children': cvals['children']},
                     cuid)
     
 def remove_child(container_path, child_uid):
-    # a small hack for the first-level containers
-    if container_path == '':
-        container_path = '/'
-        
+       
     cuid, cvals = vcdm.env['ds'].find_by_path(container_path, object_type = 'container', fields = ['children'])
     del cvals['children'][child_uid]
     vcdm.env['ds'].write({

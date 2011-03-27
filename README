@@ -22,15 +22,21 @@ Each should get its own git repo.
 		- Zope.Interface: http://pypi.python.org/pypi/zope.interface
 		- Twisted: http://twistedmatrix.com
 		- Boto: http://code.google.com/p/boto/
-		- CouchDB-Python: http://code.google.com/p/couchdb-python/
+		- CouchDB-Python: http://code.google.com/p/couchdb-python/			
 		- py-amqplib: http://barryp.org/software/py-amqplib/
 	- install RabbitMQ: http://www.rabbitmq.com/
 	- install CouchDB: http://couchdb.apache.org/
 
 If you are using Ubuntu: 
-	- apt-get install python-zope.interface python-twisted python-boto python-couchdb python-amqplib rabbitmq-server couchdb
+	- apt-get install python-zope.interface python-twisted python-boto python-amqplib rabbitmq-server couchdb
 
-
+Ubuntu 10.04 notes:	
+	- Ubuntu 10.04 (Lucid) comes with a tad too old couchdb/python couchdb. To fix that:
+	- get couchdb from ubuntuone repo:
+		- sudo add-apt-repository ppa:ubuntuone/stable
+		- sudo apt-get update && sudo apt-get install couchdb 
+		- http://www.liangeugene.com/2011/02/installing-couchdb-1-0-1-on-ubuntu-10-04-desktop-and-server-edition/
+	- sudo easy_install CouchDB  (to get python-couchdb)
 	
 3) Copy vcdm.conf.template to vcdm.conf.
 

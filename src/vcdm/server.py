@@ -24,7 +24,7 @@ class SimpleRealm(object):
         raise NotImplementedError()
     
 def main():
-    log.startLogging(sys.stdout)
+    log.startLogging(open('vcdm.log', 'a'), setStdout=False)
     
     # initialize backends
     vcdm.env['ds'] = vcdm.datastore_backends[c('general', 'ds.backend')]()

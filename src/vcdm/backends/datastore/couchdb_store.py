@@ -6,6 +6,7 @@ from vcdm.interfaces.datastore import IDatastore
 from vcdm import c
 from vcdm.errors import InternalError
 
+from twisted.python import log
 
 class CouchDBStore(IDatastore):
 
@@ -33,7 +34,7 @@ class CouchDBStore(IDatastore):
     
     def write(self, data, docid = None):
         doc = None
-        print "writing data to uid %s\n%s" %(docid, data)
+        log.msg("Writing to CouchDB. UID/DATA: %s\n%s" %(docid, data))
         if docid is None:
             docid = uuid4().hex
             data['_id'] = docid
@@ -41,9 +42,7 @@ class CouchDBStore(IDatastore):
         else:
             doc = self.db[docid]
             doc.update(data)
-            print "new data\n", doc
             self.db.save(doc)
-                                 
         return docid
     
     def exists(self, docid):
@@ -87,7 +86,7 @@ class CouchDBStore(IDatastore):
             }
         }         
         ''' % (path, comparision_string, fields)
-        res = self.db.query(fnm_fun)
+        res = self.db.query(fnm_fun)      
         if len(res) == 0:
             return (None, None)
         elif len(res) > 1:
@@ -95,7 +94,7 @@ class CouchDBStore(IDatastore):
             raise InternalError("Namespace collision: more than one UID corresponds to an object.")
         else:
             tmp_res = list(res)[0]
-            return  (tmp_res.id, tmp_res.value)    
+            return (tmp_res.id, tmp_res.value)    
         
     def find_path_uids(self, paths):
         """Return a list of IDs of container objects that correspond to the specified path."""
