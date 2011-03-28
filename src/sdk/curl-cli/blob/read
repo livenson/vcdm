@@ -1,7 +1,0 @@
-#!/bin/bash
-
-curl -H "Content-Type:application/vnd.org.snia.cdmi.dataobject+json"
-curl -H "Accept:application/vnd.org.snia.cdmi.object+json"
-curl -H "X-CDMI-Specification-Version:1.0"
-
-curl --user aaa:aaa --digest http://localhost:8080/blob/$1

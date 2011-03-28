@@ -1,2 +1,0 @@
-#!/bin/bash
-curl --user aaa:aaa --digest -X DELETE http://localhost:8080/blob/$1
