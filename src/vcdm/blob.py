@@ -5,13 +5,11 @@ from vcdm import container
 from vcdm.errors import ProtocolError, InternalError
 from vcdm.interfaces.objects import Blob
 from vcdm.container import append_child, remove_child
+from vcdm.server.cdmi.generic import get_parent
 
-def write(container_path, filename, mimetype, metadata, content):
+def write(name, container_path, fullpath, mimetype, metadata, content):
     """Write or update content of a blob"""
-    parent_container = '/'.join(container_path)
-    if parent_container == '':
-        parent_container = '/' # a small hack for the top-level container
-    fullpath = parent_container + '/' + filename
+    parent_container = get_parent(fullpath)
         
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', fields = 'parent_container')
     # assert that we have a consistency in case of an existig blob
@@ -26,11 +24,10 @@ def write(container_path, filename, mimetype, metadata, content):
     if uid is None:        
         uid = vcdm.env['ds'].write({
                         'object': 'blob',
-                        'path': filename,
                         'fullpath': fullpath,
                         'mimetype': mimetype,
                         'metadata': metadata, 
-                        'filename': filename,
+                        'filename': name,
                         'parent_container': parent_container, 
                         'ctime': str(datetime.datetime.now()), 
                         'mtime': str(datetime.datetime.now()),
@@ -38,7 +35,7 @@ def write(container_path, filename, mimetype, metadata, content):
                         'backend_type': vcdm.env['blob'].backend_type}, 
                         uid)
         # update the parent container as well
-        append_child(parent_container, uid, filename)
+        append_child(parent_container, uid, name)
         
         vcdm.env['blob'].create(uid, content)
         return (vcdm.CREATED, uid)
@@ -74,5 +71,5 @@ def delete(fullpath):
             remove_child(vals['parent_container'], uid)
             return vcdm.OK
         except:
-            #TODO - how do we handle failed delete?     
+            #TODO: - how do we handle failed delete?     
             return vcdm.CONFLICT

@@ -3,28 +3,24 @@ import vcdm
 from vcdm.errors import ProtocolError, InternalError
 
 from twisted.python import log
+from vcdm.server.cdmi.generic import get_parent
 
 def read(fullpath): 
     """ Read a specified container."""
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'container', fields = ['children', 'metadata'])
     if uid is None:
-        # XXX refactor return of the result
-        return (vcdm.NOT_FOUND, None, None, None)    
+        # XXX refactor return of the result - raise error?
+        return (vcdm.NOT_FOUND, None, None, None)
     else:
         return (vcdm.OK, uid, vals['children'], vals['metadata'])
 
-def create_or_update(container_path, path, metadata = None):
-    """Create or update a container."""
+def create_or_update(name, container_path, fullpath, metadata = None):
+    """Create or update a container."""    
+    log.msg("Container create/update: %s" % fullpath)
     
-    parent_container = '/'.join(container_path)
-    if parent_container == '':
-        parent_container = '/' # a small hack for the top-level container
-    fullpath = parent_container + '/' + path
-    
-    log.msg("Container create/update: parent_container = %s, path = %s, fullpath = %s" %(parent_container, path, fullpath))
-        
+    parent_container = get_parent(fullpath)            
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'container', fields = ['children', 'parent_container'])
-    # XXX duplication of checks with blob (vcdm). Refactor.
+    # XXX: duplication of checks with blob (vcdm). Refactor.
     if uid is not None and parent_container != vals['parent_container']:
         raise InternalError("Inconsistent information about the object! path: %s, parent_container in db: %s") % (fullpath, vals['parent_container'])
     
@@ -38,14 +34,14 @@ def create_or_update(container_path, path, metadata = None):
                         'object': 'container',         
                         'metadata': metadata,   
                         'fullpath': fullpath,
-                        'path': path,
+                        'name': name,
                         'parent_container': parent_container,
                         'children': {},
                         'ctime': str(datetime.datetime.now())},                        
                         uid)
         # update the parent container as well, unless it's a top-level container
         if fullpath != '/':
-            append_child(parent_container, uid, path)
+            append_child(parent_container, uid, name)
         return (vcdm.CREATED, uid, [])
     else:
         # update container
@@ -55,17 +51,18 @@ def create_or_update(container_path, path, metadata = None):
                         uid)        
         return (vcdm.OK, uid, vals['children'])
 
-def delete(path):
+def delete(fullpath):
     """ Delete a container."""
-    uid, vals = vcdm.env['ds'].find_by_path(path, object_type = 'container', fields = ['children', 'parent_container'])
+    log.msg("Deleting a container %s" % fullpath)
+    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'container', fields = ['children', 'parent_container'])
     if uid is None:
         return vcdm.NOT_FOUND
     else:
         # fail if we are deleting a non-empty container
         if len(vals['children']) != 0:
-            raise ProtocolError("Cannot delete a non-empty container '%s'" %path)
+            raise ProtocolError("Cannot delete a non-empty container '%s'" %fullpath)
         vcdm.env['ds'].delete(uid) 
-        if path != '/': 
+        if fullpath != '/': 
             remove_child(vals['parent_container'], uid)          
         ## XXX: delete all children?
         return vcdm.OK
@@ -74,10 +71,9 @@ def delete(path):
 
 def check_path(container_path):
     # for a top-level container - all is good
-    if container_path == ['']:
+    if container_path == ['/']:
         return True
-    
-    log.msg("Checking paths: %s" % container_path)
+        
     # XXX: probably not the best way to do the search, but seems to work
     # construct all possible fullpaths of containers and do a search for them
     all_paths = []

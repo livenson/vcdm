@@ -4,6 +4,8 @@ from  vcdm import container
 from vcdm.server.cdmi.cdmi_content_types import CDMI_CONTAINER
 from vcdm.server.cdmi.root import CDMI_VERSION, CDMI_SERVER_HEADER
 from vcdm.server.http_status_codes import OK
+from vcdm.server.cdmi.generic import parse_path, set_common_headers,\
+    get_common_body
 
 try:
     import json
@@ -17,12 +19,7 @@ class Container(resource.Resource):
     def render_GET(self, request):
         """GET operation corresponds to reading container's data"""
         # parse the request        
-        fullpath = request.path.rstrip('/')         
-        tmp = fullpath.split('/')
-        if len(tmp) != 1: # if it's not a top-level container
-            container_path = tmp[:-1]
-        else:
-            container_path = ['']
+        name, container_path, fullpath = parse_path(request.path)
         
         # contact the backend
         status, uid, children, metadata = container.read(fullpath)
@@ -30,57 +27,46 @@ class Container(resource.Resource):
         # create a header                
         request.setResponseCode(status)
         request.setHeader('Content-Type', CDMI_CONTAINER)
-        request.setHeader('X-CDMI-Specification-Version', CDMI_VERSION)
-        request.setHeader('Server', CDMI_SERVER_HEADER)
+        set_common_headers(request)
         
-        # and a body
-        server = request.host[1] + ":" + str(request.host[2])
-        
-        response_body = {'objectURI': server + request.uri,
-                         'objectID': uid,                         
-                         'domainURI': server,
-                         'parentURI': server + "/".join(container_path),
-                         'capabilitiesURI': None, 
+        # and a body       
+        response_body = {
                          'completionStatus': 'Complete', 
                          'metadata': metadata,
                          'children': children
-                         } #XXX not sure what to do if status in not ok. if status == OK else {}  
+                         }   
+        response_body.update(get_common_body(request, uid, fullpath))
+        
         return json.dumps(response_body)
     
     def render_PUT(self, request):        
-        fullpath = request.path.rstrip('/') 
-        tmp = fullpath.split('/')
-        container_path = tmp[:-1]
+        name, container_path, fullpath = parse_path(request.path)
         
         length = int(request.getHeader('Content-Length'))        
         request.content.seek(0, 0)
         
         # process json encoded request body
         body = json.loads(request.content.read(length))        
+
         metadata = body['metadata']
-                
-        status, uid, children = container.create_or_update(container_path, tmp[-1], metadata)
+        status, uid, children = container.create_or_update(name, container_path, fullpath, metadata)
         
         request.setResponseCode(status)
         request.setHeader('Content-Type', CDMI_CONTAINER)
-        request.setHeader('X-CDMI-Specification-Version', CDMI_VERSION)
-        request.setHeader('Server', CDMI_SERVER_HEADER)
+        set_common_headers(request)
          
-         # and a body
-        server = request.host[1] + ":" + str(request.host[2])
-        response_body = {'objectURI': server + request.uri,
-                         'objectID': uid,                         
-                         'domainURI': server,
-                         'parentURI': server + "/".join(container_path),
-                         'capabilitiesURI': None, 
+        # and a body
+        response_body = {
                          'completionStatus': 'Complete', 
                          'metadata': metadata,
                          'children': children
                          }  
+        response_body.update(get_common_body(request, uid, fullpath))
+        
         return json.dumps(response_body)
     
     def render_DELETE(self, request):
-        fullpath = request.path
+        name, container_path, fullpath = parse_path(request.path)
         status = container.delete(fullpath)
         request.setResponseCode(status)
         request.setHeader('Server', CDMI_SERVER_HEADER)   

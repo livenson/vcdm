@@ -24,9 +24,10 @@ class CouchDBStore(IDatastore):
             self.write({
                         'object': 'container',            
                         'fullpath': '/',
-                        'path': '/',
+                        'name': '/',
                         'parent_container': '/', 
                         'children': {},
+                        'metadata': {},
                         'ctime': str(datetime.datetime.now())}, None)
     
     def read(self, docid):        

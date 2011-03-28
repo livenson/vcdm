@@ -25,7 +25,7 @@ class RootCDMIResource(resource.Resource):
         ## Current CDMI version is a bit inconsistent wrt to accept/content-types. Picking a processing object 
         ## is not an obvious step. For now, we abuse the specification and require some of the optional fields to be present.    
         if version is None or CDMI_VERSION not in version:
-            return BAD_REQUEST
+            return self
         
         # decide on the object to be used for processing the request
         if content ==  CDMI_DATA and accept == CDMI_DATA \
@@ -44,4 +44,4 @@ class RootCDMIResource(resource.Resource):
         return "Unknown object requested: %s, %s" %(content, accept) # if nothing matches            
 
     def render(self, request):
-        return "Unforeseen error for request: %s", request
+        return "Incorrect CDMI request: %s", request
