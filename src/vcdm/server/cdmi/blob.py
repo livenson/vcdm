@@ -52,8 +52,13 @@ class Blob(resource.Resource):
         request.content.seek(0, 0)
         # process json encoded request body
         body = json.loads(request.content.read(length))
-        mimetype = body['mimetype'] if body['mimetype'] is not None else 'text/plain'
-        metadata = body['metadata']
+        # default values of mimetype and metadata
+        mimetype = 'text/plain' 
+        metadata = {}
+        if 'mimetype' in body:
+            mimetype = body['mimetype'] 
+        if 'metadata' in body:
+            metadata = body['metadata']
                 
         status, uid = blob.write(name, container_path, fullpath, mimetype, metadata, body['value'])
         

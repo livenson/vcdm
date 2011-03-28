@@ -12,7 +12,7 @@ def read(fullpath):
         # XXX refactor return of the result - raise error?
         return (vcdm.NOT_FOUND, None, None, None)
     else:
-        return (vcdm.OK, uid, vals['children'], vals['metadata'])
+        return (vcdm.OK, uid, vals['children'].values(), vals['metadata'])
 
 def create_or_update(name, container_path, fullpath, metadata = None):
     """Create or update a container."""    

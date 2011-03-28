@@ -47,8 +47,10 @@ class Container(resource.Resource):
         
         # process json encoded request body
         body = json.loads(request.content.read(length))        
-
-        metadata = body['metadata']
+        
+        metadata = {}
+        if 'metadata' in body:
+            metadata = body['metadata']
         status, uid, children = container.create_or_update(name, container_path, fullpath, metadata)
         
         request.setResponseCode(status)
