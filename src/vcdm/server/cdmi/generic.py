@@ -33,9 +33,8 @@ def get_common_body(request, uid, fullpath):
     body = {
             'objectID': uid,
             'domainURI': server,
-            'parentURI': server + get_parent(fullpath),
-            'objectURI': server + fullpath,
-            'capabilitiesURI': None, # TODO: add capability URI                          
+            'parentURI': get_parent(fullpath),
+            'objectURI': fullpath,                          
             }    
     return body
     

@@ -44,15 +44,15 @@ mq = {
     }
 
 container = {
-        "list_children": False,
+        "list_children": True,
         "list_children_range": False,
-        "read_metadata": False,
-        "modify_metadata": False,
+        "read_metadata": True,
+        "modify_metadata": True,
         "snapshot": False,
-        "create_dataobject": False,
+        "create_dataobject": True,
         "post_dataobject": False, 
-        "create_container": False,
-        "delete_container": False,
+        "create_container": True,
+        "delete_container": True,
         "move_container": False,
         "copy_container": False,
     }

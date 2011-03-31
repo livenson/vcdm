@@ -33,7 +33,8 @@ class Container(resource.Resource):
         response_body = {
                          'completionStatus': 'Complete', 
                          'metadata': metadata,
-                         'children': children
+                         'children': children,
+                         'capabilitiesURI': '/cdmi_capabilities/container'   
                          }   
         response_body.update(get_common_body(request, uid, fullpath))
         

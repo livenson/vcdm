@@ -6,8 +6,6 @@ from twisted.web import resource
 from vcdm import blob
 from vcdm.server.cdmi.cdmi_content_types import CDMI_OBJECT
 
-from root import CDMI_VERSION
-from vcdm.server.cdmi.root import CDMI_SERVER_HEADER
 from vcdm.server.cdmi.generic import set_common_headers, parse_path,\
     get_common_body
 
@@ -38,7 +36,8 @@ class Blob(resource.Resource):
                          'completionStatus': 'Complete',
                          'mimetype': mimetype, 
                          'metadata': metadata,
-                         'value': content
+                         'value': content,
+                         'capabilitiesURI': '/cdmi_capabilities/dataobject'
                          }  
         response_body.update(get_common_body(request, uid, fullpath))
         return json.dumps(response_body)
