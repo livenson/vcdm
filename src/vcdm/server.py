@@ -47,7 +47,8 @@ def main():
     # 1-way SSL for production
     from twisted.internet import ssl
     sslContext = ssl.DefaultOpenSSLContextFactory('server_credentials/key.pem','server_credentials/cert.pem')
-    reactor.listenSSL(int(c('general', 'server.endpoint').split(":")[1]), server.Site(resource=wrapper), contextFactory = sslContext)
+    # reactor.listenSSL(int(c('general', 'server.endpoint').split(":")[1]), server.Site(resource=wrapper), contextFactory = sslContext)
+    reactor.listenTCP(int(c('general', 'server.endpoint').split(":")[1]), server.Site(resource=wrapper))
         
     # connector for providing quick metainfo
     from vcdm.server.meta.info import InfoResource

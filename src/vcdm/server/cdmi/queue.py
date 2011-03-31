@@ -4,6 +4,7 @@ import cgi
 
 from vcdm import mq
 
+# TODO: refactor 
 class Queue(resource.Resource):
     allowedMethods = ('PUT','GET','DELETE', 'POST') # commands we support for the data items
     isLeaf = True # queues cannot be nested

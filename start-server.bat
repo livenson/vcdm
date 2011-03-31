@@ -1,3 +1,3 @@
 ECHO Starting a server
-set PYTHONPATH=src;%PYTHONPATH%
+set PYTHONPATH=src;libsrc;%PYTHONPATH%
 python src\vcdm\server.py

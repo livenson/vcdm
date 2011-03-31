@@ -1,17 +1,17 @@
 from vcdm.interfaces.blob import IBlob
+from libazure.azure_storage import BlobStorage
 
-
-from lib import winazurestorage
 import urllib2
 
+from vcdm import c
 class AzureBlob(IBlob):
     
     backend_type = 'azure'
-    
     conn = None
 
     def __init__(self, initialize_storage=False):
-        self.conn = winazurestorage.BlobStorage()
+        self.conn = BlobStorage(c('azure', 'credentials.blob_url'),
+                                 c('azure', 'credentials.account'), c('azure', 'credentials.password'))
         if initialize_storage:
             self.conn.create_container('vcdm')
 

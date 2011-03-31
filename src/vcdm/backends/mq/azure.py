@@ -1,14 +1,17 @@
 from vcdm.interfaces.mq import IMessageQueue
 
-## TODO: reformat lib into a reasonable one
-from lib import winazurestorage
+from libazure.azure_storage import QueueStorage
+
+from vcdm import c
 
 class AzureQueue(IMessageQueue):
     conn = None
     backend_type = 'azure'
     
     def __init__(self):
-        self.conn = winazurestorage.QueueStorage() # pass parameters
+        self.conn = QueueStorage(c('azure', 'credentials.queue_url'),
+                            c('azure', 'credentials.account'), 
+                            c('azure', 'credentials.password'))
     
     def create(self, qnm):
         self.conn.create_queue(qnm)
@@ -23,5 +26,4 @@ class AzureQueue(IMessageQueue):
         return self.conn.get_message(qnm)
     
     def delete_message(self, qnm):
-        # TODO: do it smarter
         self.conn.delete_message(self.conn.get_message(qnm), qnm)

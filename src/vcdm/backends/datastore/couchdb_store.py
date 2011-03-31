@@ -12,13 +12,13 @@ class CouchDBStore(IDatastore):
 
     db = None
     
-    def __init__(self, initialize = False):
+    def __init__(self):
         server = couchdb.Server(c('local', 'datastore.endpoint'))
-        if initialize:
+        if 'meta' not in server:
             self.db = server.create('meta')
         else:
-            # already created?
-            self.db = server['meta']
+            # already created
+            self.db = server['meta'] 
         # make sure we have a top-level folder
         if self.find_by_path('/', 'container')[0] is None:
             self.write({

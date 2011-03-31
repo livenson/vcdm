@@ -1,48 +1,45 @@
-VCDM
+VCDM (aka CDMI-proxy)
+---------------------
 
-Includes drafts of:
-- CDMI server 
-- CMDI clients (.Net, Java, curl, python)
-- buildbot conf
-- docs
-- sample server credentials (!!! never use them in production !!!)
+VCDM is an implementation of CDMI-compatible server that can be used to store data both using local infrastructure
+and public cloud services.
 
-Each should get its own git repo.
-
+Implementation supports:
+- Blobs
+- MQ
+- Multi-level containers (also for single-level backends, e.g. AWS or Azure)
 
 === SETUP ===
-
 1) Get the contents of the repository.
 	- git clone git://github.com/livenson/vcdm.git
-	- wget -O vcdm.zip --no-check-certificate https://github.com/livenson/vcdm/zipball/master && unzip vcdm.zip
-	- browse to https://github.com/livenson/vcdm, click on Downloads
 
-2) For a completely local installation:
-	- install required Python packages:
+2) Get dependencies:
+	- install required Python packages (most of them could be installed through easy_install):
 		- Zope.Interface: http://pypi.python.org/pypi/zope.interface
 		- Twisted: http://twistedmatrix.com
-		- Boto: http://code.google.com/p/boto/
 		- CouchDB-Python: http://code.google.com/p/couchdb-python/			
 		- py-amqplib: http://barryp.org/software/py-amqplib/
 	- install RabbitMQ: http://www.rabbitmq.com/
-	- install CouchDB: http://couchdb.apache.org/
+	- install CouchDB: http://couchdb.apache.org/  (at least version 1) 
 
-If you are using Ubuntu: 
-	- apt-get install python-zope.interface python-twisted python-boto python-amqplib rabbitmq-server couchdb
-
-Ubuntu 10.04 notes:	
-	- Ubuntu 10.04 (Lucid) comes with a tad too old couchdb/python couchdb. To fix that:
-	- get couchdb from ubuntuone repo:
-		- sudo add-apt-repository ppa:ubuntuone/stable
-		- sudo apt-get update && sudo apt-get install couchdb 
-		- http://www.liangeugene.com/2011/02/installing-couchdb-1-0-1-on-ubuntu-10-04-desktop-and-server-edition/
-	- sudo easy_install CouchDB  (to get python-couchdb)
+If you are using Ubuntu:
+	- apt-get install python-zope.interface python-twisted python-boto python-amqplib rabbitmq-server
+	- Ubuntus come with a too old couchdb/python-couchdb. To fix that:
+		- get couchdb from ubuntuone repo:
+			- sudo add-apt-repository ppa:ubuntuone/stable
+			- sudo apt-get update && sudo apt-get install couchdb 
+		- sudo easy_install CouchDB  (to get python-couchdb)
+		
+There are several backends available at the moment. If you are planning to use them, you also need to get the
+corresponding libraries (and put them on the PYTHONPATH or into $vcdm/libsrc:
+	- AWS: http://code.google.com/p/boto/
+	- CDMI: git://github.com/livenson/libcdmi-python
+	- Azure: git://github.com/livenson/libazure-python
 	
 3) Copy vcdm.conf.template to vcdm.conf.
 
 4) Run start-server.sh/start-server.bat.
 	- by default, ports 8080-8083 will be accessible.
-
 
 
  

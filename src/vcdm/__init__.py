@@ -25,11 +25,11 @@ from vcdm.backends.datastore.couchdb_store import CouchDBStore
 from vcdm.backends.datastore.azure_store import AzureStore
 
 # shared environment variables
-# TODO: make it a reasonable singleton
 env = {'ds': None,
        'blob': None,
        'mq': None
        }
+
 
 blob_backends = {'local': POSIXBlob, 
                  'aws': S3Blob,
