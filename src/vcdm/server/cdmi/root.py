@@ -1,5 +1,7 @@
 from twisted.web import resource
 from vcdm.server.http_status_codes import BAD_REQUEST
+from vcdm.server.cdmi.cdmi_content_types import CDMI_CAPABILITY
+from vcdm.server.cdmi import capabilities
 
 CDMI_VERSION = '1.0'
 CDMI_SERVER_HEADER = "VCDM/" + CDMI_VERSION
@@ -9,7 +11,8 @@ from cdmi_content_types import CDMI_DATA, CDMI_QUEUE, CDMI_CONTAINER, CDMI_OBJEC
 
 cdmi_objects = {CDMI_QUEUE: queue.Queue,
                 CDMI_DATA: blob.Blob,
-                CDMI_CONTAINER: container.Container}
+                CDMI_CONTAINER: container.Container,
+                CDMI_CAPABILITY: capabilities.Capability}
 
 class RootCDMIResource(resource.Resource):
     """
@@ -39,9 +42,13 @@ class RootCDMIResource(resource.Resource):
         # for containers
         if content == CDMI_OBJECT and accept == CDMI_CONTAINER \
             or content == CDMI_CONTAINER and accept == CDMI_CONTAINER:
-            return cdmi_objects[CDMI_CONTAINER]()       
+            return cdmi_objects[CDMI_CONTAINER]()    
         
-        return "Unknown object requested: %s, %s" %(content, accept) # if nothing matches            
+        # capabilities           
+        if content == CDMI_OBJECT and accept == CDMI_CAPABILITY:
+            return cdmi_objects[CDMI_CAPABILITY]
+        
+        return self           
 
     def render(self, request):
         return "Incorrect CDMI request: %s", request
