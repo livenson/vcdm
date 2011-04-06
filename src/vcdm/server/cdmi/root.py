@@ -51,4 +51,4 @@ class RootCDMIResource(resource.Resource):
         return self           
 
     def render(self, request):
-        return "Incorrect CDMI request: %s", request
+        return "At the moment only CDMI-object types are supported. Incorrect CDMI request: %s", request
