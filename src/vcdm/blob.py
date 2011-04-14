@@ -3,9 +3,9 @@ import vcdm
 
 from vcdm import container
 from vcdm.errors import ProtocolError, InternalError
-from vcdm.interfaces.objects import Blob
 from vcdm.container import append_child, remove_child
 from vcdm.server.cdmi.generic import get_parent
+from httplib import NOT_FOUND, CREATED, OK, CONFLICT
 
 def write(name, container_path, fullpath, mimetype, metadata, content):
     """Write or update content of a blob"""
@@ -38,7 +38,7 @@ def write(name, container_path, fullpath, mimetype, metadata, content):
         append_child(parent_container, uid, name)
         
         vcdm.env['blob'].create(uid, content)
-        return (vcdm.CREATED, uid)
+        return (CREATED, uid)
     else:
         uid = vcdm.env['ds'].write({                        
                         'metadata': metadata,
@@ -48,28 +48,28 @@ def write(name, container_path, fullpath, mimetype, metadata, content):
                         'backend_type': vcdm.env['blob'].backend_type}, 
                         uid)        
         vcdm.env['blob'].update(uid, content)
-        return (vcdm.OK, uid)
+        return (OK, uid)
 
 def read(fullpath, range = None):
     """ Return contents of a blob."""
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', fields = ['metadata', 'mimetype'])    
     if uid is None:
-        return (vcdm.NOT_FOUND, None, None, None, None)
+        return (NOT_FOUND, None, None, None, None)
     else:        
-        return (vcdm.OK, vcdm.env['blob'].read(uid, range), uid, vals['mimetype'], vals['metadata'])
+        return (OK, vcdm.env['blob'].read(uid, range), uid, vals['mimetype'], vals['metadata'])
 
 def delete(fullpath):
     """ Delete a blob. """
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', fields = ['parent_container'])
     if uid is None:
-        return vcdm.NOT_FOUND
+        return NOT_FOUND
     else:
         try:
             vcdm.env['blob'].delete(uid)
             vcdm.env['ds'].delete(uid)
             # find parent container and update its children range
             remove_child(vals['parent_container'], uid)
-            return vcdm.OK
+            return OK
         except:
             #TODO: - how do we handle failed delete?     
-            return vcdm.CONFLICT
+            return CONFLICT

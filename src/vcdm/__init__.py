@@ -46,5 +46,3 @@ mq_backends = {'local': AMQPMQ,
 datastore_backends = {'local': CouchDBStore,
                       'azure': AzureStore}
 
-# import exit codes
-from vcdm.server.http_status_codes import *

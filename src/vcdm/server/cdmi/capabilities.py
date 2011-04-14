@@ -1,9 +1,9 @@
 from twisted.web import resource
 from vcdm.server.cdmi.cdmi_content_types import CDMI_CAPABILITY, CDMI_DATA
 from vcdm.server.cdmi.root import CDMI_VERSION
-from vcdm.server.http_status_codes import BAD_REQUEST, OK
 from vcdm.server.cdmi.generic import parse_path, get_common_body
 from vcdm.server.cdmi import current_capabilities
+from httplib import OK
 
 
 try:

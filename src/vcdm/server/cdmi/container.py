@@ -2,8 +2,7 @@ from  twisted.web import resource
 
 from  vcdm import container
 from vcdm.server.cdmi.cdmi_content_types import CDMI_CONTAINER
-from vcdm.server.cdmi.root import CDMI_VERSION, CDMI_SERVER_HEADER
-from vcdm.server.http_status_codes import OK
+from vcdm.server.cdmi.root import CDMI_SERVER_HEADER
 from vcdm.server.cdmi.generic import parse_path, set_common_headers,\
     get_common_body
 

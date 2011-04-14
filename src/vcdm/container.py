@@ -1,18 +1,18 @@
 import datetime
 import vcdm
 from vcdm.errors import ProtocolError, InternalError
-
 from twisted.python import log
 from vcdm.server.cdmi.generic import get_parent
+from httplib import NOT_FOUND, OK, CREATED
 
 def read(fullpath): 
     """ Read a specified container."""
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'container', fields = ['children', 'metadata'])
     if uid is None:
         # XXX refactor return of the result - raise error?
-        return (vcdm.NOT_FOUND, None, None, None)
+        return (NOT_FOUND, None, None, None)
     else:
-        return (vcdm.OK, uid, vals['children'].values(), vals['metadata'])
+        return (OK, uid, vals['children'].values(), vals['metadata'])
 
 def create_or_update(name, container_path, fullpath, metadata = None):
     """Create or update a container."""    
@@ -42,21 +42,21 @@ def create_or_update(name, container_path, fullpath, metadata = None):
         # update the parent container as well, unless it's a top-level container
         if fullpath != '/':
             append_child(parent_container, uid, name)
-        return (vcdm.CREATED, uid, [])
+        return (CREATED, uid, [])
     else:
         # update container
         uid = vcdm.env['ds'].write({
                         'metadata': metadata,
                         'mtime': str(datetime.datetime.now())},
                         uid)        
-        return (vcdm.OK, uid, vals['children'])
+        return (OK, uid, vals['children'])
 
 def delete(fullpath):
     """ Delete a container."""
     log.msg("Deleting a container %s" % fullpath)
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'container', fields = ['children', 'parent_container'])
     if uid is None:
-        return vcdm.NOT_FOUND
+        return NOT_FOUND
     else:
         # fail if we are deleting a non-empty container
         if len(vals['children']) != 0:
@@ -65,7 +65,7 @@ def delete(fullpath):
         if fullpath != '/': 
             remove_child(vals['parent_container'], uid)          
         ## XXX: delete all children?
-        return vcdm.OK
+        return OK
 
 ####### Support functions dealing with container logic #########
 

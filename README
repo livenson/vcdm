@@ -32,14 +32,15 @@ If you are using Ubuntu:
 		
 There are several backends available at the moment. If you are planning to use them, you also need to get the
 corresponding libraries (and put them on the PYTHONPATH or into $vcdm/libsrc:
-	- AWS: http://code.google.com/p/boto/
+	- AWS: http://code.google.com/p/boto/	
 	- CDMI: https://github.com/livenson/libcdmi-python
 	- Azure: https://github.com/livenson/winazurestorage
 	
 3) Copy vcdm.conf.template to vcdm.conf.
 
 4) Run start-server.sh/start-server.bat.
-	- by default, ports 8080-8083 will be accessible.
+	- by default, ports 8080-8081 will be accessible.
+	- 8080: debugging access - no encryption or authZ
+	- 8081: production access - encryption and authZ
 
 
- 

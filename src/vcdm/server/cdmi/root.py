@@ -1,12 +1,10 @@
 from twisted.web import resource
-from vcdm.server.http_status_codes import BAD_REQUEST
 from vcdm.server.cdmi.cdmi_content_types import CDMI_CAPABILITY
-from vcdm.server.cdmi import capabilities
 
 CDMI_VERSION = '1.0'
 CDMI_SERVER_HEADER = "VCDM/" + CDMI_VERSION
 
-import blob, queue, container
+import blob, queue, container, capabilities
 from cdmi_content_types import CDMI_DATA, CDMI_QUEUE, CDMI_CONTAINER, CDMI_OBJECT
 
 cdmi_objects = {CDMI_QUEUE: queue.Queue,

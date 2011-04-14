@@ -1,7 +1,7 @@
 import unittest
 import struct
 import re
-from common import generate_guid, generate_guid_b64
+from vcdm.server.cdmi.common import generate_guid, generate_guid_b64
 
 class GuidGenTestCase(unittest.TestCase):
     def testGuidIsTimeDependent(self):
