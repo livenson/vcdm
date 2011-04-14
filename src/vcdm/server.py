@@ -1,5 +1,3 @@
-import sys
-
 from zope.interface import implements
 
 from twisted.python import log
@@ -47,11 +45,10 @@ def main():
     # 1-way SSL for production
     from twisted.internet import ssl
     sslContext = ssl.DefaultOpenSSLContextFactory('server_credentials/key.pem','server_credentials/cert.pem')
-    # reactor.listenSSL(int(c('general', 'server.endpoint').split(":")[1]), server.Site(resource=wrapper), contextFactory = sslContext)
-    reactor.listenTCP(int(c('general', 'server.endpoint').split(":")[1]), server.Site(resource=wrapper))
+    reactor.listenSSL(int(c('general', 'server.endpoint').split(":")[1]), server.Site(resource=wrapper), contextFactory = sslContext)
         
     # connector for providing quick metainfo
-    from vcdm.server.meta.info import InfoResource
+    #from vcdm.server.meta.info import InfoResource
     # TODO: fix InfoResource
     #reactor.listenTCP(8083, server.Site(resource = InfoResource()))
     

@@ -20,7 +20,7 @@ class Queue(resource.Resource):
     
     def render_GET(self, request):
         # parse the request        
-        name, container_path, fullpath = parse_path(request.path)
+        _, __, fullpath = parse_path(request.path)
         
         status, value, uid, metadata, mimetype = mq.get(fullpath)
         # construct response

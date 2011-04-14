@@ -21,7 +21,7 @@ class Blob(resource.Resource):
     def render_GET(self, request):
         """GET operation corresponds to reading of the blob object"""
         # process path and extract potential containers/fnm
-        name, container_path, fullpath = parse_path(request.path)
+        _, __, fullpath = parse_path(request.path)
         
         # perform operation on ADT
         status, content, uid, mimetype, metadata = blob.read(fullpath)
@@ -78,7 +78,7 @@ class Blob(resource.Resource):
 
     def render_DELETE(self, request):
         """DELETE operations corresponds to the blob deletion operation"""
-        name, container_path, fullpath = parse_path(request.path)
+        _, __, fullpath = parse_path(request.path)
         status = blob.delete(fullpath)
         request.setResponseCode(status)
         set_common_headers(request)

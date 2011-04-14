@@ -22,7 +22,7 @@ class Capability(resource.Resource):
 
     def render_GET(self, fixed_path, request):
         # for now only support top-level capabilities
-        name, container_path, fullpath = parse_path(request.path)
+        _, __, fullpath = parse_path(request.path)
         
         # TODO: how to handle the missing UID? Perhaps, store capabilities in datastore?
         body = get_common_body(request, None, fullpath) 

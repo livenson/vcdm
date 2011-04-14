@@ -11,7 +11,7 @@ def parse_path(path):
     """Parse request path, return (name, container_path, fullpath) tuple"""
     fullpath = path
     # remove duplicate consecutive slashes: e.g. /// -> /    
-    filtered_path = [k for k, v in groupby(fullpath.split('/')) if k != '']
+    filtered_path = [k for k, _ in groupby(fullpath.split('/')) if k != '']
     filtered_path.insert(0, '/') # add root container 
     
     # if we have length one, the can only be a root path. For that we define container_path = ['/'], i.e. it is self-contained.

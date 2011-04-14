@@ -18,7 +18,7 @@ class Container(resource.Resource):
     def render_GET(self, request):
         """GET operation corresponds to reading container's data"""
         # parse the request        
-        name, container_path, fullpath = parse_path(request.path)
+        _, __, fullpath = parse_path(request.path)
         
         # contact the backend
         status, uid, children, metadata = container.read(fullpath)
@@ -68,7 +68,7 @@ class Container(resource.Resource):
         return json.dumps(response_body)
     
     def render_DELETE(self, request):
-        name, container_path, fullpath = parse_path(request.path)
+        _, __, fullpath = parse_path(request.path)
         status = container.delete(fullpath)
         request.setResponseCode(status)
         request.setHeader('Server', CDMI_SERVER_HEADER)   
