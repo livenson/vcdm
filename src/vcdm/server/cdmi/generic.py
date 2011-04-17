@@ -8,7 +8,7 @@ def set_common_headers(request):
     request.setHeader('Server', CDMI_SERVER_HEADER)
     
 def parse_path(path):
-    """Parse request path, return (name, container_path, fullpath) tuple"""
+    """Parse request path, return (name, [container_path], fullpath) tuple. """
     fullpath = path
     # remove duplicate consecutive slashes: e.g. /// -> /    
     filtered_path = [k for k, _ in groupby(fullpath.split('/')) if k != '']
@@ -28,7 +28,7 @@ def get_parent(fullpath):
     return parent
 
 def get_common_body(request, uid, fullpath):
-    """Return dictionary with body elements common to all/most of the CDMI responses"""
+    """Return dictionary with body elements common to all/most of the CDMI responses."""
     server = request.host[1] + ":" + str(request.host[2])
     body = {
             'objectID': uid,

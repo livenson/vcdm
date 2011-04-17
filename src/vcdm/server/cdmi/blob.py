@@ -83,3 +83,38 @@ class Blob(resource.Resource):
         request.setResponseCode(status)
         set_common_headers(request)
         return ""
+
+
+class NonCDMIBlob(resource.Resource):
+    isLeaf = True # data items cannot be nested
+    allowedMethods = ('PUT','GET','DELETE') # commands we support for the data items
+
+    def render_GET(self, request):
+        # process path and extract potential containers/fnm
+        _, __, fullpath = parse_path(request.path)
+        
+        # perform operation on ADT
+        status, content, _, mimetype, __ = blob.read(fullpath)        
+        # construct response
+        request.setResponseCode(status)
+        request.setHeader('Content-Type', mimetype)    
+        return content
+        
+    def render_PUT(self, request):
+        """PUT corresponds to a create/update operation on a blob"""
+        # process path and extract potential containers/fnm
+        name, container_path, fullpath = parse_path(request.path)
+        length = int(request.getHeader('Content-Length'))    
+        request.content.seek(0, 0)
+        # process json encoded request body
+        content = request.content.read(length)
+        # default values of mimetype and metadata
+        
+        mimetype = 'text/plain' 
+        if request.getHeader('Content-Length') is not None:
+            mimetype = request.getHeader('Content-Length')    
+                
+        status, _ = blob.write(name, container_path, fullpath, mimetype, {}, content)        
+        request.setResponseCode(status)        
+          
+        return ""

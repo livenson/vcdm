@@ -42,11 +42,10 @@ class Container(resource.Resource):
     def render_PUT(self, request):        
         name, container_path, fullpath = parse_path(request.path)
         
-        length = int(request.getHeader('Content-Length'))        
-        request.content.seek(0, 0)
-        
+        req_length = request.getHeader('Content-Length')    
+        request.content.seek(0, 0)    
         # process json encoded request body
-        body = json.loads(request.content.read(length))        
+        body = json.loads(request.content.read(req_length))        
         
         metadata = {}
         if 'metadata' in body:
@@ -74,3 +73,34 @@ class Container(resource.Resource):
         request.setHeader('Server', CDMI_SERVER_HEADER)   
         return ""
 
+class NonCDMIContainer(resource.Resource):
+    isLeaf = True
+    allowMethods = ('PUT', 'GET')
+    
+    def render_GET(self, request):
+        """GET operation corresponds to reading a container's data."""
+        # parse the request        
+        _, __, fullpath = parse_path(request.path)
+        
+        # contact the backend
+        status, _, children, metadata = container.read(fullpath)
+        
+        # create a header                
+        request.setResponseCode(status)
+        request.setHeader('Content-Type', 'application/json')
+        
+        # and a body     
+        # this is not a completely correct implementation of a non-cdmi reply. 
+        # TODO: change to more specific fields once fields separation is implemented  
+        response_body = {
+                         'metadata': metadata,
+                         'children': children,   
+                         }           
+        
+        return json.dumps(response_body)
+    
+    def render_PUT(self, request):      
+        name, container_path, fullpath = parse_path(request.path)             
+        status, _, __ = container.create_or_update(name, container_path, fullpath, {})        
+        request.setResponseCode(status)        
+        return ""

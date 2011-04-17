@@ -8,7 +8,7 @@ from vcdm.server.cdmi.generic import get_parent
 from httplib import NOT_FOUND, CREATED, OK, CONFLICT
 
 def write(name, container_path, fullpath, mimetype, metadata, content):
-    """Write or update content of a blob"""
+    """ Write or update content of a blob. """
     parent_container = get_parent(fullpath)
         
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', fields = 'parent_container')

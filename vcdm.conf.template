@@ -1,4 +1,7 @@
 [general]
+# specify supported objects
+support_blob = yes
+support_mq = yes
 # options: aws, local, azure, cdmi
 blob.backend = local
 # options: local, aws, azure

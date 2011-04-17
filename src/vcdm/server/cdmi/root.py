@@ -21,8 +21,23 @@ class RootCDMIResource(resource.Resource):
         version = request.getHeader('X-CDMI-Specification-Version')
         accept = request.getHeader('Accept') 
         
-        ## == Request validation. == 
-        # TODO: possibly move to a separate function      
+        if version is not None:
+            return self._decide_cdmi_object(content, version, accept)
+        else:
+            return self._decide_non_cdmi_object(request.path)
+
+    def render(self, request):
+        return "At the moment only CDMI-object types are supported. Incorrect CDMI request: %s", request
+    
+    def _decide_non_cdmi_object(self, path):
+        # if we have a normal http request, there are two possibilities - either we are creating a new container or a new object
+        # we distinguish them based on a trailing slash
+        if path.endswith('/'):
+            return container.NonCDMIContainer()
+        else:
+            return blob.NonCDMIBlob()
+
+    def _decide_cdmi_object(self, content, accept, version):
         ## Current CDMI version is a bit inconsistent wrt to accept/content-types. Picking a processing object 
         ## is not an obvious step. For now, we abuse the specification and require some of the optional fields to be present.    
         if version is None or CDMI_VERSION not in version:
@@ -45,8 +60,3 @@ class RootCDMIResource(resource.Resource):
         # capabilities           
         if content == CDMI_OBJECT and accept == CDMI_CAPABILITY:
             return cdmi_objects[CDMI_CAPABILITY]
-        
-        return self           
-
-    def render(self, request):
-        return "At the moment only CDMI-object types are supported. Incorrect CDMI request: %s", request
