@@ -8,7 +8,7 @@ from twisted.cred.checkers import FilePasswordDB
 
 import vcdm
 from vcdm import c
-from vcdm.server.cdmi import RootCDMIResource
+from vcdm.server.cdmi import RootCDMIResource, current_capabilities
 
 class SimpleRealm(object):
     """
@@ -27,8 +27,10 @@ def main():
     # initialize backends
     vcdm.env['ds'] = vcdm.datastore_backends[c('general', 'ds.backend')]()
     vcdm.env['blob'] = vcdm.blob_backends[c('general', 'blob.backend')]()
-    vcdm.env['mq'] = vcdm.mq_backends[c('general', 'mq.backend')]()
-        
+    # do we want queue backend?
+    if c('general', 'support_mq') == 'yes':
+        vcdm.env['mq'] = vcdm.mq_backends[c('general', 'mq.backend')]()
+        current_capabilities.system['queues'] = True
     # for now just a small list of 
     checkers = [FilePasswordDB('users.db')]
     

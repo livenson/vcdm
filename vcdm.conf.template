@@ -1,13 +1,12 @@
 [general]
 # specify supported objects
-support_blob = yes
 support_mq = yes
 # options: aws, local, azure, cdmi
 blob.backend = local
-# options: local, aws, azure
-mq.backend = local
-# local, azure
-ds.backend = local
+# options: amqp, aws, azure
+mq.backend = amqp
+# couchdb, azure
+ds.backend = couchdb
 server.endpoint = localhost:8080
 server.debug_port = 2364
 

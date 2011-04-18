@@ -17,9 +17,9 @@ class RootCDMIResource(resource.Resource):
     A root CDMI resource. Handles initial request parsing and decides on the specific request processor.
     """
     def getChild(self, path, request):     
-        content = request.getHeader('Content-Type')        
-        version = request.getHeader('X-CDMI-Specification-Version')
-        accept = request.getHeader('Accept') 
+        content = request.getHeader('content-type')        
+        version = request.getHeader('x-cdmi-specification-version')
+        accept = request.getHeader('accept')         
         
         if version is not None:
             return self._decide_cdmi_object(content, version, accept)
@@ -37,9 +37,10 @@ class RootCDMIResource(resource.Resource):
         else:
             return blob.NonCDMIBlob()
 
-    def _decide_cdmi_object(self, content, accept, version):
+    def _decide_cdmi_object(self, content, version, accept):
         ## Current CDMI version is a bit inconsistent wrt to accept/content-types. Picking a processing object 
-        ## is not an obvious step. For now, we abuse the specification and require some of the optional fields to be present.    
+        ## is not an obvious step. For now, we abuse the specification and require some of the optional fields to be present.
+        print version
         if version is None or CDMI_VERSION not in version:
             return self
         
@@ -58,5 +59,5 @@ class RootCDMIResource(resource.Resource):
             return cdmi_objects[CDMI_CONTAINER]()    
         
         # capabilities           
-        if content == CDMI_OBJECT and accept == CDMI_CAPABILITY:
-            return cdmi_objects[CDMI_CAPABILITY]
+        if content == CDMI_CAPABILITY:
+            return cdmi_objects[CDMI_CAPABILITY]()

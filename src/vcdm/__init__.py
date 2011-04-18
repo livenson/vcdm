@@ -11,18 +11,6 @@ def c(group, field):
     """Shorthand for getting configuration values"""
     return config.get(group, field)
 
-from vcdm.backends.blob.localdisk import POSIXBlob
-from vcdm.backends.blob.azure import AzureBlob
-from vcdm.backends.blob.aws_s3 import S3Blob
-from vcdm.backends.blob.cdmi import CDMIBlob
-
-from vcdm.backends.mq.amqp import AMQPMQ
-from vcdm.backends.mq.aws_sqs import AWSSQSMessageQueue
-from vcdm.backends.mq.azure import AzureQueue
-from vcdm.backends.mq.cdmi import CDMIQueue
-
-from vcdm.backends.datastore.couchdb_store import CouchDBStore
-from vcdm.backends.datastore.azure_store import AzureStore
 
 # shared environment variables
 env = {'ds': None,
@@ -30,19 +18,48 @@ env = {'ds': None,
        'mq': None
        }
 
+# compulsory localdisk backend
+from vcdm.backends.blob.localdisk import POSIXBlob
+blob_backends = {'local': POSIXBlob}
+ 
+# optional backends, some require presence of additional plugins
+if c('general', 'blob.backend') == 'aws':
+    from vcdm.backends.blob.aws_s3 import S3Blob    
+    blob_backends['aws'] = S3Blob
 
-blob_backends = {'local': POSIXBlob, 
-                 'aws': S3Blob,
-                 'azure': AzureBlob,
-                 'cdmi': CDMIBlob
-                 }
+if c('general', 'blob.backend') == 'azure':
+    from vcdm.backends.blob.azure import AzureBlob    
+    blob_backends['azure'] = AzureBlob
+    
+if c('general', 'blob.backend') == 'cdmi':
+    from vcdm.backends.blob.cdmi import CDMIBlob
+    blob_backends['cdmi'] = CDMIBlob                 
 
-mq_backends = {'local': AMQPMQ,
-               'aws': AWSSQSMessageQueue,
-               'azure': AzureQueue,
-               'cdmi': CDMIQueue
-               }
+# mq is a non-compulsory object
+mq_backends = {}
 
-datastore_backends = {'local': CouchDBStore,
-                      'azure': AzureStore}
+if c('general', 'support_mq') == 'yes' and c('general', 'mq.backend') == 'local':
+    from vcdm.backends.mq.amqp import AMQPMQ
+    mq_backends['amqp'] = AMQPMQ                 
 
+if c('general', 'support_mq') == 'yes' and c('general', 'mq.backend') == 'cdmi':
+    from vcdm.backends.mq.cdmi import CDMIQueue
+    mq_backends['cdmi'] = CDMIQueue                 
+
+if c('general', 'support_mq') == 'yes' and c('general', 'mq.backend') == 'aws':    
+    from vcdm.backends.mq.aws_sqs import AWSSQSMessageQueue
+    mq_backends['aws'] = AWSSQSMessageQueue                 
+
+if c('general', 'support_mq') == 'yes' and c('general', 'mq.backend') == 'azure':    
+    from vcdm.backends.mq.azure import AzureQueue
+    mq_backends['azure'] = AzureQueue
+             
+# datastore backends
+datastore_backends = {}
+if c('general', 'ds.backend') == 'couchdb':
+    from vcdm.backends.datastore.couchdb_store import CouchDBStore
+    datastore_backends['couchdb'] = CouchDBStore  
+
+if c('general', 'ds.backend') == 'azure':
+    from vcdm.backends.datastore.azure_store import AzureStore
+    datastore_backends['couchdb'] = AzureStore  

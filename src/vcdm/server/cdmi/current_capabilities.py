@@ -3,7 +3,7 @@ system = {
         "domains": False,
         "notification": False,
         "query": False,
-        "queues": True,
+        "queues": False,
             
         # export protocols        
         "export_webdav": False,
