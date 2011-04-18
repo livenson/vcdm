@@ -8,6 +8,7 @@ from vcdm.server.cdmi.cdmi_content_types import CDMI_OBJECT
 
 from vcdm.server.cdmi.generic import set_common_headers, parse_path,\
     get_common_body
+from vcdm.server.cdmi.root import CDMI_SERVER_HEADER
 
 try:
     import json
@@ -117,4 +118,12 @@ class NonCDMIBlob(resource.Resource):
         status, _ = blob.write(name, container_path, fullpath, mimetype, {}, content)        
         request.setResponseCode(status)        
           
+        return ""
+    
+    def render_DELETE(self, request):
+        """DELETE operations corresponds to the blob deletion operation"""
+        _, __, fullpath = parse_path(request.path)
+        status = blob.delete(fullpath)
+        request.setResponseCode(status)
+        request.setHeader('Server', CDMI_SERVER_HEADER)
         return ""

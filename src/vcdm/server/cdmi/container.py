@@ -42,7 +42,7 @@ class Container(resource.Resource):
     def render_PUT(self, request):        
         name, container_path, fullpath = parse_path(request.path)
         
-        req_length = request.getHeader('Content-Length')    
+        req_length = int(request.getHeader('Content-Length'))    
         request.content.seek(0, 0)    
         # process json encoded request body
         body = json.loads(request.content.read(req_length))        
@@ -75,7 +75,7 @@ class Container(resource.Resource):
 
 class NonCDMIContainer(resource.Resource):
     isLeaf = True
-    allowMethods = ('PUT', 'GET')
+    allowMethods = ('PUT', 'GET', 'DELETE')
     
     def render_GET(self, request):
         """GET operation corresponds to reading a container's data."""
@@ -103,4 +103,11 @@ class NonCDMIContainer(resource.Resource):
         name, container_path, fullpath = parse_path(request.path)             
         status, _, __ = container.create_or_update(name, container_path, fullpath, {})        
         request.setResponseCode(status)        
+        return ""
+    
+    def render_DELETE(self, request):
+        _, __, fullpath = parse_path(request.path)
+        status = container.delete(fullpath)
+        request.setResponseCode(status)
+        request.setHeader('Server', CDMI_SERVER_HEADER)   
         return ""

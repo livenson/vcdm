@@ -10,8 +10,8 @@ from httplib import NOT_FOUND, CREATED, OK, CONFLICT
 def write(name, container_path, fullpath, mimetype, metadata, content):
     """ Write or update content of a blob. """
     parent_container = get_parent(fullpath)
-        
-    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', fields = 'parent_container')
+    
+    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', fields = ['parent_container'])
     # assert that we have a consistency in case of an existig blob
     if uid is not None and parent_container != vals['parent_container']:
         raise InternalError("Inconsistent information about the object! path: %s, parent_container in db: %s") % (fullpath, vals['parent_container'])
