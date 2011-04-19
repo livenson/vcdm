@@ -5,7 +5,7 @@ from vcdm import container
 from vcdm.errors import ProtocolError, InternalError
 from vcdm.container import append_child, remove_child
 from vcdm.server.cdmi.generic import get_parent
-from httplib import NOT_FOUND, CREATED, OK, CONFLICT
+from httplib import NOT_FOUND, CREATED, OK, CONFLICT, NO_CONTENT
 
 def write(name, container_path, fullpath, mimetype, metadata, content):
     """ Write or update content of a blob. """
@@ -69,7 +69,7 @@ def delete(fullpath):
             vcdm.env['ds'].delete(uid)
             # find parent container and update its children range
             remove_child(vals['parent_container'], uid)
-            return OK
+            return NO_CONTENT
         except:
             #TODO: - how do we handle failed delete?     
             return CONFLICT

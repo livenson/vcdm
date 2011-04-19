@@ -3,7 +3,7 @@ import vcdm
 from vcdm.errors import ProtocolError, InternalError
 from twisted.python import log
 from vcdm.server.cdmi.generic import get_parent
-from httplib import NOT_FOUND, OK, CREATED
+from httplib import NOT_FOUND, OK, CREATED, NO_CONTENT
 
 def read(fullpath): 
     """ Read a specified container."""
@@ -65,7 +65,7 @@ def delete(fullpath):
         if fullpath != '/': 
             remove_child(vals['parent_container'], uid)          
         ## XXX: delete all children?
-        return OK
+        return NO_CONTENT
 
 ####### Support functions dealing with container logic #########
 
