@@ -41,7 +41,7 @@ def create_or_update(name, container_path, fullpath, metadata = None):
                         uid)
         # update the parent container as well, unless it's a top-level container
         if fullpath != '/':
-            append_child(parent_container, uid, name)
+            append_child(parent_container, uid, name + "/")
         return (CREATED, uid, [])
     else:
         # update container
