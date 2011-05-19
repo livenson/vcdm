@@ -3,7 +3,7 @@ import vcdm
 from vcdm.errors import ProtocolError, InternalError
 from twisted.python import log
 from vcdm.server.cdmi.generic import get_parent
-from httplib import NOT_FOUND, OK, CREATED, NO_CONTENT
+from httplib import NOT_FOUND, OK, CREATED, NO_CONTENT, CONFLICT
 
 def read(fullpath): 
     """ Read a specified container."""
@@ -60,7 +60,8 @@ def delete(fullpath):
     else:
         # fail if we are deleting a non-empty container
         if len(vals['children']) != 0:
-            raise ProtocolError("Cannot delete a non-empty container '%s'" %fullpath)
+            # we do not allow deleting non-empty containers
+            return CONFLICT
         vcdm.env['ds'].delete(uid) 
         if fullpath != '/': 
             remove_child(vals['parent_container'], uid)          
