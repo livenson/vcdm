@@ -88,10 +88,7 @@ def check_path(container_path):
     log.msg("Checking paths: %s" % all_paths)
     # For now ignore all the permissions/etc. Just make sure that all path are there
     # TODO: add permission checking, probably would mean changing a query a bit to return more information    
-    if len(vcdm.env['ds'].find_path_uids(all_paths)) != len(container_path):      
-        return False
-    else:
-        return True
+    return len(vcdm.env['ds'].find_path_uids(all_paths)) == len(container_path)        
 
 def append_child(container_path, child_uid, child_name):    
     log.msg("Appending child %s:%s to a container %s" %(child_uid, child_name, container_path))    
