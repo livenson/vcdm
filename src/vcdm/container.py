@@ -3,7 +3,7 @@ import vcdm
 from vcdm.errors import ProtocolError, InternalError
 from twisted.python import log
 from vcdm.server.cdmi.generic import get_parent
-from httplib import NOT_FOUND, OK, CREATED, NO_CONTENT, CONFLICT
+from httplib import NOT_FOUND, OK, CREATED, NO_CONTENT, CONFLICT, FORBIDDEN
 
 def read(fullpath): 
     """ Read a specified container."""
@@ -15,7 +15,7 @@ def read(fullpath):
         return (OK, uid, vals['children'].values(), vals['metadata'])
 
 def create_or_update(name, container_path, fullpath, metadata = None):
-    """Create or update a container."""    
+    """Create or update a container."""
     log.msg("Container create/update: %s" % fullpath)
     
     parent_container = get_parent(fullpath)            
@@ -26,7 +26,8 @@ def create_or_update(name, container_path, fullpath, metadata = None):
     
     # assert we can write to the defined path
     if not check_path(container_path):
-        raise ProtocolError("Writing to a container is not allowed. Container path: %s" % '/'.join(container_path))
+        log.err("Writing to a container is not allowed. Container path: %s" % '/'.join(container_path))
+        return (FORBIDDEN, uid, [])
     
     if uid is None:
         # if uid is None, it shall create a new entry, update otherwise        
@@ -87,7 +88,7 @@ def check_path(container_path):
     log.msg("Checking paths: %s" % all_paths)
     # For now ignore all the permissions/etc. Just make sure that all path are there
     # TODO: add permission checking, probably would mean changing a query a bit to return more information    
-    if len(vcdm.env['ds'].find_path_uids(all_paths)) != len(container_path):
+    if len(vcdm.env['ds'].find_path_uids(all_paths)) != len(container_path):      
         return False
     else:
         return True
