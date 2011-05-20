@@ -1,6 +1,6 @@
 import datetime
 import vcdm
-from vcdm.errors import ProtocolError, InternalError
+from vcdm.errors import InternalError
 from twisted.python import log
 from vcdm.server.cdmi.generic import get_parent
 from httplib import NOT_FOUND, OK, CREATED, NO_CONTENT, CONFLICT, FORBIDDEN

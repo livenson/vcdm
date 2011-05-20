@@ -2,7 +2,8 @@ import datetime
 import vcdm
 
 from vcdm import container
-from vcdm.errors import ProtocolError, InternalError
+from vcdm.errors import InternalError
+from twisted.python import log
 from vcdm.container import append_child, remove_child
 from vcdm.server.cdmi.generic import get_parent
 from httplib import NOT_FOUND, CREATED, OK, CONFLICT, NO_CONTENT, FORBIDDEN
@@ -19,7 +20,7 @@ def write(name, container_path, fullpath, mimetype, metadata, content):
     # assert we can write to the defined path
     if not container.check_path(container_path):
         log.err("Writing to a container is not allowed. Container path: %s" % '/'.join(container_path))
-        return (FORBIDDEN, uid)   
+        return (FORBIDDEN, uid)
             
     # if uid is None, create a new entry, update otherwise
     if uid is None:        
