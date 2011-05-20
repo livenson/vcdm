@@ -74,8 +74,7 @@ def delete(fullpath):
 def check_path(container_path):
     # for a top-level container - all is good
     if container_path == ['/']:
-        return True
-        
+        return True        
     # XXX: probably not the best way to do the search, but seems to work
     # construct all possible fullpaths of containers and do a search for them
     all_paths = []
@@ -101,7 +100,7 @@ def append_child(container_path, child_uid, child_name):
                     cuid)
     
 def remove_child(container_path, child_uid):
-       
+    log.msg("Removing child %s from a container %s" %(child_uid, container_path))       
     cuid, cvals = vcdm.env['ds'].find_by_path(container_path, object_type = 'container', fields = ['children'])
     del cvals['children'][child_uid]
     vcdm.env['ds'].write({

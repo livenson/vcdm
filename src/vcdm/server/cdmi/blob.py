@@ -98,7 +98,7 @@ class NonCDMIBlob(resource.Resource):
         status, content, _, mimetype, __ = blob.read(fullpath)        
         # construct response
         request.setResponseCode(status)
-        request.setHeader('Content-Type', mimetype)    
+        request.setHeader('Content-Type', mimetype)
         return content
         
     def render_PUT(self, request):
@@ -116,8 +116,7 @@ class NonCDMIBlob(resource.Resource):
             mimetype = request.getHeader('Content-Length')    
                 
         status, _ = blob.write(name, container_path, fullpath, mimetype, {}, content)        
-        request.setResponseCode(status)        
-          
+        request.setResponseCode(status)                  
         return ""
     
     def render_DELETE(self, request):
