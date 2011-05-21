@@ -9,6 +9,7 @@ from twisted.cred.checkers import FilePasswordDB
 import vcdm
 from vcdm import c
 from vcdm.server.cdmi import RootCDMIResource, current_capabilities
+from twisted.internet.selectreactor import SelectReactor
 
 class SimpleRealm(object):
     """

@@ -1,6 +1,5 @@
 import datetime
 import vcdm
-from vcdm.errors import InternalError
 from twisted.python import log
 from vcdm.server.cdmi.generic import get_parent
 from httplib import NOT_FOUND, OK, CREATED, NO_CONTENT, CONFLICT, FORBIDDEN
@@ -22,7 +21,8 @@ def create_or_update(name, container_path, fullpath, metadata = None):
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'container', fields = ['children', 'parent_container'])
     # XXX: duplication of checks with blob (vcdm). Refactor.
     if uid is not None and parent_container != vals['parent_container']:
-        raise InternalError("Inconsistent information about the object! path: %s, parent_container in db: %s") % (fullpath, vals['parent_container'])
+        log.err("Inconsistent information about the object! path: %s, parent_container in db: %s" % (fullpath, vals['parent_container']))
+        return (FORBIDDEN, uid, [])        
     
     # assert we can write to the defined path
     if not check_path(container_path):
@@ -61,6 +61,7 @@ def delete(fullpath):
     else:
         # fail if we are deleting a non-empty container
         if len(vals['children']) != 0:
+            log.err("Cannot delete non-empty container %s. Existing children: %s." % (fullpath, vals['children']))
             # we do not allow deleting non-empty containers
             return CONFLICT
         vcdm.env['ds'].delete(uid) 

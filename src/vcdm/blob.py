@@ -2,7 +2,6 @@ import datetime
 import vcdm
 
 from vcdm import container
-from vcdm.errors import InternalError
 from twisted.python import log
 from vcdm.container import append_child, remove_child
 from vcdm.server.cdmi.generic import get_parent
@@ -15,7 +14,8 @@ def write(name, container_path, fullpath, mimetype, metadata, content):
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', fields = ['parent_container'])
     # assert that we have a consistency in case of an existig blob
     if uid is not None and parent_container != vals['parent_container']:
-        raise InternalError("Inconsistent information about the object! path: %s, parent_container in db: %s") % (fullpath, vals['parent_container'])
+        log.err("Inconsistent information about the object! path: %s, parent_container in db: %s" % (fullpath, vals['parent_container']))
+        return (FORBIDDEN, uid)
 
     # assert we can write to the defined path
     if not container.check_path(container_path):
@@ -55,6 +55,7 @@ def write(name, container_path, fullpath, mimetype, metadata, content):
 def read(fullpath, range = None):
     """ Return contents of a blob."""
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', fields = ['metadata', 'mimetype'])
+    log.msg("Reading path %s, uid: %s" % (fullpath, uid))
     if uid is None:
         return (NOT_FOUND, None, None, None, None)
     else:        

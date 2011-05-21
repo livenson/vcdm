@@ -9,6 +9,7 @@ from vcdm.server.cdmi.cdmi_content_types import CDMI_OBJECT
 from vcdm.server.cdmi.generic import set_common_headers, parse_path,\
     get_common_body
 from vcdm.server.cdmi.root import CDMI_SERVER_HEADER
+from httplib import OK
 
 try:
     import json
@@ -92,13 +93,14 @@ class NonCDMIBlob(resource.Resource):
 
     def render_GET(self, request):
         # process path and extract potential containers/fnm
-        _, __, fullpath = parse_path(request.path)
-        
+        _, __, fullpath = parse_path(request.path)        
         # perform operation on ADT
         status, content, _, mimetype, __ = blob.read(fullpath)        
         # construct response
         request.setResponseCode(status)
-        request.setHeader('Content-Type', mimetype)
+        # XXX: hack - somewhy the response just hangs if to simply path mimetype as a content type
+        actual_type = 'text/plain' if mimetype == 'text/plain' else mimetype
+        request.setHeader('Content-Type', actual_type)        
         return content
         
     def render_PUT(self, request):
@@ -112,8 +114,8 @@ class NonCDMIBlob(resource.Resource):
         # default values of mimetype and metadata
         
         mimetype = 'text/plain' 
-        if request.getHeader('Content-Length') is not None:
-            mimetype = request.getHeader('Content-Length')    
+        if request.getHeader('Content-Type') is not None:
+            mimetype = request.getHeader('Content-Type')    
                 
         status, _ = blob.write(name, container_path, fullpath, mimetype, {}, content)        
         request.setResponseCode(status)                  
