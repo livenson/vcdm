@@ -1,35 +1,51 @@
 [general]
-# specify supported objects
+# specify supported objects. By default, blob is always supported. 
+# Support for MQ can be turned on with this option.
 support_mq = no
+# Choose which backend to use for blob operations. Available options are listed below. 
+# NB: For some of the backends to work, you might need extra library (e.g. libazure or libcdmi-python).
+# Instructions on getting these libraries are in the README file.
 # options: aws, local, azure, cdmi
 blob.backend = local
+# (Optional - only if support_mq is set to 'yes'). 
+# Choose which backend to use for message queue operations. Available options are listed below. 
 # options: amqp, aws, azure
 mq.backend = amqp
-# couchdb
+# Pick backend for datastore. Datastore is used for storing all kinds of metadata. 
+# It is also used for implementing support of CDMI containers. 
+# options: couchdb
 ds.backend = couchdb
+# Choose interface and port for production (TLS + AuthN) endpoint.
 server.endpoint = localhost:8080
+# Debug endpoint is used to provide unencrypted and unauthenticated access to resources.
 server.use_debug_port = yes
+# Port where to run debug interface (listens to all interfaces).
 server.debug_port = 2364
 
 # storage backends
 [local]
+# If local backend for blob was chosen, specify path to 
+# the folder where blob's content shall be stored.
 blob.datadir = /path/to/data/dir
 
 [amqp]
+# If MQ with AMQP backend is turned on, provide credentials for accessing AMQP-compatible engine.
 mq.endpoint = localhost:5672
 mq.username = guest
 mq.password = guest
 
 [couchdb]
+# Datastore implementation on top of CouchDB.
 datastore.endpoint = http://localhost:5984/
 
 [aws]
-credentials_source = static
+# For blob and mq backends also Amazon Web Services could be used. 
+# Provide your access key and secret access key to be able to use the service.
 credentials.username = ACCESSKEYID
 credentials.password = SECRETACCESSKEY
 
 [azure]
-credentials_source = static
+# To be able to use MS Azure cloud for MQ and blob backends, provide your Azure data credentials.
 credentials.account = ACCOUNTNAME
 credentials.password = SECRETACCESSKEY
 credentials.blob_url = blob.core.windows.net
@@ -37,7 +53,7 @@ credentials.table_url = table.core.windows.net
 credentials.queue_url = queue.core.windows.net
 
 [cdmi]
-credentials_source = static
+# CDMI-backends
 credentials.username = aaa
 credentials.password = aaa
 cdmi.endpoint = http://localhost:8082/
