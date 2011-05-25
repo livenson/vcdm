@@ -8,8 +8,8 @@ from twisted.cred.checkers import FilePasswordDB
 
 import vcdm
 from vcdm import c
-from vcdm.server.cdmi import RootCDMIResource, current_capabilities
-from twisted.internet.selectreactor import SelectReactor
+from vcdm.server.cdmi.root import RootCDMIResource
+from vcdm.server.cdmi import current_capabilities
 
 class SimpleRealm(object):
     """
@@ -42,8 +42,9 @@ def main():
     # TODO: configure reactor to use
     # http://twistedmatrix.com/documents/current/core/howto/choosing-reactor.html
     
-    # unencrypted/unprotected connection for testing/development        
-    reactor.listenTCP(int(c('general', 'server.debug_port')), server.Site(resource=RootCDMIResource()))
+    # unencrypted/unprotected connection for testing/development
+    if c('general', 'server.use_debug_port') == 'yes':      
+        reactor.listenTCP(int(c('general', 'server.debug_port')), server.Site(resource=RootCDMIResource()))
     
     # 1-way SSL for production
     from twisted.internet import ssl

@@ -9,7 +9,6 @@ from vcdm.server.cdmi.cdmi_content_types import CDMI_OBJECT
 from vcdm.server.cdmi.generic import set_common_headers, parse_path,\
     get_common_body
 from vcdm.server.cdmi.root import CDMI_SERVER_HEADER
-from httplib import OK
 
 try:
     import json

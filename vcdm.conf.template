@@ -5,17 +5,22 @@ support_mq = no
 blob.backend = local
 # options: amqp, aws, azure
 mq.backend = amqp
-# couchdb, azure
+# couchdb
 ds.backend = couchdb
 server.endpoint = localhost:8080
+server.use_debug_port = yes
 server.debug_port = 2364
 
 # storage backends
 [local]
 blob.datadir = /path/to/data/dir
+
+[amqp]
 mq.endpoint = localhost:5672
 mq.username = guest
 mq.password = guest
+
+[couchdb]
 datastore.endpoint = http://localhost:5984/
 
 [aws]

@@ -10,9 +10,9 @@ class AMQPMQ(IMessageQueue):
     backend_type = 'amqp'
         
     def __init__(self, initialize_exchange=False):        
-        self.conn = amqp.Connection(host=c('local', 'mq.endpoint'), 
-                               userid=c('local', 'mq.username'), 
-                               password=c('local', 'mq.password'), 
+        self.conn = amqp.Connection(host=c('amqp', 'mq.endpoint'), 
+                               userid=c('amqp', 'mq.username'), 
+                               password=c('amqp', 'mq.password'), 
                                virtual_host="/", insist=False)
         if initialize_exchange:
             chan = self.conn.channel()
