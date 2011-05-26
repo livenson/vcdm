@@ -17,18 +17,20 @@ class RootCDMIResource(resource.Resource):
     """
     A root CDMI resource. Handles initial request parsing and decides on the specific request processor.
     """
-    def getChild(self, path, request):     
-        content = request.getHeader('content-type')        
+    def getChild(self, path, request):
+        log.msg("Request path received: %s, parameters: %s" %(request.path, request.args))
         version = request.getHeader('x-cdmi-specification-version')
-        accept = request.getHeader('accept')
+        
+        if version is not None and CDMI_VERSION not in version:
+            return self
 
         if version is not None:
-            return self._decide_cdmi_object(content, version, accept)
+            return self._decide_cdmi_object(request)
         else:
             return self._decide_non_cdmi_object(request.path)
 
     def render(self, request):
-        return "Unsupported request: %s", request
+        return "Unsupported version: %s", request.getHeader('x-cdmi-specification-version')
     
     def _decide_non_cdmi_object(self, path):
         # if we have a normal http request, there are two possibilities - either we are creating a new container or a new object
@@ -38,15 +40,22 @@ class RootCDMIResource(resource.Resource):
         else:
             return blob.NonCDMIBlob()
 
-    def _decide_cdmi_object(self, content, version, accept):
-        ## Current CDMI version is a bit inconsistent wrt to accept/content-types. Picking a processing object 
-        ## is not an obvious step. For now, we abuse the specification and require some of the optional fields to be present.
-        if version is None or CDMI_VERSION not in version:
-            return self
+    def _decide_cdmi_object(self, request):
+        content = request.getHeader('content-type')
+        accept = request.getHeader('accept')
         
         # decide on the object to be used for processing the request
-        if content ==  CDMI_OBJECT and accept == CDMI_OBJECT \
-            or accept == CDMI_OBJECT and content == CDMI_OBJECT:  # create | update | delete
+        
+        # for DELETE we have a special case: either a container or a blob. Difference - trailing slash.        
+        if request.method == 'DELETE':
+            if request.path.endswith('/'):
+                return cdmi_objects[CDMI_CONTAINER]()
+            else:
+                return cdmi_objects[CDMI_OBJECT]()
+        
+        # for blobs
+        if content == CDMI_OBJECT and accept == CDMI_OBJECT \
+            or accept == CDMI_OBJECT and content is None:  
             return cdmi_objects[CDMI_OBJECT]()
         
         # for queues            
@@ -62,5 +71,5 @@ class RootCDMIResource(resource.Resource):
         if content == CDMI_CAPABILITY:
             return cdmi_objects[CDMI_CAPABILITY]()
         
-        log.err("Failed to decide which CDMI object to use: %s, %s, %s" % (content, version, accept))
+        log.err("Failed to decide which CDMI object to use: %s, %s" % (content, accept))
         return self

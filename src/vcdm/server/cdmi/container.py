@@ -1,4 +1,5 @@
 from  twisted.web import resource
+from twisted.python import log
 
 from  vcdm import container
 from vcdm.server.cdmi.cdmi_content_types import CDMI_CONTAINER
@@ -41,7 +42,7 @@ class Container(resource.Resource):
     
     def render_PUT(self, request):        
         name, container_path, fullpath = parse_path(request.path)
-        
+        log.msg("Creating container %s" % fullpath)
         req_length = int(request.getHeader('Content-Length'))    
         request.content.seek(0, 0)    
         # process json encoded request body

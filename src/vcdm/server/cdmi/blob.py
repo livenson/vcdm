@@ -99,7 +99,7 @@ class NonCDMIBlob(resource.Resource):
         request.setResponseCode(status)
         # XXX: hack - somewhy the response just hangs if to simply path mimetype as a content type
         actual_type = 'text/plain' if mimetype == 'text/plain' else mimetype
-        request.setHeader('Content-Type', actual_type)        
+        request.setHeader('Content-Type', actual_type)
         return content
         
     def render_PUT(self, request):
