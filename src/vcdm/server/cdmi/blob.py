@@ -98,7 +98,7 @@ class NonCDMIBlob(resource.Resource):
         # construct response
         request.setResponseCode(status)
         # XXX: hack - somewhy the response just hangs if to simply path mimetype as a content type
-        actual_type = 'text/plain' if mimetype == 'text/plain' else mimetype
+        actual_type = 'text/plain' if mimetype == 'text/plain' else str(mimetype) # convert to str to avoid UnicodeDecodeError in twisted
         request.setHeader('Content-Type', actual_type)
         return content
         
