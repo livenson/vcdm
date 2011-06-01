@@ -3,12 +3,15 @@ Process blob-specific CDMI request.
 """
 
 from twisted.web import resource
+from twisted.python import log
+
 from vcdm import blob
 from vcdm.server.cdmi.cdmi_content_types import CDMI_OBJECT
 
 from vcdm.server.cdmi.generic import set_common_headers, parse_path,\
     get_common_body
 from vcdm.server.cdmi.root import CDMI_SERVER_HEADER
+from httplib import NOT_FOUND
 
 try:
     import json
@@ -92,15 +95,19 @@ class NonCDMIBlob(resource.Resource):
 
     def render_GET(self, request):
         # process path and extract potential containers/fnm
-        _, __, fullpath = parse_path(request.path)        
+        _, __, fullpath = parse_path(request.path)
+        log.msg("Getting blob (non-cdmi) %s" % fullpath)        
         # perform operation on ADT
         status, content, _, mimetype, __ = blob.read(fullpath)        
         # construct response
         request.setResponseCode(status)
-        # XXX: hack - somewhy the response just hangs if to simply path mimetype as a content type
-        actual_type = 'text/plain' if mimetype == 'text/plain' else str(mimetype) # convert to str to avoid UnicodeDecodeError in twisted
-        request.setHeader('Content-Type', actual_type)
-        return content
+        if status is not NOT_FOUND:
+            # XXX: hack - somewhy the response just hangs if to simply path mimetype as a content type
+            actual_type = 'text/plain' if mimetype == 'text/plain' else str(mimetype) # convert to str to avoid UnicodeDecodeError in twisted
+            request.setHeader('Content-Type', actual_type)
+            return content
+        else:
+            return ""
         
     def render_PUT(self, request):
         """PUT corresponds to a create/update operation on a blob"""

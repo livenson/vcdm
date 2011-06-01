@@ -1,13 +1,14 @@
 VCDM (aka CDMI-proxy)
 ---------------------
 
-VCDM is an implementation of CDMI-compatible server that can be used to store data both using local infrastructure
+VCDM is an implementation of CDMI-compatible (v 1.0.1h) server that can be used to store data both using local infrastructure
 and public cloud services.
 
 Implementation supports:
 - Blobs
-- MQ
 - Multi-level containers (also for single-level backends, e.g. AWS or Azure)
+
+MQ support is on the way.
 
 === SETUP ===
 1) Get the contents of the repository.
@@ -18,17 +19,19 @@ Implementation supports:
 		- Zope.Interface: http://pypi.python.org/pypi/zope.interface
 		- Twisted: http://twistedmatrix.com
 		- CouchDB-Python: http://code.google.com/p/couchdb-python/			
-		- py-amqplib: http://barryp.org/software/py-amqplib/
-	- install RabbitMQ: http://www.rabbitmq.com/
-	- install CouchDB: http://couchdb.apache.org/  (at least version 1) 
+	- install CouchDB: http://couchdb.apache.org/  (at least version 1)
+	
+   For MQ support:
+	- py-amqplib: http://barryp.org/software/py-amqplib/
+	- install RabbitMQ: http://www.rabbitmq.com/	 
 
 If you are using Ubuntu:
-	- apt-get install python-zope.interface python-twisted python-boto python-amqplib rabbitmq-server
-	- Ubuntus come with a too old couchdb/python-couchdb. To fix that:
+	- Ubuntu (at least up to version 10.10) come with a too old couchdb/python-couchdb in 
+	default repos. To fix that:
 		- get couchdb from ubuntuone repo:
 			- sudo add-apt-repository ppa:ubuntuone/stable
 			- sudo apt-get update && sudo apt-get install couchdb 
-		- sudo easy_install CouchDB  (to get python-couchdb)
+		- sudo easy_install -U CouchDB (to get python-couchdb)
 		
 There are several backends available at the moment. If you are planning to use them, you also need to get the
 corresponding libraries (and put them on the PYTHONPATH or into $vcdm/libsrc:
