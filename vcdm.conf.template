@@ -43,6 +43,7 @@ datastore.endpoint = http://localhost:5984/
 # Provide your access key and secret access key to be able to use the service.
 credentials.username = ACCESSKEYID
 credentials.password = SECRETACCESSKEY
+aws.bucket_name = cdmi-proxy
 
 [azure]
 # To be able to use MS Azure cloud for MQ and blob backends, provide your Azure data credentials.
@@ -51,6 +52,7 @@ credentials.password = SECRETACCESSKEY
 credentials.blob_url = blob.core.windows.net
 credentials.table_url = table.core.windows.net
 credentials.queue_url = queue.core.windows.net
+azure.bucket_name = cdmi-proxy
 
 [cdmi]
 # CDMI-backends

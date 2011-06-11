@@ -54,11 +54,14 @@ def write(name, container_path, fullpath, mimetype, metadata, content):
 
 def read(fullpath, range = None):
     """ Return contents of a blob."""
-    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', fields = ['metadata', 'mimetype'])
+    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', fields = ['metadata', 'mimetype', 'ctime', 'size'])
     log.msg("Reading path %s, uid: %s" % (fullpath, uid))
     if uid is None:
         return (NOT_FOUND, None, None, None, None)
-    else:        
+    else:
+        # add costs to the metadata
+        print vals['size'], vals['ctime']
+        print datetime.datetime(vals['ctime'])
         return (OK, vcdm.env['blob'].read(uid, range), uid, vals['mimetype'], vals['metadata'])
 
 def delete(fullpath):
