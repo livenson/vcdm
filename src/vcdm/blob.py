@@ -58,10 +58,7 @@ def read(fullpath, range = None):
     log.msg("Reading path %s, uid: %s" % (fullpath, uid))
     if uid is None:
         return (NOT_FOUND, None, None, None, None)
-    else:
-        # add costs to the metadata
-        print vals['size'], vals['ctime']
-        print datetime.datetime(vals['ctime'])
+    else:        
         return (OK, vcdm.env['blob'].read(uid, range), uid, vals['mimetype'], vals['metadata'])
 
 def delete(fullpath):
