@@ -21,6 +21,8 @@ server.endpoint = localhost:8080
 server.use_debug_port = yes
 # Port where to run debug interface (listens to all interfaces).
 server.debug_port = 2364
+# Authorization mechanism
+server.authz = dummy
 
 # storage backends
 [local]

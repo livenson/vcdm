@@ -19,7 +19,7 @@ class SimpleRealm(object):
 
     def requestAvatar(self, avatarId, mind, *interfaces):
         if resource.IResource in interfaces:
-            return resource.IResource, RootCDMIResource(), lambda: None
+            return resource.IResource, RootCDMIResource(avatarId), lambda: None
         raise NotImplementedError()
     
 def main():

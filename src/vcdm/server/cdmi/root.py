@@ -3,7 +3,7 @@ from twisted.python import log
 from vcdm.server.cdmi.cdmi_content_types import CDMI_CAPABILITY
 
 CDMI_VERSION = '1.0.1h'
-CDMI_SERVER_HEADER = "VCDM/" + CDMI_VERSION
+CDMI_SERVER_HEADER = "CDMI-Proxy/" + CDMI_VERSION
 
 import blob, queue, container, capabilities
 from cdmi_content_types import CDMI_QUEUE, CDMI_CONTAINER, CDMI_OBJECT
@@ -14,6 +14,13 @@ cdmi_objects = {CDMI_QUEUE: queue.Queue,
                 CDMI_CAPABILITY: capabilities.Capability}
 
 class RootCDMIResource(resource.Resource):
+    
+    def __init__(self, avatarID = None):
+        ## Twisted Resource is a not a new style class, so emulating a super-call
+        resource.Resource.__init__(self)
+        self.avatarID = avatarID
+        log.msg("Authenticated user: %s" % avatarID)
+    
     """
     A root CDMI resource. Handles initial request parsing and decides on the specific request processor.
     """
@@ -36,9 +43,9 @@ class RootCDMIResource(resource.Resource):
         # if we have a normal http request, there are two possibilities - either we are creating a new container or a new object
         # we distinguish them based on a trailing slash                
         if path.endswith('/'):
-            return container.NonCDMIContainer()
+            return container.NonCDMIContainer(self.avatarID)
         else:
-            return blob.NonCDMIBlob()
+            return blob.NonCDMIBlob(self.avatarID)
 
     def _decide_cdmi_object(self, request):
         content = request.getHeader('content-type')
@@ -49,27 +56,27 @@ class RootCDMIResource(resource.Resource):
         # for DELETE we have a special case: either a container or a blob. Difference - trailing slash.        
         if request.method == 'DELETE':
             if request.path.endswith('/'):
-                return cdmi_objects[CDMI_CONTAINER]()
+                return cdmi_objects[CDMI_CONTAINER](self.avatarID)
             else:
-                return cdmi_objects[CDMI_OBJECT]()
+                return cdmi_objects[CDMI_OBJECT](self.avatarID)
         
         # for blobs
         if content == CDMI_OBJECT and accept == CDMI_OBJECT \
             or accept == CDMI_OBJECT and content is None:  
-            return cdmi_objects[CDMI_OBJECT]()
+            return cdmi_objects[CDMI_OBJECT](self.avatarID)
         
         # for queues            
         if content ==  CDMI_QUEUE and accept == CDMI_QUEUE:
-            return cdmi_objects[CDMI_QUEUE]()
+            return cdmi_objects[CDMI_QUEUE](self.avatarID)
         
         # for containers
         if content == CDMI_CONTAINER or accept == CDMI_CONTAINER \
             or content is None and accept == CDMI_CONTAINER:
-            return cdmi_objects[CDMI_CONTAINER]()    
+            return cdmi_objects[CDMI_CONTAINER](self.avatarID)    
         
         # capabilities           
         if content == CDMI_CAPABILITY:
-            return cdmi_objects[CDMI_CAPABILITY]()
+            return cdmi_objects[CDMI_CAPABILITY](self.avatarID)
         
         log.err("Failed to decide which CDMI object to use: %s, %s" % (content, accept))
         return self

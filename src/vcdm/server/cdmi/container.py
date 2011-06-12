@@ -15,6 +15,10 @@ except ImportError:
 class Container(resource.Resource):
     isLeaf = True
     allowMethods = ('PUT', 'GET', 'DELETE')
+    
+    def __init__(self, avatarID = None):        
+        resource.Resource.__init__(self)
+        self.avatarID = avatarID
 
     def render_GET(self, request):
         """GET operation corresponds to reading container's data"""
@@ -22,7 +26,7 @@ class Container(resource.Resource):
         _, __, fullpath = parse_path(request.path)
         
         # contact the backend
-        status, uid, children, metadata = container.read(fullpath)
+        status, uid, children, metadata = container.read(self.avatarID, fullpath)
         
         # create a header                
         request.setResponseCode(status)
@@ -46,12 +50,11 @@ class Container(resource.Resource):
         req_length = int(request.getHeader('Content-Length'))    
         request.content.seek(0, 0)    
         # process json encoded request body
-        body = json.loads(request.content.read(req_length))        
-        
+        body = json.loads(request.content.read(req_length))                
         metadata = {}
         if 'metadata' in body:
             metadata = body['metadata']
-        status, uid, children = container.create_or_update(name, container_path, fullpath, metadata)
+        status, uid, children = container.create_or_update(self.avatarID, name, container_path, fullpath, metadata)
         
         request.setResponseCode(status)
         request.setHeader('Content-Type', CDMI_CONTAINER)
@@ -69,7 +72,7 @@ class Container(resource.Resource):
     
     def render_DELETE(self, request):
         _, __, fullpath = parse_path(request.path)
-        status = container.delete(fullpath)
+        status = container.delete(self.avatarID, fullpath)
         request.setResponseCode(status)
         request.setHeader('Server', CDMI_SERVER_HEADER)   
         return ""
@@ -78,13 +81,17 @@ class NonCDMIContainer(resource.Resource):
     isLeaf = True
     allowMethods = ('PUT', 'GET', 'DELETE')
     
+    def __init__(self, avatarID = None):        
+        resource.Resource.__init__(self)
+        self.avatarID = avatarID
+    
     def render_GET(self, request):
         """GET operation corresponds to reading a container's data."""
         # parse the request        
         _, __, fullpath = parse_path(request.path)
         
         # contact the backend
-        status, _, children, metadata = container.read(fullpath)
+        status, _, children, metadata = container.read(self.avatarID, fullpath)
         
         # create a header                
         request.setResponseCode(status)
@@ -102,13 +109,13 @@ class NonCDMIContainer(resource.Resource):
     
     def render_PUT(self, request):      
         name, container_path, fullpath = parse_path(request.path)             
-        status, _, __ = container.create_or_update(name, container_path, fullpath, {})        
+        status, _, __ = container.create_or_update(self.avatarID, name, container_path, fullpath, {})        
         request.setResponseCode(status)        
         return ""
     
     def render_DELETE(self, request):
         _, __, fullpath = parse_path(request.path)
-        status = container.delete(fullpath)
+        status = container.delete(self.avatarID, fullpath)
         request.setResponseCode(status)
         request.setHeader('Server', CDMI_SERVER_HEADER)   
         return ""

@@ -35,7 +35,7 @@ class CouchDBStore(IDatastore):
     
     def write(self, data, docid = None):
         doc = None
-        log.msg("Writing to CouchDB. UID/DATA: %s\n%s" %(docid, data))
+        log.msg("Writing to CouchDB. UID: %s, data: %s" %(docid, data))
         if docid is None:
             docid = uuid4().hex
             data['_id'] = docid
