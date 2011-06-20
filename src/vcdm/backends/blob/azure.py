@@ -18,20 +18,22 @@ class AzureBlob(IBlob):
         self.conn.create_container(cdmi_bucket_name)
 
     def read(self, fnm, rng=None):
-        return self.conn.get_blob(unicode(cdmi_bucket_name), unicode(fnm))
+        return self.conn.get_blob(cdmi_bucket_name, unicode(fnm))
     
     def create(self, fnm, content):
-        self.conn.put_blob(unicode(cdmi_bucket_name), unicode(fnm), content)
+        self.conn.put_blob(cdmi_bucket_name, unicode(fnm), content)
     
     def update(self, fnm, content):
         self.create(fnm, content)
         
     def delete(self, fnm):
         try:
-            self.conn.delete_blob(unicode(cdmi_bucket_name), unicode(fnm))
+            self.conn.delete_blob(cdmi_bucket_name, unicode(fnm))
         except urllib2.HTTPError:
             # TODO: winazure lib seems to be passing also positive responses via exceptions. Need to clarify
             import sys
             print "====================="
-            print sys.exc_info()
+            print "something happened:", sys.exc_info()[0]
+            import traceback
+            traceback.print_exc()
             print "====================="

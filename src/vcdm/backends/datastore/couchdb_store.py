@@ -64,7 +64,19 @@ class CouchDBStore(IDatastore):
         ''' % pattern.replace("/", "\\/")
                   
         return list(self.db.query(dirn_fun))
+    
+    def get_total_blob_size(self):
+        """ Return total size in GBs of all blobs indexed by the datastore. """
         
+        dirn_fun = '''
+        function(doc) {
+           if (doc.object == 'blob') {
+               emit(doc.size, null);
+           }
+        }
+        '''
+        
+        return sum([x.key for x in self.db.query(dirn_fun)])
     
     def find_by_path(self, path, object_type = None, fields = None):
         """ Find an object at a given path.

@@ -45,6 +45,7 @@ def main():
     # unencrypted/unprotected connection for testing/development
     if c('general', 'server.use_debug_port') == 'yes':      
         reactor.listenTCP(int(c('general', 'server.debug_port')), server.Site(resource=RootCDMIResource()))
+        reactor.listenTCP(2365, server.Site(resource=wrapper))
     
     # 1-way SSL for production
     from twisted.internet import ssl
@@ -52,9 +53,9 @@ def main():
     reactor.listenSSL(int(c('general', 'server.endpoint').split(":")[1]), server.Site(resource=wrapper), contextFactory = sslContext)
         
     # connector for providing quick metainfo
-    #from vcdm.server.meta.info import InfoResource
+    from vcdm.server.meta.info import InfoResource
     # TODO: fix InfoResource
-    #reactor.listenTCP(8083, server.Site(resource = InfoResource()))
+    reactor.listenTCP(8083, server.Site(resource = InfoResource()))
     
     reactor.run()
 

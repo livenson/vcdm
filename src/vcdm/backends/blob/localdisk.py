@@ -2,6 +2,7 @@ import os
 from vcdm.interfaces.blob import IBlob
 
 from vcdm import c
+from vcdm.utils import copyStreamToStream
 
 class POSIXBlob(IBlob):
     
@@ -13,21 +14,16 @@ class POSIXBlob(IBlob):
 
     def create(self, fnm, content):
         """Write the content to a file"""
-        f = open(self.location + os.sep + fnm, 'w')
-        f.write(content)        
-        f.close()
+        input_stream, input_length = content
+        with open(self.location + os.sep + fnm, 'wb') as output_file:
+            copyStreamToStream(input_stream, output_file, input_length)
+            input_stream.close()
+        
         
     def read(self, fnm, rng=None):
-        """Read the contents of a file, possibly a certain byte range"""
-        f = open(self.location + os.sep + fnm, 'r')
-        d = None
-        if rng is None:
-            d = f.read()
-        else:
-            f.seek(rng[0])
-            d = f.read(rng[1] - rng[0])
-        f.close()
-        return d
+        """Read the contents of a file, possibly a certain byte range"""        
+        name = self.location + os.sep + fnm
+        return open(name,'rb')        
         
     def update(self, fnm, content):
         """Update contents of a file"""

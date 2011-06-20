@@ -30,6 +30,7 @@ def get_parent(fullpath):
 def get_common_body(request, uid, fullpath):
     """Return dictionary with body elements common to all/most of the CDMI responses."""
     server = request.host.host + ":" + str(request.host.port)
+    
     body = {
             'objectID': uid,
             'domainURI': server,
