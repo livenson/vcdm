@@ -18,7 +18,7 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
     # assert that we have a consistency in case of an existig blob
     if uid is not None and parent_container != vals['parent_container']:
         log.err("Inconsistent information about the object! path: %s, parent_container in db: %s" % (fullpath, vals['parent_container']))
-        return (FORBIDDEN, uid)    
+        return (FORBIDDEN, uid)
 
     # assert we can write to the defined path
     # TODO: expensive check for consistency, make optional 

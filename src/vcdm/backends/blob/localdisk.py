@@ -18,12 +18,11 @@ class POSIXBlob(IBlob):
         with open(self.location + os.sep + fnm, 'wb') as output_file:
             copyStreamToStream(input_stream, output_file, input_length)
             input_stream.close()
-        
-        
+                
     def read(self, fnm, rng=None):
         """Read the contents of a file, possibly a certain byte range"""        
         name = self.location + os.sep + fnm
-        return open(name,'rb')        
+        return open(name,'rb')
         
     def update(self, fnm, content):
         """Update contents of a file"""
