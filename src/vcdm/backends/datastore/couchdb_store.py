@@ -123,4 +123,28 @@ class CouchDBStore(IDatastore):
             return None        
         else:
             return list(res)
+        
+#    def find_by_conditions(self, conditions, object_type, fields):
+#        comparision_string = 'true'
+#        if object_type is not None:
+#            comparision_string = "doc.object == '%s'" % object_type
+#        
+#        if conditions is not None:
+#            for c in conditions:
+#                field, operator, value = c                
+#                comparision_string += "doc.metadata" xxx has field AND field operator to value 
+#        
+#        if fields is not None:
+#            fields = '{' + ','.join([f + ': doc.' + f for f in fields]) + '}'
+#        else:
+#            fields = 'null'    
+#                            
+#        fnm_fun = '''function(doc) {
+#            if (doc.metadata && %s ) {
+#                emit(doc.id, %s);            
+#            }
+#        }
+#        ''' % ( comparision_string, fields)
+#        res = self.db.query(fnm_fun)
+#        print list(res)
     

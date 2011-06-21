@@ -15,7 +15,8 @@ def c(group, field):
 # shared environment variables
 env = {'ds': None,
        'blob': None,
-       'mq': None
+       'mq': None,
+       'blobs': {}
        }
 
 # compulsory localdisk backend
@@ -23,17 +24,23 @@ from vcdm.backends.blob.localdisk import POSIXBlob
 blob_backends = {'local': POSIXBlob}
  
 # optional backends, some require presence of additional plugins
-if c('general', 'blob.backend') == 'aws':
+try:
     from vcdm.backends.blob.aws_s3 import S3Blob    
     blob_backends['aws'] = S3Blob
+except ImportError:
+    print "AWS back-end type not available"
 
-if c('general', 'blob.backend') == 'azure':
+try:
     from vcdm.backends.blob.azure import AzureBlob    
     blob_backends['azure'] = AzureBlob
+except ImportError:
+    print "Azure back-end type not available"
     
-if c('general', 'blob.backend') == 'cdmi':
+try:
     from vcdm.backends.blob.cdmi import CDMIBlob
-    blob_backends['cdmi'] = CDMIBlob                 
+    blob_backends['cdmi'] = CDMIBlob
+except ImportError:
+    print "CDMI back-end type not available"            
 
 # mq is a non-compulsory object
 mq_backends = {}
@@ -60,6 +67,6 @@ if c('general', 'ds.backend') == 'couchdb':
     from vcdm.backends.datastore.couchdb_store import CouchDBStore
     datastore_backends['couchdb'] = CouchDBStore  
 
-if c('general', 'ds.backend') == 'azure':
-    from vcdm.backends.datastore.azure_store import AzureStore
-    datastore_backends['couchdb'] = AzureStore  
+#if c('general', 'ds.backend') == 'azure':
+#    from vcdm.backends.datastore.azure_store import AzureStore
+#    datastore_backends['couchdb'] = AzureStore  

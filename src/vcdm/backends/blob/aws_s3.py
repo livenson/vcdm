@@ -6,31 +6,29 @@ import boto
 from boto.s3.key import Key
 from boto.s3.connection import Location
 from boto.exception import S3CreateError
-from StringIO import StringIO
-import tempfile
 from tempfile import NamedTemporaryFile
 
-cdmi_bucket_name = c('aws', 'aws.bucket_name')
-# change to Location.USWest for the corresponding zone
-AWS_BUCKET_LOCATION = Location.EU
 
 class S3Blob(IBlob):
     
     conn = None
     backend_type = 's3'
     
-    def __init__(self):
-        self.conn = boto.connect_s3(c('aws', 'credentials.username'), 
-                                    c('aws', 'credentials.password'))    
+    def __init__(self, backend_name):
+        self.backend_name = backend_name
+        self.conn = boto.connect_s3(c(backend_name, 'credentials.username'), 
+                                    c(backend_name, 'credentials.password'))    
         # create a new bucket - just in case
-        # TODO: validate return code in reality
+        self.cdmi_bucket_name = c(backend_name, 'aws.bucket_name')
+        
+        # change to Location.USWest for the corresponding zone
         try:
-            self.conn.create_bucket(cdmi_bucket_name, location = Location.EU)
+            self.conn.create_bucket(self.cdmi_bucket_name, location = Location.EU)
         except S3CreateError:
             log.msg("S3 bucket already created. Using it.")
 
     def read(self, fnm):        
-        b = self.conn.get_bucket(cdmi_bucket_name)
+        b = self.conn.get_bucket(self.cdmi_bucket_name)
         k = Key(b)    
         k.key = fnm
         # read in the content to a temporary file on disk
@@ -43,7 +41,7 @@ class S3Blob(IBlob):
     
     def create(self, fnm, content):
         input_stream, _ = content
-        b = self.conn.get_bucket(cdmi_bucket_name)
+        b = self.conn.get_bucket(self.cdmi_bucket_name)
         k = Key(b)
         k.key = fnm
         k.set_contents_from_file(input_stream)
@@ -53,7 +51,7 @@ class S3Blob(IBlob):
         self.create(fnm, content)
     
     def delete(self, fnm):
-        b = self.conn.get_bucket(cdmi_bucket_name)
+        b = self.conn.get_bucket(self.cdmi_bucket_name)
         k = Key(b)    
         k.key = fnm
         k.delete()

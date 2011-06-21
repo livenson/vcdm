@@ -33,6 +33,11 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
         log.err("Authorization failed.")
         return (FORBIDDEN, uid)
     
+    # ok, time for action
+    # pick a blob back-end - if request_backend is specified in the metadata and 
+    # available in the system - use it. Else - resolve to default one.    
+    blob_backend = vcdm.env['blobs'].get(metadata.get('desired_backend', None), vcdm.env['blob'])
+    
     # if uid is None, create a new entry, update otherwise
     if uid is None:
         uid = vcdm.env['ds'].write({
@@ -44,22 +49,26 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
                         'parent_container': parent_container, 
                         'ctime': str(datetime.datetime.now()), 
                         'mtime': str(datetime.datetime.now()),
+                        'atime': str(datetime.datetime.now()),
                         'size': int(content[1]), # length
-                        'backend_type': vcdm.env['blob'].backend_type},                                    
+                        'backend_type': blob_backend.backend_type,
+                        'backend_name': blob_backend.backend_name},                                    
                         uid)
         # update the parent container as well
         _append_child(parent_container, uid, name)
-        vcdm.env['blob'].create(uid, content)
+        blob_backend.create(uid, content)
         return (CREATED, uid)
     else:
         uid = vcdm.env['ds'].write({                        
                         'metadata': metadata,
                         'mimetype': mimetype,
-                        'mtime': str(datetime.datetime.now()), 
+                        'mtime': str(datetime.datetime.now()),
+                        'atime': str(datetime.datetime.now()),
                         'size': int(content[1]), # length
-                        'backend_type': vcdm.env['blob'].backend_type}, 
+                        'backend_type': blob_backend.backend_type,
+                        'backend_name': blob_backend.backend_name}, 
                         uid)        
-        vcdm.env['blob'].update(uid, content)
+        blob_backend.update(uid, content)
         return (OK, uid)
 
 def read(avatar, fullpath):
@@ -76,7 +85,12 @@ def read(avatar, fullpath):
         acls = vals['metadata'].get('cdmi_acl', None)    
         if not authorize(avatar, fullpath, "read_blob", acls):
             log.err("Authorization failed.")        
-            return (FORBIDDEN, None, None, None, None, None)                
+            return (FORBIDDEN, None, None, None, None, None)
+        # update access time
+        uid = vcdm.env['ds'].write({                        
+                        'atime': str(datetime.datetime.now()),
+                        },
+                        uid)                
         return (OK, vcdm.env['blob'].read(uid), uid, vals['mimetype'], vals['metadata'], vals['size'])
 
 def delete(avatar, fullpath):
@@ -109,4 +123,12 @@ def exists(avatar, fullpath):
         return NOT_FOUND
     else:
         return OK
+    
+def query_blob_metadata(conditions):
+    """ Search for blobs that match passed conditions. Return a list of fullpaths. """
+    # XXX
+    for c in conditions:
+        pass
+    uid, vals = vcdm.env['ds'].find_by_conditions(conditions, object_type = 'blob', fields = ['fullpath'])
+    
     

@@ -1,13 +1,18 @@
+#############################################################
+###                 GENERAL CONFIGURATION                 ### 
+#############################################################
+
 [general]
+# Comma separated list of blob backends. Each entry must correspond to a 
+# separate section with configuration
+blob.backends = home_1, office_1
+
+# Choose default blob backend to use if a user did not specify her desire. 
+blob.default.backend = home_1
+
 # specify supported objects. By default, blob is always supported. 
 # Support for MQ can be turned on with this option.
 support_mq = no
-
-# Choose which backend to use for blob operations. Available options are listed below. 
-# NB: For some of the backends to work, you might need extra library (e.g. libazure or libcdmi-python).
-# Instructions on getting these libraries are in the README file.
-# options: aws, local, azure, cdmi
-blob.backend = local
 
 # (Optional - only if support_mq is set to 'yes'). 
 # Choose which backend to use for message queue operations. Available options are listed below. 
@@ -25,17 +30,28 @@ server.endpoint = localhost:8080
 # Debug endpoint is used to provide unencrypted and unauthenticated access to resources.
 server.use_debug_port = yes
 
-# Port where to run debug interface (listens to all interfaces).
+# Port where to run debug interface (listens on all interfaces).
 server.debug_port = 2364
 
 # Authorization mechanism
 server.authz = dummy
 
-# storage backends
-[local]
-# If local backend for blob was chosen, specify path to 
-# the folder where blob's content shall be stored.
-blob.datadir = /path/to/data/dir
+
+#############################################################
+###                 BACKEND CONFIGURATION                 ### 
+#############################################################
+
+# blob backend 1
+[home_1]
+# options: aws, local, azure, cdmi
+type = local
+blob.datadir = data
+
+# blob backend 2
+[office_1]
+# options: aws, local, azure, cdmi
+type = local
+blob.datadir = data2
 
 [amqp]
 # If MQ with AMQP backend is turned on, provide credentials for accessing AMQP-compatible engine.
@@ -46,6 +62,15 @@ mq.password = guest
 [couchdb]
 # Datastore implementation on top of CouchDB.
 datastore.endpoint = http://localhost:5984/
+
+#############################################################
+###                  BACKEND TEMPLATES                    ### 
+#############################################################
+
+[local]
+# If local backend for blob was chosen, specify path to 
+# the folder where blob's content shall be stored.
+blob.datadir = data
 
 [aws]
 # For blob and mq backends also Amazon Web Services could be used. 

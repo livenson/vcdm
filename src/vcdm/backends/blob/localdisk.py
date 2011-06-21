@@ -9,8 +9,9 @@ class POSIXBlob(IBlob):
     backend_type = 'posix'    
     location = None
     
-    def __init__(self): 
-        self.location = c('local', 'blob.datadir')
+    def __init__(self, backend_name): 
+        self.backend_name = backend_name
+        self.location = c(backend_name, 'blob.datadir')
 
     def create(self, fnm, content):
         """Write the content to a file"""
@@ -19,7 +20,7 @@ class POSIXBlob(IBlob):
             copyStreamToStream(input_stream, output_file, input_length)
             input_stream.close()
                 
-    def read(self, fnm, rng=None):
+    def read(self, fnm):
         """Read the contents of a file, possibly a certain byte range"""        
         name = self.location + os.sep + fnm
         return open(name,'rb')

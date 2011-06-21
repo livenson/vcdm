@@ -12,7 +12,6 @@ from vcdm.server.cdmi.generic import set_common_headers, parse_path,\
     get_common_body
 from vcdm.server.cdmi.root import CDMI_SERVER_HEADER
 from httplib import NOT_FOUND, OK, CREATED
-from vcdm.utils import print_memory_stats
 from twisted.web.server import NOT_DONE_YET
 from twisted.web.static import NoRangeStaticProducer
 from StringIO import StringIO

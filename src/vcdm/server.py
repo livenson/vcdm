@@ -27,8 +27,18 @@ def main():
     
     # initialize backends
     vcdm.env['ds'] = vcdm.datastore_backends[c('general', 'ds.backend')]()
-    vcdm.env['blob'] = vcdm.blob_backends[c('general', 'blob.backend')]()
-    # do we want queue backend?
+    
+    # load all backends
+    for blob_backend in c('general', 'blob.backends').split(','):
+        blob_backend = blob_backend.strip()
+        log.msg("Activating %s backend." % blob_backend)
+        type = c(blob_backend, 'type')
+        vcdm.env['blobs'][blob_backend] = vcdm.blob_backends[type](blob_backend)
+    
+    # set default
+    vcdm.env['blob'] = vcdm.env['blobs'][c('general', 'blob.default.backend')]
+    
+    # do we want queue backend? just a single one at the moment
     if c('general', 'support_mq') == 'yes':
         vcdm.env['mq'] = vcdm.mq_backends[c('general', 'mq.backend')]()
         current_capabilities.system['queues'] = True
@@ -53,9 +63,9 @@ def main():
     reactor.listenSSL(int(c('general', 'server.endpoint').split(":")[1]), server.Site(resource=wrapper), contextFactory = sslContext)
         
     # connector for providing quick metainfo
-    from vcdm.server.meta.info import InfoResource
+    #from vcdm.server.meta.info import InfoResource
     # TODO: fix InfoResource
-    reactor.listenTCP(8083, server.Site(resource = InfoResource()))
+    #reactor.listenTCP(8083, server.Site(resource = InfoResource()))
     
     reactor.run()
 
