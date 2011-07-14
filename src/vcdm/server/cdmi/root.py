@@ -75,7 +75,7 @@ class RootCDMIResource(resource.Resource):
             return cdmi_objects[CDMI_CONTAINER](self.avatarID)
 
         # capabilities
-        if content == CDMI_CAPABILITY:
+        if accept == CDMI_CAPABILITY:
             return cdmi_objects[CDMI_CAPABILITY](self.avatarID)
 
         log.err("Failed to decide which CDMI object to use: %s, %s" % (content, accept))
