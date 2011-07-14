@@ -1,8 +1,7 @@
-VCDM (aka CDMI-proxy)
+CDMI-Proxy
 ---------------------
 
-VCDM is an implementation of CDMI-compatible (v 1.0.1h) server that can be used to store data both using local infrastructure
-and public cloud services.
+CDMI-Proxy is an implementation of a CDMI-compatible (v 1.0.1h) server that can be used to store data both using local infrastructure and public cloud services.
 
 Implementation supports:
 - Blobs
@@ -24,14 +23,6 @@ MQ support is on the way.
    For MQ support:
 	- py-amqplib: http://barryp.org/software/py-amqplib/
 	- install RabbitMQ: http://www.rabbitmq.com/	 
-
-If you are using Ubuntu:
-	- Ubuntu (at least up to version 10.10) come with a too old couchdb/python-couchdb in 
-	default repos. To fix that:
-		- get couchdb from ubuntuone repo:
-			- sudo add-apt-repository ppa:ubuntuone/stable
-			- sudo apt-get update && sudo apt-get install couchdb 
-		- sudo easy_install -U CouchDB (to get python-couchdb)
 		
 There are several backends available at the moment. If you are planning to use them, you also need to get the
 corresponding libraries (and put them on the PYTHONPATH or into $vcdm/libsrc:
@@ -40,6 +31,8 @@ corresponding libraries (and put them on the PYTHONPATH or into $vcdm/libsrc:
 	- Azure: https://github.com/livenson/winazurestorage
 	
 3) Copy vcdm.conf.template to vcdm.conf.
+
+4) mkdir data; mkdir data2 # create two pools for data, check vcdm.conf for more comments
 
 4) Run start-server.sh/start-server.bat.
 	- by default, ports 2364 and 8080 will be accessible.
