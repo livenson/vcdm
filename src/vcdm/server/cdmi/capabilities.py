@@ -20,6 +20,10 @@ class Capability(resource.Resource):
     isLeaf = True
     allowedMethods = ('GET')
 
+    def __init__(self, avatar = None):
+        resource.Resource.__init__(self)
+        self.avatar = avatar
+
     def render_GET(self, request):
         # for now only support top-level capabilities
         _, __, fullpath = parse_path(request.path)
