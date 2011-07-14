@@ -1,6 +1,6 @@
 # CDMI content types
 
-CDMI_CAPABILITY='application/cdmi-capabilities'
+CDMI_CAPABILITY='application/cdmi-capability'
 CDMI_CONTAINER='application/cdmi-container'
 CDMI_DOMAIN='application/cdmi-domain'
 CDMI_OBJECT='application/cdmi-object'
