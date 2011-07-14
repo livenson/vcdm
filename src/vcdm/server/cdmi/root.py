@@ -37,7 +37,7 @@ class RootCDMIResource(resource.Resource):
             return self._decide_non_cdmi_object(request.path)
 
     def render(self, request):
-        return "Unsupported version: %s" % request.getHeader('x-cdmi-specification-version')
+        return "Unsupported request: %s" % request
 
     def _decide_non_cdmi_object(self, path):
         # if we have a normal http request, there are two possibilities - either we are creating a new container or a new object
