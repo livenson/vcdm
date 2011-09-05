@@ -1,5 +1,5 @@
 CDMI-Proxy
----------------------
+----------
 
 CDMI-Proxy is an implementation of a CDMI-compatible (v 1.0.1h) server that can be used to store data both using local infrastructure and public cloud services.
 
@@ -7,23 +7,16 @@ Implementation supports:
 - Blobs
 - Multi-level containers (also for single-level backends, e.g. AWS or Azure)
 
-MQ support is on the way.
-
-=== SETUP ===
-1) Get the contents of the repository.
-	- git clone git://github.com/livenson/vcdm.git
+SETUP
+=====
+1) Get the code: 
+    git clone git://github.com/livenson/vcdm.git
 
 2) Get dependencies:
-	- install required Python packages (most of them could be installed through easy_install):
-		- Zope.Interface: http://pypi.python.org/pypi/zope.interface
-		- Twisted: http://twistedmatrix.com
-		- CouchDB-Python: http://code.google.com/p/couchdb-python/			
-	- install CouchDB: http://couchdb.apache.org/  (at least version 1)
-	
-   For MQ support:
-	- py-amqplib: http://barryp.org/software/py-amqplib/
-	- install RabbitMQ: http://www.rabbitmq.com/	 
-		
+    - pip install -r requirements.txt
+    - install CouchDB: http://couchdb.apache.org/  (at least version 1) 
+        - Couchbase offers latest versions:  http://www.couchbase.com/downloads/couchbase-single-server/community
+
 There are several backends available at the moment. If you are planning to use them, you also need to get the
 corresponding libraries (and put them on the PYTHONPATH or into $vcdm/libsrc:
 	- AWS: http://code.google.com/p/boto/	
@@ -40,3 +33,4 @@ corresponding libraries (and put them on the PYTHONPATH or into $vcdm/libsrc:
 	- 8080: production access - encryption and authN
 
 The terms of use of the software are governed by the BSD license (3 clause).
+
