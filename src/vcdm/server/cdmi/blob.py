@@ -126,10 +126,10 @@ class NonCDMIBlob(resource.Resource):
         _, __, fullpath = parse_path(request.path)
         log.msg("Getting blob (non-cdmi) %s" % fullpath)        
         # perform operation on ADT
-        status, content_object, _, mimetype, __, size = blob.read(self.avatar, fullpath)        
+        status, content_object, _, mimetype, __, size = blob.read(self.avatar, fullpath)
         # construct response
         request.setResponseCode(status)
-        if status is not NOT_FOUND:
+        if status is OK:
             # XXX: hack - somewhy the response just hangs if to simply path mimetype as a content_object type
             actual_type = 'text/plain' if mimetype == 'text/plain' else str(mimetype) # convert to str to avoid UnicodeDecodeError in twisted
             request.setHeader('Content-Type', actual_type)          
