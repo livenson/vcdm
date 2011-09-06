@@ -11,8 +11,28 @@ def authorize(avatar, resource, action, acls=None):
 
 ### Implementations ###
 def dummy(avatar, resource, action, acls):
-    log.msg("Authorizing %s to perform %s on %s. ACLs: %s" %(avatar, action, resource, acls))
+    log.msg("Dummy authorization of %s to perform %s on %s. ACLs: %s" %(avatar, action, resource, acls))
     return True
 
+def strict(avatar, resource, action, acls):
+    """Only allows operation if a user has the corresponding bit set"""
+    log.msg("Strict authorization of %s to perform %s on %s. ACLs: %s" %(avatar, action, resource, acls))
+    if resource == '/':
+        return True # allow everything for the root folder
+    if acls is None:
+        return False # disallowed by default
+    for prefix in ['read','write','delete']:
+        if action.startswith(prefix):
+            user_acls = acls.get(avatar)
+            if user_acls is None:
+                return False # disallowed by default
+            return rights[prefix] in user_acls
+    return False
+
 # map of all possible mechanisms
-mechanisms = {'dummy': dummy}
+mechanisms = {'dummy': dummy,
+              'strict': strict}
+
+rights = {'read': 'r',
+          'write' : 'w',
+          'delete': 'd'}

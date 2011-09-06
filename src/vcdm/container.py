@@ -2,7 +2,7 @@ import datetime
 import vcdm
 from twisted.python import log
 from vcdm.server.cdmi.generic import get_parent
-from httplib import NOT_FOUND, OK, CREATED, NO_CONTENT, CONFLICT, FORBIDDEN
+from httplib import NOT_FOUND, OK, CREATED, NO_CONTENT, CONFLICT, FORBIDDEN, UNAUTHORIZED
 from vcdm.authz import authorize
 
 def read(avatar, fullpath): 
@@ -16,7 +16,7 @@ def read(avatar, fullpath):
         acls = vals['metadata'].get('cdmi_acl', None)    
         if not authorize(avatar, fullpath, 'read_container', acls):
             log.err("Authorization failed.") 
-            return (FORBIDDEN, None, None, None)
+            return (UNAUTHORIZED, None, None, None)
         return (OK, uid, vals['children'].values(), vals['metadata'])
 
 def create_or_update(avatar, name, container_path, fullpath, metadata = None):
@@ -24,7 +24,7 @@ def create_or_update(avatar, name, container_path, fullpath, metadata = None):
     log.msg("Container create/update: %s" % fullpath)
     
     parent_container = get_parent(fullpath)            
-    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'container', fields = ['children', 'parent_container'])
+    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'container', fields = ['children', 'parent_container', 'owner'])
     # XXX: duplication of checks with blob (vcdm). Refactor.
     if uid is not None and parent_container != vals['parent_container']:
         log.err("Inconsistent information about the object! path: %s, parent_container in db: %s" % (fullpath, vals['parent_container']))
@@ -35,23 +35,30 @@ def create_or_update(avatar, name, container_path, fullpath, metadata = None):
         log.err("Writing to a container is not allowed. Container path: %s" % '/'.join(container_path))
         return (FORBIDDEN, uid, [])
     
-    # authorize call, take parent permissions     
+    # authorize call, take parent permissions
     _, cvals = vcdm.env['ds'].find_by_path(parent_container, object_type = 'container', fields = ['metadata'])
     acl = cvals['metadata'].get('cdmi_acl', None)
     if not authorize(avatar, parent_container, "write_container", acl):
         log.err("Authorization failed.")
-        return (FORBIDDEN, uid)
+        return (UNAUTHORIZED, uid, [])
     
     if uid is None:
-        # if uid is None, it shall create a new entry, update otherwise        
+        # if uid is None, it shall create a new entry, update otherwise
+        if avatar is not None:
+            container_acl = metadata.get('cdmi_acl')
+            if container_acl is None:
+                metadata['cdmi_acl'] = {avatar: 'rwd'}
+            else:
+                metadata['cdmi_acl'].update({avatar:'rwd'})
         uid = vcdm.env['ds'].write({
-                        'object': 'container',         
-                        'metadata': metadata,   
+                        'object': 'container',
+                        'metadata': metadata,
+                        'owner': avatar,
                         'fullpath': fullpath,
                         'name': name,
                         'parent_container': parent_container,
                         'children': {},
-                        'ctime': str(datetime.datetime.now())},                        
+                        'ctime': str(datetime.datetime.now())},
                         uid)
         # update the parent container as well, unless it's a top-level container
         if fullpath != '/':
@@ -59,6 +66,9 @@ def create_or_update(avatar, name, container_path, fullpath, metadata = None):
         return (CREATED, uid, [])
     else:
         # update container
+        # forbid rewrites of containers by other users
+        if vals.get('owner') is not None and vals.get('owner') != avatar:
+            return (UNAUTHORIZED, uid, [])
         uid = vcdm.env['ds'].write({
                         'metadata': metadata,
                         'mtime': str(datetime.datetime.now())},
@@ -76,7 +86,7 @@ def delete(avatar, fullpath):
         acls = vals['metadata'].get('cdmi_acl', None)    
         if not authorize(avatar, fullpath, "delete_container", acls):
             log.err("Authorization failed.")        
-            return FORBIDDEN
+            return UNAUTHORIZED
         # fail if we are deleting a non-empty container
         if len(vals['children']) != 0:            
             log.err("Cannot delete non-empty container %s. Existing children: %s." % (fullpath, vals['children']))

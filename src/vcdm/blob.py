@@ -6,7 +6,7 @@ from twisted.python import log
 from vcdm.container import _append_child, _remove_child
 from vcdm.server.cdmi.generic import get_parent
 
-from httplib import NOT_FOUND, CREATED, OK, CONFLICT, NO_CONTENT, FORBIDDEN
+from httplib import NOT_FOUND, CREATED, OK, CONFLICT, NO_CONTENT, FORBIDDEN, UNAUTHORIZED
 from vcdm.authz import authorize
 
 
@@ -29,9 +29,9 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
     # authorize call, take parent permissions     
     _, cvals = vcdm.env['ds'].find_by_path(parent_container, object_type = 'container', fields = ['metadata'])
     acl = cvals['metadata'].get('cdmi_acl', None)
-    if not authorize(avatar, parent_container, "write_blob", acl):
+    if not authorize(avatar, parent_container,"write_blob", acl):
         log.err("Authorization failed.")
-        return (FORBIDDEN, uid)
+        return (UNAUTHORIZED, uid)
     
     # ok, time for action
     # pick a blob back-end - if request_backend is specified in the metadata and 
@@ -40,8 +40,16 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
     
     # if uid is None, create a new entry, update otherwise
     if uid is None:
+        # add full rights to the creator
+        if avatar is not None:
+            blob_acl = metadata.get('cdmi_acl')
+            if blob_acl is None:
+                metadata['cdmi_acl'] = {avatar: 'rwd'}
+            else:
+                metadata['cdmi_acl'].update({avatar:'rwd'})
         uid = vcdm.env['ds'].write({
                         'object': 'blob',
+                        'owner': avatar,
                         'fullpath': fullpath,
                         'mimetype': mimetype,
                         'metadata': metadata, 
@@ -85,7 +93,7 @@ def read(avatar, fullpath):
         acls = vals['metadata'].get('cdmi_acl', None)    
         if not authorize(avatar, fullpath, "read_blob", acls):
             log.err("Authorization failed.")        
-            return (FORBIDDEN, None, None, None, None, None)
+            return (UNAUTHORIZED, None, None, None, None, None)
         # update access time
         uid = vcdm.env['ds'].write({                        
                         'atime': str(datetime.datetime.now()),
@@ -105,7 +113,7 @@ def delete(avatar, fullpath):
             acls = vals['metadata'].get('cdmi_acl', None)    
             if not authorize(avatar, fullpath, "delete_blob", acls):
                 log.err("Authorization failed.")
-                return FORBIDDEN
+                return UNAUTHORIZED
             vcdm.env['blob'].delete(uid)
             vcdm.env['ds'].delete(uid)
             # find parent container and update its children range

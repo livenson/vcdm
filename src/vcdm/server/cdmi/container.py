@@ -93,29 +93,29 @@ class NonCDMIContainer(resource.Resource):
         # contact the backend
         status, _, children, metadata = container.read(self.avatarID, fullpath)
         
-        # create a header                
+        # create a header
         request.setResponseCode(status)
         request.setHeader('Content-Type', 'application/json')
         
-        # and a body     
-        # this is not a completely correct implementation of a non-cdmi reply. 
-        # TODO: change to more specific fields once fields separation is implemented  
+        # and a body
+        # this is not a completely correct implementation of a non-cdmi reply.
+        # TODO: change to more specific fields once fields separation is implemented
         response_body = {
                          'metadata': metadata,
-                         'children': children,   
-                         }           
+                         'children': children,
+                         }
         
         return json.dumps(response_body)
     
-    def render_PUT(self, request):      
-        name, container_path, fullpath = parse_path(request.path)             
-        status, _, __ = container.create_or_update(self.avatarID, name, container_path, fullpath, {})        
-        request.setResponseCode(status)        
+    def render_PUT(self, request):
+        name, container_path, fullpath = parse_path(request.path)
+        status, _, __ = container.create_or_update(self.avatarID, name, container_path, fullpath, {})
+        request.setResponseCode(status)
         return ""
     
     def render_DELETE(self, request):
         _, __, fullpath = parse_path(request.path)
         status = container.delete(self.avatarID, fullpath)
         request.setResponseCode(status)
-        request.setHeader('Server', CDMI_SERVER_HEADER)   
+        request.setHeader('Server', CDMI_SERVER_HEADER)
         return ""

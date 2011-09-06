@@ -121,6 +121,7 @@ class NonCDMIBlob(resource.Resource):
         self.avatar = avatar
 
     def render_GET(self, request):
+        """GET returns contents of a blob"""
         # process path and extract potential containers/fnm
         _, __, fullpath = parse_path(request.path)
         log.msg("Getting blob (non-cdmi) %s" % fullpath)        
@@ -147,7 +148,11 @@ class NonCDMIBlob(resource.Resource):
         """PUT corresponds to a create/update operation on a blob"""
         # process path and extract potential containers/fnm
         name, container_path, fullpath = parse_path(request.path)
-        length = int(request.getHeader('Content-Length'))    
+        l = request.getHeader('Content-Length')
+        if l is None:
+            request.setResponseCode(411)
+            return ''
+        length = int(request.getHeader('Content-Length'))
         content = (request.content, length)
         # default values of mimetype and metadata        
         mimetype = request.getHeader('Content-Type') \

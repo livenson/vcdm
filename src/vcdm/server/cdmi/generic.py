@@ -10,7 +10,7 @@ def set_common_headers(request):
 def parse_path(path):
     """Parse request path, return (name, [container_path], fullpath) tuple. """
     fullpath = path
-    # remove duplicate consecutive slashes: e.g. /// -> /    
+    # remove duplicate consecutive slashes: e.g. /// -> /
     filtered_path = [k for k, _ in groupby(fullpath.split('/')) if k != '']
     filtered_path.insert(0, '/') # add root container 
     
@@ -38,4 +38,4 @@ def get_common_body(request, uid, fullpath):
             'objectURI': fullpath,                          
             }    
     return body
-    
+

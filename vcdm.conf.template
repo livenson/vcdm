@@ -10,8 +10,7 @@ blob.backends = home_1, office_1
 # Choose default blob backend to use if a user did not specify her desire. 
 blob.default.backend = home_1
 
-# specify supported objects. By default, blob is always supported. 
-# Support for MQ can be turned on with this option.
+# (EXPERIMENTAL) Add support for message queues
 support_mq = no
 
 # (Optional - only if support_mq is set to 'yes'). 
@@ -34,7 +33,7 @@ server.use_debug_port = yes
 server.debug_port = 2364
 
 # Authorization mechanism
-server.authz = dummy
+server.authz = strict
 
 
 #############################################################
