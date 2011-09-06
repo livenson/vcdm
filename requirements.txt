@@ -2,4 +2,3 @@ zope.interface
 Twisted
 CouchDB
 pyOpenSSL
-ZODB3
