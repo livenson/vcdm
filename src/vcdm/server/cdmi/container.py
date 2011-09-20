@@ -22,26 +22,27 @@ class Container(resource.Resource):
 
     def render_GET(self, request):
         """GET operation corresponds to reading container's data"""
-        # parse the request        
+        # parse the request
         _, __, fullpath = parse_path(request.path)
-        
+
         # contact the backend
         status, uid, children, metadata = container.read(self.avatarID, fullpath)
-        
-        # create a header                
+
+        # create a header
         request.setResponseCode(status)
         request.setHeader('Content-Type', CDMI_CONTAINER)
         set_common_headers(request)
-        
-        # and a body       
+
+        # and a body
         response_body = {
                          'completionStatus': 'Complete', 
                          'metadata': metadata,
                          'children': children,
+                         'childrenrange': '' if len(children) == 0 else '0-%s' % len(children),
                          'capabilitiesURI': '/cdmi_capabilities/container'   
-                         }   
+                         }
         response_body.update(get_common_body(request, uid, fullpath))
-        
+
         return json.dumps(response_body)
     
     def render_PUT(self, request):        

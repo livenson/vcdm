@@ -35,7 +35,8 @@ def get_common_body(request, uid, fullpath):
             'objectID': uid,
             'domainURI': server,
             'parentURI': get_parent(fullpath),
-            'objectURI': fullpath,                          
-            }    
+            'objectURI': fullpath,
+            'objectName': fullpath.rsplit('/')[-1]
+            }
     return body
 
