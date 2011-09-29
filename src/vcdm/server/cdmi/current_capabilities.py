@@ -1,58 +1,58 @@
 system = {
         
-        "domains": False,
-        "notification": False,
-        "query": False,
-        "queues": False,
+        "cdmi_domains": False,
+        "cdmi_notification": False,
+        "cdmi_query": False,
+        "cdmi_queues": False,
             
         # export protocols        
-        "export_webdav": False,
-        "export_cifs": False,
+        "cdmi_export_webdav": False,
+        "cdmi_export_cifs": False,
 
-        "security_https_transport": True,        
+        "cdmi_security_https_transport": True,        
 
         
         # Storage System Metadata Capabilities
-        "size": True,
-        "ctime": True,
-        "atime": False,
-        "mtime": False,
-        "hash": False,
-        "acl": False,
+        "cdmi_size": True,
+        "cdmi_ctime": True,
+        "cdmi_atime": False,
+        "cdmi_mtime": False,
+        "cdmi_hash": False,
+        "cdmi_acl": False,
     }
 
 dataobject = {
 
-        "read_value": True,
-        "read_value_range": False,
-        "read_metadata": True,
-        "modify_value": True,
-        "modify_value_range": False,
-        "modify_metadata": True,
-        "delete_dataobject": True,
-        "serialize_dataobject": False,
-        "deserialize_dataobject": False,
+        "cdmi_read_value": True,
+        "cdmi_read_value_range": False,
+        "cdmi_read_metadata": True,
+        "cdmi_modify_value": True,
+        "cdmi_modify_value_range": False,
+        "cdmi_modify_metadata": True,
+        "cdmi_delete_dataobject": True,
+        "cdmi_serialize_dataobject": False,
+        "cdmi_deserialize_dataobject": False,
     }
 
 mq = {
 
-        "read_value": True,        
-        "read_metadata": True,
-        "modify_value": True,
-        "modify_metadata": True,
-        "delete_queue": True,
+        "cdmi_read_value": True,        
+        "cdmi_read_metadata": True,
+        "cdmi_modify_value": True,
+        "cdmi_modify_metadata": True,
+        "cdmi_delete_queue": True,
     }
 
 container = {
-        "list_children": True,
-        "list_children_range": False,
-        "read_metadata": True,
-        "modify_metadata": True,
-        "snapshot": False,
-        "create_dataobject": True,
-        "post_dataobject": False, 
-        "create_container": True,
-        "delete_container": True,
-        "move_container": False,
-        "copy_container": False,
+        "cdmi_list_children": True,
+        "cdmi_list_children_range": False,
+        "cdmi_read_metadata": True,
+        "cdmi_modify_metadata": True,
+        "cdmi_snapshot": False,
+        "cdmi_create_dataobject": True,
+        "cdmi_post_dataobject": False, 
+        "cdmi_create_container": True,
+        "cdmi_delete_container": True,
+        "cdmi_move_container": False,
+        "cdmi_copy_container": False,
     }

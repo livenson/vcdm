@@ -1,24 +1,25 @@
 from twisted.web import resource
-from vcdm.server.cdmi.cdmi_content_types import CDMI_CAPABILITY
-from vcdm.server.cdmi.root import CDMI_VERSION
-from vcdm.server.cdmi.generic import parse_path, get_common_body
-from vcdm.server.cdmi import current_capabilities
 from httplib import OK
-
 
 try:
     import json
 except ImportError:
     import simplejson as json
 
+from vcdm.server.cdmi.cdmi_content_types import CDMI_CAPABILITY
+from vcdm.server.cdmi.root import CDMI_VERSION
+from vcdm.server.cdmi.generic import parse_path, get_common_body
+from vcdm.server.cdmi import current_capabilities
+from vcdm import c
+
 capability_objects = {'system': current_capabilities.system,
                       'dataobject': current_capabilities.dataobject,
                       'mq': current_capabilities.mq,
                       'container': current_capabilities.container}
 
+
 class Capability(resource.Resource):
     isLeaf = True
-    allowedMethods = ('GET')
 
     def __init__(self, avatar = None):
         resource.Resource.__init__(self)
