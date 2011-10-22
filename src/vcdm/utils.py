@@ -22,3 +22,4 @@ def print_memory_stats(location_tag = "undef"):
         print "MEM_STAT (%s) rm=%s, vm=%s" % (location_tag, rm, vm)
     except ImportError:
         print "psutil module not available"
+

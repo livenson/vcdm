@@ -34,10 +34,10 @@ class Blob(resource.Resource):
         """GET operation corresponds to reading of the blob object"""
         # process path and extract potential containers/fnm
         _, __, fullpath = parse_path(request.path)
-        
+ 
         # perform operation on ADT
         status, content_object, uid, mimetype, metadata, _ = blob.read(self.avatar,fullpath)
-        
+
         # construct response
         request.setResponseCode(status)
         request.setHeader('Content-Type', CDMI_OBJECT)
@@ -57,12 +57,12 @@ class Blob(resource.Resource):
             return json.dumps(response_body)
         else:
             return ''
-        
+
     def render_PUT(self, request):
         """PUT corresponds to a create/update operation on a blob"""
         # process path and extract potential containers/fnm
         name, container_path, fullpath = parse_path(request.path)
-        
+
         length = int(request.getHeader('Content-Length'))
         request.content.seek(0, 0)
         # process json encoded request body
@@ -70,7 +70,7 @@ class Blob(resource.Resource):
         # default values of mimetype and metadata
         mimetype = body.get('mimetype', 'text/plain') 
         metadata = body.get('metadata', {})
-        
+
         content = (StringIO(body['value']), sys.getsizeof(body['value']))
         status, uid = blob.write(self.avatar, name, container_path, fullpath, mimetype, metadata, content)
         request.setResponseCode(status)
@@ -83,12 +83,12 @@ class Blob(resource.Resource):
                              'metadata': metadata,
                              }
             # add common elements
-            response_body.update(get_common_body(request, uid, fullpath))              
+            response_body.update(get_common_body(request, uid, fullpath))
             return json.dumps(response_body)
         else:
             # error state
             return ''
-        
+
     def render_DELETE(self, request):
         """DELETE operations corresponds to the blob deletion operation"""
         _, __, fullpath = parse_path(request.path)
@@ -108,14 +108,14 @@ class Blob(resource.Resource):
 class NonCDMIBlob(resource.Resource):
     isLeaf = True # data items cannot be nested
     allowedMethods = ('PUT','GET','DELETE', 'HEAD') # commands we support for the data items
-    
+
     def makeProducer(self, request, content_object):       
         request.setResponseCode(OK)
         # TODO: add full support for multi-part download and upload
         # TODO: twisted.web.static.File is a nice example for streaming
         # TODO: For non-local backends twisted.web.Proxy approach should be reused.
-        return NoRangeStaticProducer(request, content_object)        
-    
+        return NoRangeStaticProducer(request, content_object)
+
     def __init__(self, avatar = None):        
         resource.Resource.__init__(self)
         self.avatar = avatar
@@ -132,18 +132,18 @@ class NonCDMIBlob(resource.Resource):
         if status is OK:
             # XXX: hack - somewhy the response just hangs if to simply path mimetype as a content_object type
             actual_type = 'text/plain' if mimetype == 'text/plain' else str(mimetype) # convert to str to avoid UnicodeDecodeError in twisted
-            request.setHeader('Content-Type', actual_type)          
+            request.setHeader('Content-Type', actual_type)
             request.setHeader('Content-Length', str(size))
             producer = self.makeProducer(request, content_object)
             producer.start()
             return NOT_DONE_YET
         return ''
-        
+
     def render_HEAD(self, request):
         _, __, fullpath = parse_path(request.path)
         request.setResponseCode(blob.exists(self.avatar, fullpath))
         return ''
-        
+
     def render_PUT(self, request):
         """PUT corresponds to a create/update operation on a blob"""
         # process path and extract potential containers/fnm
@@ -161,7 +161,7 @@ class NonCDMIBlob(resource.Resource):
         status, _ = blob.write(self.avatar, name, container_path, fullpath, mimetype, {}, content)        
         request.setResponseCode(status)
         return ''
-    
+
     def render_DELETE(self, request):
         """DELETE operations corresponds to the blob deletion operation"""
         _, __, fullpath = parse_path(request.path)
@@ -169,3 +169,4 @@ class NonCDMIBlob(resource.Resource):
         request.setResponseCode(status)
         request.setHeader('Server', CDMI_SERVER_HEADER)
         return ''
+
