@@ -33,6 +33,7 @@ server.use_debug_port = yes
 server.debug_port = 2364
 
 # Authorization mechanism
+# options: dummy, strict
 server.authz = strict
 
 
