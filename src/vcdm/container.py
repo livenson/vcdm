@@ -37,19 +37,20 @@ def create_or_update(avatar, name, container_path, fullpath, metadata = None):
     
     # authorize call, take parent permissions
     _, cvals = vcdm.env['ds'].find_by_path(parent_container, object_type = 'container', fields = ['metadata'])
-    acl = None if 'metadata' not in cvals else cvals['metadata'].get('cdmi_acl', None)
+    acl = cvals['metadata'].get('cdmi_acl', None)
     if not authorize(avatar, parent_container, "write_container", acl):
         log.err("Authorization failed.")
         return (UNAUTHORIZED, uid, [])
     
     if uid is None:
         # if uid is None, it shall create a new entry, update otherwise
-        if avatar is not None:
-            container_acl = metadata.get('cdmi_acl')
-            if container_acl is None:
-                metadata['cdmi_acl'] = {avatar: 'rwd'}
-            else:
-                metadata['cdmi_acl'].update({avatar:'rwd'})
+        if avatar is None:
+            avatar = 'Anonymous'
+        container_acl = metadata.get('cdmi_acl')
+        if container_acl is None:
+            metadata['cdmi_acl'] = {avatar: 'rwd'}
+        else:
+            metadata['cdmi_acl'].update({avatar:'rwd'})
         uid = vcdm.env['ds'].write({
                         'object': 'container',
                         'metadata': metadata,

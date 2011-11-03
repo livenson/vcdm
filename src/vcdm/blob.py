@@ -28,7 +28,7 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
     
     # authorize call, take parent permissions     
     _, cvals = vcdm.env['ds'].find_by_path(parent_container, object_type = 'container', fields = ['metadata'])
-    acl = None if 'metadata' not in cvals else cvals['metadata'].get('cdmi_acl', None)
+    acl = cvals['metadata'].get('cdmi_acl', None)
     if not authorize(avatar, parent_container,"write_blob", acl):
         log.err("Authorization failed.")
         return (UNAUTHORIZED, uid)
@@ -41,12 +41,13 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
     # if uid is None, create a new entry, update otherwise
     if uid is None:
         # add full rights to the creator
-        if avatar is not None:
-            blob_acl = metadata.get('cdmi_acl')
-            if blob_acl is None:
-                metadata['cdmi_acl'] = {avatar: 'rwd'}
-            else:
-                metadata['cdmi_acl'].update({avatar:'rwd'})
+        if avatar is None:
+            avatar = 'Anonymous'
+        blob_acl = metadata.get('cdmi_acl')
+        if blob_acl is None:
+            metadata['cdmi_acl'] = {avatar: 'rwd'}
+        else:
+            metadata['cdmi_acl'].update({avatar:'rwd'})
         uid = vcdm.env['ds'].write({
                         'object': 'blob',
                         'owner': avatar,
