@@ -37,7 +37,7 @@ def create_or_update(avatar, name, container_path, fullpath, metadata = None):
     
     # authorize call, take parent permissions
     _, cvals = vcdm.env['ds'].find_by_path(parent_container, object_type = 'container', fields = ['metadata'])
-    acl = cvals['metadata'].get('cdmi_acl', None)
+    acl = cvals['metadata'].get('cdmi_acl', {})
     if not authorize(avatar, parent_container, "write_container", acl):
         log.err("Authorization failed.")
         return (UNAUTHORIZED, uid, [])

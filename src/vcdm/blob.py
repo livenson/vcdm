@@ -28,7 +28,7 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
     
     # authorize call, take parent permissions     
     _, cvals = vcdm.env['ds'].find_by_path(parent_container, object_type = 'container', fields = ['metadata'])
-    acl = cvals['metadata'].get('cdmi_acl', None)
+    acl = cvals['metadata'].get('cdmi_acl', {})
     if not authorize(avatar, parent_container,"write_blob", acl):
         log.err("Authorization failed.")
         return (UNAUTHORIZED, uid)
