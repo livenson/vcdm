@@ -38,16 +38,16 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
     # available in the system - use it. Else - resolve to default one.    
     blob_backend = vcdm.env['blobs'].get(metadata.get('desired_backend', None), vcdm.env['blob'])
     
+    # add default acls
+    if avatar is None:
+            avatar = 'Anonymous'
+    blob_acl = metadata.get('cdmi_acl')
+    if blob_acl is None:
+        metadata['cdmi_acl'] = acl # append parent ACLs for a new folder
+    metadata['cdmi_acl'].update({avatar:'rwd'}) # and creator's ACLs just in case
+    
     # if uid is None, create a new entry, update otherwise
     if uid is None:
-        # add full rights to the creator
-        if avatar is None:
-            avatar = 'Anonymous'
-        blob_acl = metadata.get('cdmi_acl')
-        if blob_acl is None:
-            metadata['cdmi_acl'] = {avatar: 'rwd'}
-        else:
-            metadata['cdmi_acl'].update({avatar:'rwd'})
         uid = vcdm.env['ds'].write({
                         'object': 'blob',
                         'owner': avatar,

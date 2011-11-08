@@ -41,16 +41,17 @@ def create_or_update(avatar, name, container_path, fullpath, metadata = None):
     if not authorize(avatar, parent_container, "write_container", acl):
         log.err("Authorization failed.")
         return (UNAUTHORIZED, uid, [])
-    
-    if uid is None:
-        # if uid is None, it shall create a new entry, update otherwise
-        if avatar is None:
+           
+    # add default acls
+    if avatar is None:
             avatar = 'Anonymous'
-        container_acl = metadata.get('cdmi_acl')
-        if container_acl is None:
-            metadata['cdmi_acl'] = {avatar: 'rwd'}
-        else:
-            metadata['cdmi_acl'].update({avatar:'rwd'})
+    container_acl = metadata.get('cdmi_acl')
+    if container_acl is None:
+        metadata['cdmi_acl'] = acl # append parent ACLs for a new folder
+    metadata['cdmi_acl'].update({avatar:'rwd'}) # and creator's ACLs just in case
+    
+    # if uid is None, it shall create a new entry, update otherwise
+    if uid is None:
         uid = vcdm.env['ds'].write({
                         'object': 'container',
                         'metadata': metadata,
