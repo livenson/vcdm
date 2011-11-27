@@ -34,3 +34,12 @@ class POSIXBlob(IBlob):
         """Delete a specified file"""
         os.remove(self.location + os.sep + fnm)
         
+
+    def move_to_tre_server(self, fnm):
+        source = os.path.join(c(self.backend_name, 'blob.datadir'), fnm)
+        target = os.path.join(c('general', 'tre_data_folder'), fnm)
+        try:
+            os.symlink(os.path.abspath(source), os.path.abspath(target))
+        except OSError, ex:
+            if ex.errno == 17:
+                pass

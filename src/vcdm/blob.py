@@ -6,18 +6,21 @@ from twisted.python import log
 from vcdm.container import _append_child, _remove_child
 from vcdm.server.cdmi.generic import get_parent
 
-from httplib import NOT_FOUND, CREATED, OK, CONFLICT, NO_CONTENT, FORBIDDEN, UNAUTHORIZED
+from httplib import NOT_FOUND, CREATED, OK, CONFLICT, NO_CONTENT, FORBIDDEN, UNAUTHORIZED,\
+    NOT_IMPLEMENTED, FOUND
 from vcdm.authz import authorize
 
 
 def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
-    """ Write or update content of a blob. """   
+    """ Write or update content of a blob. """
     parent_container = get_parent(fullpath)
     
-    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', fields = ['parent_container'])    
+    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', 
+                                            fields = ['parent_container'])
     # assert that we have a consistency in case of an existig blob
     if uid is not None and parent_container != vals['parent_container']:
-        log.err("Inconsistent information about the object! path: %s, parent_container in db: %s" % (fullpath, vals['parent_container']))
+        log.err("Inconsistent information about the object! path: %s, parent_container in db: %s" % 
+                                                    (fullpath, vals['parent_container']))
         return (FORBIDDEN, uid)
 
     # assert we can write to the defined path
@@ -61,14 +64,14 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
                         'atime': str(datetime.datetime.now()),
                         'size': int(content[1]), # length
                         'backend_type': blob_backend.backend_type,
-                        'backend_name': blob_backend.backend_name},                                    
+                        'backend_name': blob_backend.backend_name},
                         uid)
         # update the parent container as well
         _append_child(parent_container, uid, name)
         blob_backend.create(uid, content)
         return (CREATED, uid)
     else:
-        uid = vcdm.env['ds'].write({                        
+        uid = vcdm.env['ds'].write({
                         'metadata': metadata,
                         'mimetype': mimetype,
                         'mtime': str(datetime.datetime.now()),
@@ -80,32 +83,41 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
         blob_backend.update(uid, content)
         return (OK, uid)
 
-def read(avatar, fullpath):
+def read(avatar, fullpath, tre_request=False):
     """ Return contents of a blob.
     Returns:
     (HTTP_STATUS_CODE, content, UID, mimetype, metadata, size) 
     """
-    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', fields = ['metadata', 'mimetype', 'ctime', 'size'])
+    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', 
+                                            fields = ['metadata', 'mimetype', 'ctime', 'size'])
     log.msg("Reading path %s, uid: %s" % (fullpath, uid))
     if uid is None:
         return (NOT_FOUND, None, None, None, None, None)
     else:        
-        # authorize call    
-        acls = vals['metadata'].get('cdmi_acl', None)    
+        # authorize call
+        acls = vals['metadata'].get('cdmi_acl')
         if not authorize(avatar, fullpath, "read_blob", acls):
-            log.err("Authorization failed.")        
+            log.err("Authorization failed.")
             return (UNAUTHORIZED, None, None, None, None, None)
         # update access time
-        uid = vcdm.env['ds'].write({                        
+        vcdm.env['ds'].write({
                         'atime': str(datetime.datetime.now()),
                         },
-                        uid)                
+                        uid)
+        # TRE-request? 
+        if tre_request:
+            if not vcdm.env['tre_enabled']:
+                return (NOT_IMPLEMENTED, None, None, None, None, None)
+            # XXX only local blob backend supports that at the moment
+            vcdm.env['blob'].move_to_tre_server(uid)
+            return (FOUND, None, uid, None, None, None)
         return (OK, vcdm.env['blob'].read(uid), uid, vals['mimetype'], vals['metadata'], vals['size'])
 
 def delete(avatar, fullpath):
     """ Delete a blob. """
     log.msg("Deleting %s" % fullpath)
-    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', fields = ['parent_container', 'metadata'])
+    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', 
+                                            fields = ['parent_container', 'metadata'])
     if uid is None:
         return NOT_FOUND
     else:
@@ -123,7 +135,7 @@ def delete(avatar, fullpath):
         except:
             #TODO: - how do we handle failed delete?     
             return CONFLICT
-        
+
 def exists(avatar, fullpath):
     """ Check for existance of a file. """
     log.msg("Checking existance %s" % fullpath)
@@ -132,12 +144,4 @@ def exists(avatar, fullpath):
         return NOT_FOUND
     else:
         return OK
-    
-def query_blob_metadata(conditions):
-    """ Search for blobs that match passed conditions. Return a list of fullpaths. """
-    # XXX
-    for c in conditions:
-        pass
-    uid, vals = vcdm.env['ds'].find_by_conditions(conditions, object_type = 'blob', fields = ['fullpath'])
-    
-    
+

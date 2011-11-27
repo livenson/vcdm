@@ -36,6 +36,11 @@ server.debug_port = 2364
 # options: dummy, strict
 server.authz = strict
 
+# Traffic Redundancy Elimination (TRE) support (EXPERIMENTAL)
+tre_enabled = no
+tre_server = localhost:5000
+tre_data_folder = /path/to/tredata
+
 
 #############################################################
 ###                 BACKEND CONFIGURATION                 ### 

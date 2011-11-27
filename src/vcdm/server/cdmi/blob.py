@@ -6,12 +6,13 @@ from twisted.web import resource
 from twisted.python import log
 
 from vcdm import blob
+from vcdm import c
 from vcdm.server.cdmi.cdmi_content_types import CDMI_OBJECT
 
 from vcdm.server.cdmi.generic import set_common_headers, parse_path,\
     get_common_body
 from vcdm.server.cdmi.root import CDMI_SERVER_HEADER
-from httplib import NOT_FOUND, OK, CREATED
+from httplib import OK, CREATED, FOUND
 from twisted.web.server import NOT_DONE_YET
 from twisted.web.static import NoRangeStaticProducer
 from StringIO import StringIO
@@ -34,13 +35,19 @@ class Blob(resource.Resource):
         """GET operation corresponds to reading of the blob object"""
         # process path and extract potential containers/fnm
         _, __, fullpath = parse_path(request.path)
- 
+        tre_header = request.getHeader('tre-enabled') 
+        tre_request = tre_header is not None and (tre_header == 'true' or tre_header =='True')
+        log.msg("Request for TRE-enabled download received.")
         # perform operation on ADT
-        status, content_object, uid, mimetype, metadata, _ = blob.read(self.avatar,fullpath)
-
+        status, content_object, uid, mimetype, metadata, _ = blob.read(self.avatar, 
+                                                                       fullpath, tre_request)
         # construct response
         request.setResponseCode(status)
+        
         request.setHeader('Content-Type', CDMI_OBJECT)
+        if tre_request and status == FOUND:
+            request.setHeader('Location', "/".join([c('general', 'tre_server'), uid]))
+
         set_common_headers(request)
         if status == OK:
             # for content we want to read in the full object into memory
@@ -52,7 +59,7 @@ class Blob(resource.Resource):
                              'metadata': metadata,
                              'value': content, 
                              'capabilitiesURI': '/cdmi_capabilities/dataobject'
-                             }          
+                             }
             response_body.update(get_common_body(request, uid, fullpath))
             return json.dumps(response_body)
         else:
@@ -72,7 +79,8 @@ class Blob(resource.Resource):
         metadata = body.get('metadata', {})
 
         content = (StringIO(body['value']), sys.getsizeof(body['value']))
-        status, uid = blob.write(self.avatar, name, container_path, fullpath, mimetype, metadata, content)
+        status, uid = blob.write(self.avatar, name, container_path, fullpath, 
+                                 mimetype, metadata, content)
         request.setResponseCode(status)
         request.setHeader('Content-Type', CDMI_OBJECT)
         set_common_headers(request)
@@ -109,14 +117,14 @@ class NonCDMIBlob(resource.Resource):
     isLeaf = True # data items cannot be nested
     allowedMethods = ('PUT','GET','DELETE', 'HEAD') # commands we support for the data items
 
-    def makeProducer(self, request, content_object):       
+    def makeProducer(self, request, content_object):
         request.setResponseCode(OK)
         # TODO: add full support for multi-part download and upload
         # TODO: twisted.web.static.File is a nice example for streaming
         # TODO: For non-local backends twisted.web.Proxy approach should be reused.
         return NoRangeStaticProducer(request, content_object)
 
-    def __init__(self, avatar = None):        
+    def __init__(self, avatar = None):
         resource.Resource.__init__(self)
         self.avatar = avatar
 
@@ -124,14 +132,15 @@ class NonCDMIBlob(resource.Resource):
         """GET returns contents of a blob"""
         # process path and extract potential containers/fnm
         _, __, fullpath = parse_path(request.path)
-        log.msg("Getting blob (non-cdmi) %s" % fullpath)        
+        log.msg("Getting blob (non-cdmi) %s" % fullpath)
         # perform operation on ADT
         status, content_object, _, mimetype, __, size = blob.read(self.avatar, fullpath)
         # construct response
         request.setResponseCode(status)
         if status is OK:
-            # XXX: hack - somewhy the response just hangs if to simply path mimetype as a content_object type
-            actual_type = 'text/plain' if mimetype == 'text/plain' else str(mimetype) # convert to str to avoid UnicodeDecodeError in twisted
+            # XXX: hack - some-why the response just hangs if to simply path 
+            # mimetype as a content_object type
+            actual_type = 'text/plain' if mimetype == 'text/plain' else str(mimetype)
             request.setHeader('Content-Type', actual_type)
             request.setHeader('Content-Length', str(size))
             producer = self.makeProducer(request, content_object)
@@ -154,11 +163,11 @@ class NonCDMIBlob(resource.Resource):
             return ''
         length = int(request.getHeader('Content-Length'))
         content = (request.content, length)
-        # default values of mimetype and metadata        
+        # default values of mimetype and metadata
         mimetype = request.getHeader('Content-Type') \
                     if request.getHeader('Content-Type') is not None \
                     else 'text/plain'
-        status, _ = blob.write(self.avatar, name, container_path, fullpath, mimetype, {}, content)        
+        status, _ = blob.write(self.avatar, name, container_path, fullpath, mimetype, {}, content)
         request.setResponseCode(status)
         return ''
 

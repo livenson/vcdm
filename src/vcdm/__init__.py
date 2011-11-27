@@ -13,6 +13,7 @@ def c(group, field):
 
 
 # shared environment variables
+global env
 env = {'ds': None,
        'blob': None,
        'mq': None,
@@ -67,6 +68,4 @@ if c('general', 'ds.backend') == 'couchdb':
     from vcdm.backends.datastore.couchdb_store import CouchDBStore
     datastore_backends['couchdb'] = CouchDBStore  
 
-#if c('general', 'ds.backend') == 'azure':
-#    from vcdm.backends.datastore.azure_store import AzureStore
-#    datastore_backends['couchdb'] = AzureStore  
+env['tre_enabled'] = c('general', 'tre_enabled') == 'yes'
