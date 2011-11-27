@@ -15,7 +15,7 @@ cdmi_objects = {CDMI_QUEUE: queue.Queue,
 
 class RootCDMIResource(resource.Resource):
 
-    def __init__(self, avatarID = None):
+    def __init__(self, avatarID = 'Anonymous'):
         ## Twisted Resource is a not a new style class, so emulating a super-call
         resource.Resource.__init__(self)
         self.avatarID = avatarID
