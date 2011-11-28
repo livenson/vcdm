@@ -69,7 +69,7 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
         # update the parent container as well
         _append_child(parent_container, uid, name)
         blob_backend.create(uid, content)
-        log.msg(type='accounting', avatar=avatar, amount=int(content([1]), acc_type='blob_creation'))
+        log.msg(type='accounting', avatar=avatar, amount=int(content[1]), acc_type='blob_creation')
         return (CREATED, uid)
     else:
         uid = vcdm.env['ds'].write({
@@ -82,7 +82,7 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
                         'backend_name': blob_backend.backend_name}, 
                         uid)        
         blob_backend.update(uid, content)
-        log.msg(type='accounting', avatar=avatar, amount=int(content([1]), acc_type='blob_update'))
+        log.msg(type='accounting', avatar=avatar, amount=int(content[1]), acc_type='blob_update')
 
         return (OK, uid)
 
