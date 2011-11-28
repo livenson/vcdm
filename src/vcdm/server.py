@@ -10,6 +10,7 @@ import vcdm
 from vcdm import c
 from vcdm.server.cdmi.root import RootCDMIResource
 from vcdm.server.cdmi import current_capabilities
+from vcdm.utils import AccountingLogObserver
 
 class SimpleRealm(object):
     """
@@ -23,8 +24,11 @@ class SimpleRealm(object):
         raise NotImplementedError()
     
 def main():
-    log.startLogging(open('vcdm.log', 'a'), setStdout=False)
-    
+    # setup logging
+    log.startLogging(open(c('general', 'common_log'), 'a'), setStdout=False)
+    acclog = AccountingLogObserver(open(c('general', 'accounting_log'), 'a'))
+    log.addObserver(acclog.emit)
+
     # initialize backends
     vcdm.env['ds'] = vcdm.datastore_backends[c('general', 'ds.backend')]()
     
