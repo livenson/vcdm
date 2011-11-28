@@ -69,6 +69,7 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
         # update the parent container as well
         _append_child(parent_container, uid, name)
         blob_backend.create(uid, content)
+        log.msg(type='accounting', avatar=avatar, amount=int(content([1]), acc_type='blob_creation'))
         return (CREATED, uid)
     else:
         uid = vcdm.env['ds'].write({
@@ -81,6 +82,8 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
                         'backend_name': blob_backend.backend_name}, 
                         uid)        
         blob_backend.update(uid, content)
+        log.msg(type='accounting', avatar=avatar, amount=int(content([1]), acc_type='blob_update'))
+
         return (OK, uid)
 
 def read(avatar, fullpath, tre_request=False):
@@ -104,6 +107,7 @@ def read(avatar, fullpath, tre_request=False):
                         'atime': str(datetime.datetime.now()),
                         },
                         uid)
+        log.msg(type='accounting', avatar=avatar, amount=vals['size'], acc_type='blob_read')
         # TRE-request? 
         if tre_request:
             if not vcdm.env['tre_enabled']:
@@ -131,6 +135,7 @@ def delete(avatar, fullpath):
             vcdm.env['ds'].delete(uid)
             # find parent container and update its children range
             _remove_child(vals['parent_container'], uid)
+            log.msg(type='accounting', avatar=avatar, amount=1, acc_type='blob_delete')
             return NO_CONTENT
         except:
             #TODO: - how do we handle failed delete?     
@@ -140,6 +145,7 @@ def exists(avatar, fullpath):
     """ Check for existance of a file. """
     log.msg("Checking existance %s" % fullpath)
     uid, _ = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob')
+    log.msg(type='accounting', avatar=avatar, amount=1, acc_type='blob_exists')
     if uid is None:
         return NOT_FOUND
     else:

@@ -17,6 +17,7 @@ def read(avatar, fullpath):
         if not authorize(avatar, fullpath, 'read_container', acls):
             log.err("Authorization failed.") 
             return (UNAUTHORIZED, None, None, None)
+        log.msg(type='accounting', avatar=avatar, amount=1, acc_type='container_read')
         return (OK, uid, vals['children'].values(), vals['metadata'])
 
 def create_or_update(avatar, name, container_path, fullpath, metadata = None):
@@ -65,6 +66,7 @@ def create_or_update(avatar, name, container_path, fullpath, metadata = None):
         # update the parent container as well, unless it's a top-level container
         if fullpath != '/':
             _append_child(parent_container, uid, name + "/")
+        log.msg(type='accounting', avatar=avatar, amount=1, acc_type='container_create')
         return (CREATED, uid, [])
     else:
         # update container
@@ -74,7 +76,8 @@ def create_or_update(avatar, name, container_path, fullpath, metadata = None):
         uid = vcdm.env['ds'].write({
                         'metadata': metadata,
                         'mtime': str(datetime.datetime.now())},
-                        uid)        
+                        uid)
+        log.msg(type='accounting', avatar=avatar, amount=1, acc_type='container_update')
         return (OK, uid, vals['children'])
 
 def delete(avatar, fullpath):
@@ -98,6 +101,7 @@ def delete(avatar, fullpath):
         if fullpath != '/': 
             _remove_child(vals['parent_container'], uid)          
         ## XXX: delete all children?
+        log.msg(type='accounting', avatar=avatar, amount=1, acc_type='container_delete')
         return NO_CONTENT
 
 ####### Support functions dealing with container logic #########
