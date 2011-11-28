@@ -36,11 +36,9 @@ class AccountingLogObserver(FileLogObserver):
     def emit(self, eventDict):
         if eventDict.get('type') == 'accounting':
             timeStr = self.formatTime(eventDict['time'])
-    
             avatar = eventDict.get('avatar')
             amount = eventDict.get('amount')
-            acc_type = eventDict.get('type')
-    
-            util.untilConcludes(self.write, timeStr + " " + avatar + " " 
-                                            + acc_type +" " + amount)
+            acc_type = eventDict.get('acc_type')
+            msg = "%s %s %s %s" %(timeStr, avatar, acc_type, amount)
+            util.untilConcludes(self.write, msg)
             util.untilConcludes(self.flush)
