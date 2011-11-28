@@ -133,10 +133,15 @@ class NonCDMIBlob(resource.Resource):
         # process path and extract potential containers/fnm
         _, __, fullpath = parse_path(request.path)
         log.msg("Getting blob (non-cdmi) %s" % fullpath)
+        tre_header = request.getHeader('tre-enabled') 
+        tre_request = tre_header is not None and (tre_header == 'true' or tre_header =='True')
         # perform operation on ADT
-        status, content_object, _, mimetype, __, size = blob.read(self.avatar, fullpath)
+        status, content_object, uid, mimetype, __, size = blob.read(self.avatar, fullpath, tre_request)
         # construct response
         request.setResponseCode(status)
+        if tre_request and status == FOUND:
+            request.setHeader('Location', "/".join([c('general', 'tre_server'), uid]))
+        
         if status is OK:
             # XXX: hack - some-why the response just hangs if to simply path 
             # mimetype as a content_object type
