@@ -5,6 +5,7 @@ from twisted.internet import reactor
 from twisted.web import server, resource, guard
 from twisted.cred.portal import IRealm, Portal
 from twisted.cred.checkers import FilePasswordDB 
+from twisted.internet import task
 
 import vcdm
 from vcdm import c
@@ -40,7 +41,9 @@ def main():
         vcdm.env['blobs'][blob_backend] = vcdm.blob_backends[type](blob_backend)
     
     # set default
-    vcdm.env['blob'] = vcdm.env['blobs'][c('general', 'blob.default.backend')]
+    vcdm.env['blob'] = vcdm.env['blobs'][c('general', 'blob.default.backend')]  
+    # initiate blob logging
+    task.LoopingCall(vcdm.blob.get_stored_size_all_avatars).start(c('general', 'accounting.total_frequency')) #in seconds
     
     # do we want queue backend? just a single one at the moment
     if c('general', 'support_mq') == 'yes':

@@ -151,3 +151,13 @@ def exists(avatar, fullpath):
     else:
         return OK
 
+def get_stored_size(avatar='Anonymous'):
+    """Emit into the accounting log total size of all registered blobs for an avatar"""
+    total_size = vcdm.env['ds'].get_total_blob_size(avatar)
+    log.msg(type='accounting', avatar=avatar, amount=total_size, acc_type='blob_total_size')
+
+def get_stored_size_all_avatars():
+    """Emit into the accounting log total size of registed blobs for each avatar"""
+    for av in vcdm.env['ds'].get_all_avatars():
+        get_stored_size(av)
+    

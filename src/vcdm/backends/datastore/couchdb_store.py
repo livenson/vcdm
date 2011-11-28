@@ -28,6 +28,7 @@ class CouchDBStore(IDatastore):
                         'parent_container': '/', 
                         'children': {},
                         'metadata': {},
+                        'owner': 'system',
                         'ctime': str(datetime.datetime.now())}, None)
     
     def read(self, docid):        
@@ -65,18 +66,44 @@ class CouchDBStore(IDatastore):
                   
         return list(self.db.query(dirn_fun))
     
-    def get_total_blob_size(self):
+    def get_total_blob_size(self, avatar = 'Anonymous'):
         """ Return total size in GBs of all blobs indexed by the datastore. """
         
         dirn_fun = '''
         function(doc) {
-           if (doc.object == 'blob') {
+           if (doc.object == 'blob' && doc.owner == '%s') {
                emit(doc.size, null);
            }
         }
-        '''
+        ''' % avatar
         
         return sum([x.key for x in self.db.query(dirn_fun)])
+    
+    def get_all_avatars(self):
+        """Return all avatars that have an entry in the system"""
+        dirn_fun = '''
+        function(doc) {
+           if (doc.object == 'blob' || doc.object == 'container') {
+               emit(doc.owner, 1);
+           }
+        }
+        '''
+        reducer='''
+        function(keys, values) {
+            var a = [], l = keys.length;    
+            for(var i=0; i<l; i++) {
+                for(var j=i+1; j<l; j++)            
+                    if (keys[i][0] === keys[j][0]) j = ++i;        
+                    a.push(keys[i][0]);    
+            }
+            return a;
+        }
+        '''
+
+        res = list(self.db.query(dirn_fun, reduce_fun=reducer, options='group=true'))
+        return res[0].value
+        
+        
     
     def find_by_path(self, path, object_type = None, fields = None):
         """ Find an object at a given path.

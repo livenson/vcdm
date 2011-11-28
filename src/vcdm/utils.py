@@ -39,6 +39,6 @@ class AccountingLogObserver(FileLogObserver):
             avatar = eventDict.get('avatar')
             amount = eventDict.get('amount')
             acc_type = eventDict.get('acc_type')
-            msg = "%s %s %s %s" %(timeStr, avatar, acc_type, amount)
+            msg = "%s %s %s %s\n" %(timeStr, avatar, acc_type, amount)
             util.untilConcludes(self.write, msg)
             util.untilConcludes(self.flush)
