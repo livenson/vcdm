@@ -1,12 +1,15 @@
+import os
+from tempfile import NamedTemporaryFile
+
 from vcdm import c
 from vcdm.interfaces.blob import IBlob
+
 from twisted.python import log
 
 import boto
 from boto.s3.key import Key
 from boto.s3.connection import Location
 from boto.exception import S3CreateError
-from tempfile import NamedTemporaryFile
 
 
 class S3Blob(IBlob):
@@ -55,3 +58,22 @@ class S3Blob(IBlob):
         k = Key(b)    
         k.key = fnm
         k.delete()
+        
+    def move_to_tre_server(self, fnm):
+        b = self.conn.get_bucket(self.cdmi_bucket_name)
+        k = Key(b)    
+        k.key = fnm
+        # read in the content to a temporary file on disk
+        fp = NamedTemporaryFile(prefix="aws_s3", 
+                               suffix=".buffer",
+                               delete=False)        
+        k.get_contents_to_file(fp)
+        
+        source = os.path.join(c(self.backend_name, 'blob.datadir'), fp.name)
+        target = os.path.join(c('general', 'tre_data_folder'), fnm)
+        
+        try:
+            os.symlink(os.path.abspath(source), os.path.abspath(target))
+        except OSError, ex:
+            if ex.errno == 17:
+                pass
