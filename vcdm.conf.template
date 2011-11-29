@@ -35,6 +35,8 @@ server.debug_port = 2364
 # Authorization mechanism
 # a file with activated usernames:password (password is stored in plaintext)
 usersdb.plaintext = users.db
+# a file with activated usernames:password (password is stored as md5 hexdigest)
+usersdb.md5 = users.db.md5
 # options: dummy, strict
 server.authz = strict
 
@@ -48,7 +50,7 @@ accounting.total_frequency = 600.0
 
 # Traffic Redundancy Elimination (TRE) support (EXPERIMENTAL)
 tre_enabled = no
-tre_server = localhost:5000
+tre_server = http://localhost:5000
 tre_data_folder = /path/to/tredata
 
 

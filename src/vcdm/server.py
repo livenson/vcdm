@@ -43,18 +43,24 @@ def main():
     # set default
     vcdm.env['blob'] = vcdm.env['blobs'][c('general', 'blob.default.backend')]  
     # initiate blob logging
-    task.LoopingCall(vcdm.blob.get_stored_size_all_avatars).start(c('general', 'accounting.total_frequency')) #in seconds
+    task.LoopingCall(vcdm.blob.get_stored_size_all_avatars).start(float(c('general', 'accounting.total_frequency'))) #in seconds
     
     # do we want queue backend? just a single one at the moment
     if c('general', 'support_mq') == 'yes':
         vcdm.env['mq'] = vcdm.mq_backends[c('general', 'mq.backend')]()
         current_capabilities.system['queues'] = True
     # for now just a small list of 
-    checkers = [FilePasswordDB(c('general', 'usersdb.plaintext'))]
+    def _hash(name, clearpsw, hashedpsw):
+        import hashlib
+        return  hashlib.md5(clearpsw).hexdigest()
+
+    checkers = [FilePasswordDB(c('general', 'usersdb.plaintext'), cache=True), 
+                FilePasswordDB(c('general', 'usersdb.md5'), hash=_hash, cache=True)]
     
     wrapper = guard.HTTPAuthSessionWrapper(
         Portal(SimpleRealm(), checkers),
-        [guard.DigestCredentialFactory('md5', c('general', 'server.endpoint'))])
+        [guard.BasicCredentialFactory(c('general', 'server.endpoint')),
+         guard.DigestCredentialFactory('md5', c('general', 'server.endpoint'))])
     
     # TODO: configure reactor to use
     # http://twistedmatrix.com/documents/current/core/howto/choosing-reactor.html
