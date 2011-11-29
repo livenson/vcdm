@@ -1,0 +1,6 @@
+[submodule "winazurestorage"]
+	path = winazurestorage
+	url = git://github.com/livenson/winazurestorage.git
+[submodule "libcdmi-python"]
+	path = libcdmi-python
+	url = git://github.com/livenson/libcdmi-python.git
