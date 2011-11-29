@@ -46,7 +46,7 @@ class Blob(resource.Resource):
         
         request.setHeader('Content-Type', CDMI_OBJECT)
         if tre_request and status == FOUND:
-            request.setHeader('Location', "/".join([c('general', 'tre_server'), uid]))
+            request.setHeader('Location', "/".join([c('general', 'tre_server'), str(uid)]))
 
         set_common_headers(request)
         if status == OK:
@@ -140,7 +140,7 @@ class NonCDMIBlob(resource.Resource):
         # construct response
         request.setResponseCode(status)
         if tre_request and status == FOUND:
-            request.setHeader('Location', "/".join([c('general', 'tre_server'), uid]))
+            request.setHeader('Location', "/".join([c('general', 'tre_server'), str(uid)]))
         
         if status is OK:
             # XXX: hack - some-why the response just hangs if to simply path 
