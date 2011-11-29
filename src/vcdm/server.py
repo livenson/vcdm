@@ -50,7 +50,7 @@ def main():
         vcdm.env['mq'] = vcdm.mq_backends[c('general', 'mq.backend')]()
         current_capabilities.system['queues'] = True
     # for now just a small list of 
-    checkers = [FilePasswordDB('users.db')]
+    checkers = [FilePasswordDB(c('general', 'usersdb.plaintext'))]
     
     wrapper = guard.HTTPAuthSessionWrapper(
         Portal(SimpleRealm(), checkers),

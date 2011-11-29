@@ -33,6 +33,8 @@ server.use_debug_port = yes
 server.debug_port = 2364
 
 # Authorization mechanism
+# a file with activated usernames:password (password is stored in plaintext)
+usersdb.plaintext = users.db
 # options: dummy, strict
 server.authz = strict
 
