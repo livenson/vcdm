@@ -6,6 +6,7 @@ from vcdm.server.cdmi.cdmi_content_types import CDMI_CONTAINER
 from vcdm.server.cdmi.root import CDMI_SERVER_HEADER
 from vcdm.server.cdmi.generic import parse_path, set_common_headers,\
     get_common_body
+from httplib import OK
 
 try:
     import json
@@ -34,16 +35,18 @@ class Container(resource.Resource):
         set_common_headers(request)
 
         # and a body
-        response_body = {
-                         'completionStatus': 'Complete', 
-                         'metadata': metadata,
-                         'children': children,
-                         'childrenrange': '' if len(children) == 0 else '0-%s' % len(children),
-                         'capabilitiesURI': '/cdmi_capabilities/container'   
-                         }
-        response_body.update(get_common_body(request, uid, fullpath))
-
-        return json.dumps(response_body)
+        if status == OK:
+            response_body = {
+                             'completionStatus': 'Complete', 
+                             'metadata': metadata,
+                             'children': children,
+                             'childrenrange': '' if len(children) == 0 else '0-%s' % len(children),
+                             'capabilitiesURI': '/cdmi_capabilities/container'   
+                             }
+            response_body.update(get_common_body(request, uid, fullpath))
+            return json.dumps(response_body)
+        else:
+            return ''
     
     def render_PUT(self, request):        
         name, container_path, fullpath = parse_path(request.path)
