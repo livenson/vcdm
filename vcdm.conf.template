@@ -10,9 +10,6 @@ blob.backends = home_1, office_1
 # Choose default blob backend to use if a user did not specify her desire. 
 blob.default.backend = home_1
 
-# (EXPERIMENTAL) Add support for message queues
-support_mq = no
-
 # (Optional - only if support_mq is set to 'yes'). 
 # Choose which backend to use for message queue operations. Available options are listed below. 
 # options: amqp, aws, azure
@@ -24,6 +21,7 @@ mq.backend = amqp
 ds.backend = couchdb
 
 # Choose interface and port for production (TLS + AuthN) endpoint.
+# Should be accesses through HTTPS
 server.endpoint = localhost:8080
 
 # Debug endpoint is used to provide unencrypted and unauthenticated access to resources.
@@ -53,6 +51,8 @@ tre_enabled = no
 tre_server = http://localhost:5000
 tre_data_folder = /path/to/tredata
 
+# (EXPERIMENTAL) Add support for message queues
+support_mq = no
 
 #############################################################
 ###                 BACKEND CONFIGURATION                 ### 
@@ -85,11 +85,13 @@ datastore.endpoint = http://localhost:5984/
 #############################################################
 
 [local]
+type = local
 # If local backend for blob was chosen, specify path to 
 # the folder where blob's content shall be stored.
 blob.datadir = data
 
 [aws]
+type = aws
 # For blob and mq backends also Amazon Web Services could be used. 
 # Provide your access key and secret access key to be able to use the service.
 credentials.username = ACCESSKEYID
@@ -97,6 +99,7 @@ credentials.password = SECRETACCESSKEY
 aws.bucket_name = cdmi-proxy
 
 [azure]
+type = azure
 # To be able to use MS Azure cloud for MQ and blob backends, provide your Azure data credentials.
 credentials.account = ACCOUNTNAME
 credentials.password = SECRETACCESSKEY
@@ -106,6 +109,7 @@ credentials.queue_url = queue.core.windows.net
 azure.bucket_name = cdmi-proxy
 
 [cdmi]
+type = cdmi
 # CDMI-backends
 credentials.username = aaa
 credentials.password = aaa
