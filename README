@@ -1,7 +1,8 @@
 CDMI-Proxy
 ----------
 
-CDMI-Proxy is an implementation of a CDMI-compatible (v 1.0.1h) server that can be used to store data both using local infrastructure and public cloud services.
+CDMI-Proxy is an implementation of a CDMI-compatible (v 1.0.1h) server that can be 
+used to store data both using local infrastructure and public cloud services.
 
 Implementation supports:
 - Blobs
@@ -12,6 +13,16 @@ Default authorization mechanism allows to modify resource subtrees only to their
 
 SETUP
 =====
+0) Install Python and pip:
+	- For Python: CDMI-Proxy _should_ run with python2.6, but 2.7 is strongly 
+	  suggested.
+	- Pip should be available either from repositories (Linux) or could be installed 
+	  following instructions: http://www.pip-installer.org/en/latest/installing.html
+		For Windows:
+			1) Install setuptools: http://pypi.python.org/pypi/setuptools#files 
+			  (choose MSI corresponding to your platform)
+			2) easy_install pip
+
 1) Get the code: 
     git clone git://github.com/livenson/vcdm.git
 
