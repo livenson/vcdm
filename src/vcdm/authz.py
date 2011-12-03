@@ -1,10 +1,13 @@
 from twisted.python import log
+
 from vcdm import c
+
 
 def authorize(avatar, resource, action, acls=None):
     """ Top-level authorize function dispatching calls to the configured authZ mechanism."""
     try:    
-        return mechanisms[c('general', 'server.authz')](avatar, resource, action, acls)
+        result = mechanisms[c('general', 'server.authz')](avatar, resource, action, acls)
+        log.err("Authorized request: %s" %result)
     except KeyError:
         log.err("Requested authZ mechanism %s was not found.")
         return False # default failover 

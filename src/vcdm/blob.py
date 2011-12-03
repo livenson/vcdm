@@ -1,4 +1,4 @@
-import datetime
+import time
 import vcdm
 
 from vcdm import container
@@ -33,7 +33,6 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
     _, cvals = vcdm.env['ds'].find_by_path(parent_container, object_type = 'container', fields = ['metadata'])
     acl = cvals['metadata'].get('cdmi_acl', {})
     if not authorize(avatar, parent_container,"write_blob", acl):
-        log.err("Authorization failed.")
         return (UNAUTHORIZED, uid)
     
     # ok, time for action
@@ -43,7 +42,7 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
     
     # add default acls
     if avatar is None:
-            avatar = 'Anonymous'
+        avatar = 'Anonymous'
     blob_acl = metadata.get('cdmi_acl')
     if blob_acl is None:
         metadata['cdmi_acl'] = acl # append parent ACLs for a new folder
@@ -59,9 +58,9 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
                         'metadata': metadata, 
                         'filename': name,
                         'parent_container': parent_container, 
-                        'ctime': str(datetime.datetime.now()), 
-                        'mtime': str(datetime.datetime.now()),
-                        'atime': str(datetime.datetime.now()),
+                        'ctime': str(time.time()), 
+                        'mtime': str(time.time()),
+                        'atime': str(time.time()),
                         'size': int(content[1]), # length
                         'backend_type': blob_backend.backend_type,
                         'backend_name': blob_backend.backend_name},
@@ -75,8 +74,8 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
         uid = vcdm.env['ds'].write({
                         'metadata': metadata,
                         'mimetype': mimetype,
-                        'mtime': str(datetime.datetime.now()),
-                        'atime': str(datetime.datetime.now()),
+                        'mtime': str(time.time()),
+                        'atime': str(time.time()),
                         'size': int(content[1]), # length
                         'backend_type': blob_backend.backend_type,
                         'backend_name': blob_backend.backend_name}, 
@@ -89,33 +88,34 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
 def read(avatar, fullpath, tre_request=False):
     """ Return contents of a blob.
     Returns:
-    (HTTP_STATUS_CODE, content, UID, mimetype, metadata, size) 
+    (HTTP_STATUS_CODE, dictionary_of_metadata) 
     """
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', 
-                                            fields = ['metadata', 'mimetype', 'ctime', 'size'])
+                                            fields = ['metadata', 'mimetype', 'mtime', 'size'])
     log.msg("Reading path %s, uid: %s" % (fullpath, uid))
     if uid is None:
-        return (NOT_FOUND, None, None, None, None, None)
+        return (NOT_FOUND, None)
     else:        
         # authorize call
         acls = vals['metadata'].get('cdmi_acl')
         if not authorize(avatar, fullpath, "read_blob", acls):
-            log.err("Authorization failed.")
-            return (UNAUTHORIZED, None, None, None, None, None)
+            return (UNAUTHORIZED, None)
         # update access time
         vcdm.env['ds'].write({
-                        'atime': str(datetime.datetime.now()),
+                        'atime': str(time.time()),
                         },
                         uid)
         log.msg(type='accounting', avatar=avatar, amount=vals['size'], acc_type='blob_read')
+        vals['uid'] = uid
         # TRE-request? 
         if tre_request:
             if not vcdm.env['tre_enabled']:
-                return (NOT_IMPLEMENTED, None, None, None, None, None)
+                return (NOT_IMPLEMENTED, None)
             # XXX only local blob backend supports that at the moment
             vcdm.env['blob'].move_to_tre_server(uid)
-            return (FOUND, None, uid, None, None, None)
-        return (OK, vcdm.env['blob'].read(uid), uid, vals['mimetype'], vals['metadata'], vals['size'])
+            return (FOUND, vals)
+        vals['content'] = vcdm.env['blob'].read(uid)
+        return (OK, vals)
 
 def delete(avatar, fullpath):
     """ Delete a blob. """
@@ -129,7 +129,6 @@ def delete(avatar, fullpath):
             # authorize call
             acls = vals['metadata'].get('cdmi_acl', None)    
             if not authorize(avatar, fullpath, "delete_blob", acls):
-                log.err("Authorization failed.")
                 return UNAUTHORIZED
             vcdm.env['blob'].delete(uid)
             vcdm.env['ds'].delete(uid)
@@ -140,16 +139,6 @@ def delete(avatar, fullpath):
         except:
             #TODO: - how do we handle failed delete?     
             return CONFLICT
-
-def exists(avatar, fullpath):
-    """ Check for existance of a file. """
-    log.msg("Checking existance %s" % fullpath)
-    uid, _ = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob')
-    log.msg(type='accounting', avatar=avatar, amount=1, acc_type='blob_exists')
-    if uid is None:
-        return NOT_FOUND
-    else:
-        return OK
 
 def get_stored_size(avatar='Anonymous'):
     """Emit into the accounting log total size of all registered blobs for an avatar"""

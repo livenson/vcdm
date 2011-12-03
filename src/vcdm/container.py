@@ -1,47 +1,52 @@
-import datetime
-import vcdm
-from twisted.python import log
-from vcdm.server.cdmi.generic import get_parent
+import time
 from httplib import NOT_FOUND, OK, CREATED, NO_CONTENT, CONFLICT, FORBIDDEN, UNAUTHORIZED
+
+from twisted.python import log
+
+import vcdm
+from vcdm.server.cdmi.generic import get_parent
 from vcdm.authz import authorize
+
 
 def read(avatar, fullpath): 
     """ Read a specified container."""
-    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'container', fields = ['children', 'metadata'])
+    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'container', 
+                                            fields = ['children', 'metadata', 'mtime'])
     if uid is None:
         # XXX refactor return of the result - raise error?
-        return (NOT_FOUND, None, None, None)
+        return (NOT_FOUND, None)
     else:
         # authorize call    
-        acls = vals['metadata'].get('cdmi_acl', None)    
+        acls = vals['metadata'].get('cdmi_acl')
         if not authorize(avatar, fullpath, 'read_container', acls):
-            log.err("Authorization failed.") 
-            return (UNAUTHORIZED, None, None, None)
+            return (UNAUTHORIZED, None)
+        vals['uid'] = uid
         log.msg(type='accounting', avatar=avatar, amount=1, acc_type='container_read')
-        return (OK, uid, vals['children'].values(), vals['metadata'])
+        return (OK, vals)
 
 def create_or_update(avatar, name, container_path, fullpath, metadata = None):
     """Create or update a container."""
     log.msg("Container create/update: %s" % fullpath)
     
     parent_container = get_parent(fullpath)            
-    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'container', fields = ['children', 'parent_container', 'owner'])
+    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'container', 
+                                            fields = ['children', 'parent_container', 'owner'])
+    vals['uid'] = uid
     # XXX: duplication of checks with blob (vcdm). Refactor.
     if uid is not None and parent_container != vals['parent_container']:
         log.err("Inconsistent information about the object! path: %s, parent_container in db: %s" % (fullpath, vals['parent_container']))
-        return (FORBIDDEN, uid, [])
+        return (FORBIDDEN, uid)
     
     # assert we can write to the defined path
     if not check_path(container_path):
         log.err("Writing to a container is not allowed. Container path: %s" % '/'.join(container_path))
-        return (FORBIDDEN, uid, [])
+        return (FORBIDDEN, uid)
     
     # authorize call, take parent permissions
     _, cvals = vcdm.env['ds'].find_by_path(parent_container, object_type = 'container', fields = ['metadata'])
     acl = cvals['metadata'].get('cdmi_acl', {})
     if not authorize(avatar, parent_container, "write_container", acl):
-        log.err("Authorization failed.")
-        return (UNAUTHORIZED, uid, [])
+        return (UNAUTHORIZED, vals)
            
     # add default acls
     if avatar is None:
@@ -61,24 +66,26 @@ def create_or_update(avatar, name, container_path, fullpath, metadata = None):
                         'name': name,
                         'parent_container': parent_container,
                         'children': {},
-                        'ctime': str(datetime.datetime.now())},
+                        'ctime': str(time.time()),
+                        'mtime': str(time.time())},
                         uid)
+        vals['uid'] = uid
         # update the parent container as well, unless it's a top-level container
         if fullpath != '/':
             _append_child(parent_container, uid, name + "/")
         log.msg(type='accounting', avatar=avatar, amount=1, acc_type='container_create')
-        return (CREATED, uid, [])
+        return (CREATED, vals)
     else:
         # update container
         # forbid rewrites of containers by other users
         if vals.get('owner') is not None and vals.get('owner') != avatar:
-            return (UNAUTHORIZED, uid, [])
+            return (UNAUTHORIZED, vals)
         uid = vcdm.env['ds'].write({
                         'metadata': metadata,
-                        'mtime': str(datetime.datetime.now())},
+                        'mtime': str(time.time())},
                         uid)
         log.msg(type='accounting', avatar=avatar, amount=1, acc_type='container_update')
-        return (OK, uid, vals['children'])
+        return (OK, vals)
 
 def delete(avatar, fullpath):
     """ Delete a container."""
@@ -130,7 +137,8 @@ def _append_child(container_path, child_uid, child_name):
     # append a new uid-pathname pair    
     cvals['children'][unicode(child_uid)] = unicode(child_name)    
     vcdm.env['ds'].write({
-                    'children': cvals['children']},
+                    'children': cvals['children'],
+                    'mtime': str(time.time())},
                     cuid)
     
 def _remove_child(container_path, child_uid):
@@ -138,6 +146,7 @@ def _remove_child(container_path, child_uid):
     cuid, cvals = vcdm.env['ds'].find_by_path(container_path, object_type = 'container', fields = ['children'])
     del cvals['children'][child_uid]
     vcdm.env['ds'].write({
-                    'children': cvals['children']},
+                    'children': cvals['children'],
+                    'mtime': str(time.time())},
                     cuid)
     

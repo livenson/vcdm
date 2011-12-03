@@ -27,18 +27,20 @@ class Container(resource.Resource):
         _, __, fullpath = parse_path(request.path)
 
         # contact the backend
-        status, uid, children, metadata = container.read(self.avatarID, fullpath)
+        status, uid, vals = container.read(self.avatarID, fullpath)
 
         # create a header
         request.setResponseCode(status)
         request.setHeader('Content-Type', CDMI_CONTAINER)
+        request.setLastModified(float(vals['mtime']))
         set_common_headers(request)
 
         # and a body
         if status == OK:
+            children = vals['children'].values()
             response_body = {
                              'completionStatus': 'Complete', 
-                             'metadata': metadata,
+                             'metadata': vals['metadata'],
                              'children': children,
                              'childrenrange': '' if len(children) == 0 else '0-%s' % len(children),
                              'capabilitiesURI': '/cdmi_capabilities/container'   

@@ -39,28 +39,30 @@ class Blob(resource.Resource):
         tre_request = tre_header is not None and (tre_header == 'true' or tre_header =='True')
         log.msg("Request for TRE-enabled download received.")
         # perform operation on ADT
-        status, content_object, uid, mimetype, metadata, _ = blob.read(self.avatar, 
-                                                                       fullpath, tre_request)
+        status, vals = blob.read(self.avatar, fullpath, tre_request)
         # construct response
         request.setResponseCode(status)
         
         request.setHeader('Content-Type', CDMI_OBJECT)
         if tre_request and status == FOUND:
-            request.setHeader('Location', "/".join([c('general', 'tre_server'), str(uid)]))
+            request.setHeader('Location', "/".join([c('general', 'tre_server'), str(vals['uid'])]))
+            request.setLastModified(float(vals['mtime']))
 
         set_common_headers(request)
         if status == OK:
             # for content we want to read in the full object into memory
-            content = content_object.read()
+            content = vals['content'].read()
+            request.setLastModified(float(vals['mtime']))
+
             # construct body
             response_body = {
                              'completionStatus': 'Complete',
-                             'mimetype': mimetype, 
-                             'metadata': metadata,
+                             'mimetype': vals['mimetype'], 
+                             'metadata': vals['metadata'],
                              'value': content, 
                              'capabilitiesURI': '/cdmi_capabilities/dataobject'
                              }
-            response_body.update(get_common_body(request, uid, fullpath))
+            response_body.update(get_common_body(request, str(vals['uid']), fullpath))
             return json.dumps(response_body)
         else:
             return ''
@@ -104,13 +106,6 @@ class Blob(resource.Resource):
         request.setResponseCode(status)
         set_common_headers(request)
         return ''
-    
-    def render_HEAD(self, request):
-        """ XXX: In general HEAD should have the same semantics as GET - body. 
-        But for now abuse it a bit."""
-        _, __, fullpath = parse_path(request.path)
-        request.setResponseCode(blob.exists(self.avatar, fullpath))
-        return ''
 
 
 class NonCDMIBlob(resource.Resource):
@@ -136,26 +131,23 @@ class NonCDMIBlob(resource.Resource):
         tre_header = request.getHeader('tre-enabled') 
         tre_request = tre_header is not None and (tre_header == 'true' or tre_header =='True')
         # perform operation on ADT
-        status, content_object, uid, mimetype, __, size = blob.read(self.avatar, fullpath, tre_request)
+        status, vals = blob.read(self.avatar, fullpath, tre_request)
         # construct response
         request.setResponseCode(status)
         if tre_request and status == FOUND:
-            request.setHeader('Location', "/".join([c('general', 'tre_server'), str(uid)]))
+            request.setHeader('Location', "/".join([c('general', 'tre_server'), str(vals['uid'])]))
         
         if status is OK:
             # XXX: hack - some-why the response just hangs if to simply path 
             # mimetype as a content_object type
+            mimetype = vals['mimetype']
             actual_type = 'text/plain' if mimetype == 'text/plain' else str(mimetype)
             request.setHeader('Content-Type', actual_type)
-            request.setHeader('Content-Length', str(size))
-            producer = self.makeProducer(request, content_object)
+            request.setHeader('Content-Length', str(vals['size']))
+            request.setLastModified(float(vals['mtime']))
+            producer = self.makeProducer(request, vals['content'])
             producer.start()
             return NOT_DONE_YET
-        return ''
-
-    def render_HEAD(self, request):
-        _, __, fullpath = parse_path(request.path)
-        request.setResponseCode(blob.exists(self.avatar, fullpath))
         return ''
 
     def render_PUT(self, request):
