@@ -35,12 +35,12 @@ def create_or_update(avatar, name, container_path, fullpath, metadata = None):
     # XXX: duplication of checks with blob (vcdm). Refactor.
     if uid is not None and parent_container != vals['parent_container']:
         log.err("Inconsistent information about the object! path: %s, parent_container in db: %s" % (fullpath, vals['parent_container']))
-        return (FORBIDDEN, uid)
+        return (FORBIDDEN, vals)
     
     # assert we can write to the defined path
     if not check_path(container_path):
         log.err("Writing to a container is not allowed. Container path: %s" % '/'.join(container_path))
-        return (FORBIDDEN, uid)
+        return (FORBIDDEN, vals)
     
     # authorize call, take parent permissions
     _, cvals = vcdm.env['ds'].find_by_path(parent_container, object_type = 'container', fields = ['metadata'])

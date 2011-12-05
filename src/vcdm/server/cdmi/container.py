@@ -27,7 +27,7 @@ class Container(resource.Resource):
         _, __, fullpath = parse_path(request.path)
 
         # contact the backend
-        status, uid, vals = container.read(self.avatarID, fullpath)
+        status, vals = container.read(self.avatarID, fullpath)
 
         # create a header
         request.setResponseCode(status)
@@ -45,7 +45,7 @@ class Container(resource.Resource):
                              'childrenrange': '' if len(children) == 0 else '0-%s' % len(children),
                              'capabilitiesURI': '/cdmi_capabilities/container'   
                              }
-            response_body.update(get_common_body(request, uid, fullpath))
+            response_body.update(get_common_body(request, vals['uid'], fullpath))
             return json.dumps(response_body)
         else:
             return ''
@@ -99,8 +99,8 @@ class NonCDMIContainer(resource.Resource):
         _, __, fullpath = parse_path(request.path)
 
         # contact the backend
-        status, _, children, metadata = container.read(self.avatarID, fullpath)
-
+        status, vals = container.read(self.avatarID, fullpath)
+        children = vals['children'].values()
         # create a header
         request.setResponseCode(status)
         request.setHeader('Content-Type', 'application/json')
@@ -109,7 +109,7 @@ class NonCDMIContainer(resource.Resource):
         # this is not a completely correct implementation of a non-cdmi reply.
         # TODO: change to more specific fields once fields separation is implemented
         response_body = {
-                         'metadata': metadata,
+                         'metadata': vals['metadata'],
                          'children': children,
                          }
 
@@ -117,7 +117,7 @@ class NonCDMIContainer(resource.Resource):
 
     def render_PUT(self, request):
         name, container_path, fullpath = parse_path(request.path)
-        status, _, __ = container.create_or_update(self.avatarID, name, container_path, fullpath, {})
+        status, vals = container.create_or_update(self.avatarID, name, container_path, fullpath, {})
         request.setResponseCode(status)
         return ""
 
