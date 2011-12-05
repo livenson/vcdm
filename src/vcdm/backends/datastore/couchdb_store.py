@@ -127,7 +127,7 @@ class CouchDBStore(IDatastore):
             }
         }         
         ''' % (path, comparision_string, fields)
-        res = self.db.query(fnm_fun)      
+        res = self.db.query(fnm_fun)
         if len(res) == 0:
             return (None, None)
         elif len(res) > 1:

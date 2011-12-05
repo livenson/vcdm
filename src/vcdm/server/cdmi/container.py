@@ -100,20 +100,19 @@ class NonCDMIContainer(resource.Resource):
 
         # contact the backend
         status, vals = container.read(self.avatarID, fullpath)
-        children = vals['children'].values()
         # create a header
         request.setResponseCode(status)
-        request.setHeader('Content-Type', 'application/json')
 
-        # and a body
-        # this is not a completely correct implementation of a non-cdmi reply.
-        # TODO: change to more specific fields once fields separation is implemented
-        response_body = {
-                         'metadata': vals['metadata'],
-                         'children': children,
-                         }
-
-        return json.dumps(response_body)
+        if status == OK:
+            request.setHeader('Content-Type', 'application/json')
+            children = None if not 'children' in vals else vals['children'].values()
+            response_body = {
+                             'metadata': vals['metadata'],
+                             'children': children,
+                             }
+            return json.dumps(response_body)
+        else:
+            return ''
 
     def render_PUT(self, request):
         name, container_path, fullpath = parse_path(request.path)

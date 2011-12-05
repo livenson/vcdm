@@ -8,6 +8,7 @@ def authorize(avatar, resource, action, acls=None):
     try:    
         result = mechanisms[c('general', 'server.authz')](avatar, resource, action, acls)
         log.err("Authorized request: %s" %result)
+        return result
     except KeyError:
         log.err("Requested authZ mechanism %s was not found.")
         return False # default failover 
