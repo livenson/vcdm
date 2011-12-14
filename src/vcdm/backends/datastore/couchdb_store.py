@@ -11,7 +11,7 @@ from twisted.python import log
 class CouchDBStore(IDatastore):
 
     db = None
-    
+
     def __init__(self):
         server = couchdb.Server(c('couchdb', 'datastore.endpoint'))
         if 'meta' not in server:
@@ -25,16 +25,16 @@ class CouchDBStore(IDatastore):
                         'object': 'container',
                         'fullpath': '/',
                         'name': '/',
-                        'parent_container': '/', 
+                        'parent_container': '/',
                         'children': {},
                         'metadata': {},
                         'owner': 'system',
                         'ctime': str(time.time()),
                         'mtime': str(time.time())}, None)
-    
-    def read(self, docid):        
+
+    def read(self, docid):
         return self.db[docid]
-    
+
     def write(self, data, docid = None):
         doc = None
         log.msg("Writing to CouchDB. UID: %s, data: %s" %(docid, data))
@@ -47,16 +47,16 @@ class CouchDBStore(IDatastore):
             doc.update(data)
             self.db.save(doc)
         return docid
-    
+
     def exists(self, docid):
         return (docid in self.db)
-    
+
     def delete(self, docid):
         del self.db[docid]
-    
+
     def find_uid_match(self, pattern):
         """ Return UIDs that correspond to a objects with a path matching the pattern """
-        
+
         dirn_fun = '''
         function(doc) {
            if (doc.fullpath.match(/^%s/)) {
@@ -64,12 +64,12 @@ class CouchDBStore(IDatastore):
            }
         }
         ''' % pattern.replace("/", "\\/")
-                  
+
         return list(self.db.query(dirn_fun))
-    
+
     def get_total_blob_size(self, avatar = 'Anonymous'):
         """ Return total size in GBs of all blobs indexed by the datastore. """
-        
+
         dirn_fun = '''
         function(doc) {
            if (doc.object == 'blob' && doc.owner == '%s') {
@@ -77,9 +77,9 @@ class CouchDBStore(IDatastore):
            }
         }
         ''' % avatar
-        
+
         return sum([x.key for x in self.db.query(dirn_fun)])
-    
+
     def get_all_avatars(self):
         """Return all avatars that have an entry in the system"""
         dirn_fun = '''
@@ -103,51 +103,48 @@ class CouchDBStore(IDatastore):
 
         res = list(self.db.query(dirn_fun, reduce_fun=reducer, options='group=true'))
         return res[0].value
-        
-        
-    
+
     def find_by_path(self, path, object_type = None, fields = None):
         """ Find an object at a given path.
-        
         - object_type - optional filter by the type of an object (e.g. blob, container, ...)
         - fields - fields to retrieve from the database. By default only gets UID of an object
         """
         comparision_string = 'true'
         if object_type is not None:
             comparision_string = "doc.object == '%s'" % object_type
-                 
+
         if fields is not None:
             fields = '{' + ','.join([f + ': doc.' + f for f in fields]) + '}'
         else:
             fields = 'null'    
-                            
+
         fnm_fun = '''function(doc) {
             if (doc.fullpath == '%s' && %s ) {
                 emit(doc.id, %s);            
             }
-        }         
+        }
         ''' % (path, comparision_string, fields)
         res = self.db.query(fnm_fun)
         if len(res) == 0:
-            return (None, None)
+            return (None, {})
         elif len(res) > 1:
             # XXX: does CDMI allow this in case of references/...?
             raise InternalError("Namespace collision: more than one UID corresponds to an object.")
         else:
             tmp_res = list(res)[0]
-            return (tmp_res.id, tmp_res.value)    
+            return (tmp_res.id, tmp_res.value)
         
     def find_path_uids(self, paths):
         """Return a list of IDs of container objects that correspond to the specified path."""
         comparision_string = ['doc.fullpath == "' + p + '"' for p in paths]
         fnm_fun = '''function(doc) {
             if (doc.object == 'container' && (%s)) {
-                emit(doc.id, null);            
+                emit(doc.id, null);
             }
         } 
         ''' % ' || '.join(comparision_string)
         res = self.db.query(fnm_fun)
         if len(res) == 0:
-            return None        
+            return None
         else:
             return list(res)
