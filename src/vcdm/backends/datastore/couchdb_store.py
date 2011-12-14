@@ -102,7 +102,7 @@ class CouchDBStore(IDatastore):
         '''
 
         res = list(self.db.query(dirn_fun, reduce_fun=reducer, options='group=true'))
-        return res[0].value
+        return res[0].value if res[0].value is not None else []
 
     def find_by_path(self, path, object_type = None, fields = None):
         """ Find an object at a given path.
