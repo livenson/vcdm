@@ -54,19 +54,23 @@ def main():
         import hashlib
         return  hashlib.md5(clearpsw).hexdigest()
 
-    checkers = []
+    used_checkers = []
+    authn_methods = []
     if vcdm.config.has_option('general', 'usersdb.plaintext'):
-        checkers.append(FilePasswordDB(vcdm.config.get('general', 'usersdb.plaintext'), cache=True))
+        used_checkers.append(FilePasswordDB(vcdm.config.get('general', 'usersdb.plaintext'),
+                                            cache=True))
+        authn_methods.append(guard.DigestCredentialFactory('md5', 
+                                            vcdm.config.get('general', 'server.endpoint')))
 
     if vcdm.config.has_option('general', 'usersdb.md5'):
-        checkers.append(FilePasswordDB(vcdm.config.get('general', 'usersdb.md5'),
+        used_checkers.append(FilePasswordDB(vcdm.config.get('general', 'usersdb.md5'),
                                                        hash=_hash, cache=True))
+        authn_methods.append(guard.BasicCredentialFactory(vcdm.config.get('general', 
+                                                                          'server.endpoint')))
 
-    wrapper = guard.HTTPAuthSessionWrapper(
-        Portal(SimpleRealm(), checkers),
-        [guard.BasicCredentialFactory(vcdm.config.get('general', 'server.endpoint')),
-         guard.DigestCredentialFactory('md5', vcdm.config.get('general', 'server.endpoint'))])
-    
+    wrapper = guard.HTTPAuthSessionWrapper(Portal(SimpleRealm(), used_checkers),
+                                           authn_methods)
+
     # unencrypted/unprotected connection for testing/development
     if vcdm.config.get('general', 'server.use_debug_port') == 'yes':
         reactor.listenTCP(int(vcdm.config.get('general', 'server.debug_port')),
