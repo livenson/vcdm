@@ -60,8 +60,8 @@ class Container(resource.Resource):
         metadata = {}
         if 'metadata' in body:
             metadata = body['metadata']
-        status, uid, children = container.create_or_update(self.avatarID, name, container_path, fullpath, metadata)
-
+        status, vals = container.create_or_update(self.avatarID, name, container_path, fullpath, metadata)
+        children = vals['children'].values() if 'children' in vals else {}
         request.setResponseCode(status)
         request.setHeader('Content-Type', CDMI_CONTAINER)
         set_common_headers(request)
@@ -73,7 +73,7 @@ class Container(resource.Resource):
                          'children': children,
                          'childrenrange': '' if len(children) == 0 else '0-%s' % len(children),
                          }
-        response_body.update(get_common_body(request, uid, fullpath))
+        response_body.update(get_common_body(request, vals['uid'], fullpath))
 
         return json.dumps(response_body)
 
