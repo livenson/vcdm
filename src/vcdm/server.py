@@ -73,9 +73,10 @@ def main():
 
     # unencrypted/unprotected connection for testing/development
     if vcdm.config.getboolean('general', 'server.use_debug_port'):
-        reactor.listenTCP(int(vcdm.config.get('general', 'server.debug_port')),
+        reactor.listenTCP(vcdm.config.getint('general', 'server.debug_port', 2364),
                           server.Site(resource=RootCDMIResource()))
-        reactor.listenTCP(2365, server.Site(resource=wrapper))
+        reactor.listenTCP(vcdm.config.getint('general', 'server.debug_port_authn', 2365), 
+                          server.Site(resource=wrapper))
     
     # 1-way SSL for production
     from twisted.internet import ssl
