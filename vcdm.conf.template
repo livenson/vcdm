@@ -29,6 +29,8 @@ server.use_debug_port = yes
 
 # Port where to run debug interface (listens on all interfaces).
 server.debug_port = 2364
+# debug port with authn
+server.debug_port_authn = 2365
 
 # Authorization mechanism
 # a file with activated usernames:password (password is stored in plaintext)
