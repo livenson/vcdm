@@ -46,7 +46,7 @@ def main():
                     start(float(vcdm.config.get('general', 'accounting.total_frequency'))) #in seconds
     
     # do we want queue backend? just a single one at the moment
-    if vcdm.config.get('general', 'support_mq') == 'yes':
+    if vcdm.config.getboolean('general', 'support_mq'):
         vcdm.env['mq'] = vcdm.mq_backends[vcdm.config.get('general', 'mq.backend')]()
         current_capabilities.system['queues'] = True
     # for now just a small list of 
@@ -72,14 +72,15 @@ def main():
                                            authn_methods)
 
     # unencrypted/unprotected connection for testing/development
-    if vcdm.config.get('general', 'server.use_debug_port') == 'yes':
+    if vcdm.config.getboolean('general', 'server.use_debug_port'):
         reactor.listenTCP(int(vcdm.config.get('general', 'server.debug_port')),
                           server.Site(resource=RootCDMIResource()))
         reactor.listenTCP(2365, server.Site(resource=wrapper))
     
     # 1-way SSL for production
     from twisted.internet import ssl
-    sslContext = ssl.DefaultOpenSSLContextFactory('server_credentials/key.pem','server_credentials/cert.pem')
+    sslContext = ssl.DefaultOpenSSLContextFactory('server_credentials/key.pem',
+                                                  'server_credentials/cert.pem')
     reactor.listenSSL(int(vcdm.config.get('general', 'server.endpoint').split(":")[1]),
                       server.Site(resource=wrapper), contextFactory = sslContext)
 

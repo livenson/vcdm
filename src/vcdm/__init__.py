@@ -1,11 +1,10 @@
 """
 Venus-C Data Management module
 """
-# read in configuration
-import ConfigParser
-config = ConfigParser.RawConfigParser()
-# TODO: if no vcdm.conf available -> assume default values?
-config.read('vcdm.conf')
+
+# XXX this is needed for legacy config system
+from vcdm.config import get_config
+config = get_config()
 
 def c(group, field):
     """Shorthand for getting configuration values"""
@@ -46,19 +45,23 @@ except ImportError:
 # mq is a non-compulsory object
 mq_backends = {}
 
-if c('general', 'support_mq') == 'yes' and c('general', 'mq.backend') == 'local':
+if config.getboolean('general', 'support_mq') and \
+        c('general', 'mq.backend') == 'local':
     from vcdm.backends.mq.amqp import AMQPMQ
     mq_backends['amqp'] = AMQPMQ
 
-if c('general', 'support_mq') == 'yes' and c('general', 'mq.backend') == 'cdmi':
+if config.getboolean('general', 'support_mq') and \
+        c('general', 'mq.backend') == 'cdmi':
     from vcdm.backends.mq.cdmi import CDMIQueue
     mq_backends['cdmi'] = CDMIQueue
 
-if c('general', 'support_mq') == 'yes' and c('general', 'mq.backend') == 'aws':
+if config.getboolean('general', 'support_mq') and \
+        c('general', 'mq.backend') == 'aws':
     from vcdm.backends.mq.aws_sqs import AWSSQSMessageQueue
     mq_backends['aws'] = AWSSQSMessageQueue
 
-if c('general', 'support_mq') == 'yes' and c('general', 'mq.backend') == 'azure':
+if config.getboolean('general', 'support_mq') and \
+        c('general', 'mq.backend') == 'azure':
     from vcdm.backends.mq.azure import AzureQueue
     mq_backends['azure'] = AzureQueue
 
@@ -68,4 +71,4 @@ if c('general', 'ds.backend') == 'couchdb':
     from vcdm.backends.datastore.couchdb_store import CouchDBStore
     datastore_backends['couchdb'] = CouchDBStore  
 
-env['tre_enabled'] = c('general', 'tre_enabled') == 'yes'
+env['tre_enabled'] = config.getboolean('general', 'tre_enabled')
