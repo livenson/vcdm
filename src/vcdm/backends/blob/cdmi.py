@@ -5,7 +5,7 @@ from libcdmi.cdmi import CDMIConnection
 
 class CDMIBlob(IBlob):
     
-    backend_type = 'cdmi'
+    backend_name = 'cdmi'
     conn = None
     
     def __init__(self, backend_name):

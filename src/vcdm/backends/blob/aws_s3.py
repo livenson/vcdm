@@ -15,7 +15,7 @@ from boto.exception import S3CreateError
 class S3Blob(IBlob):
     
     conn = None
-    backend_type = 's3'
+    backend_name = 's3'
     
     def __init__(self, backend_name):
         self.backend_name = backend_name
