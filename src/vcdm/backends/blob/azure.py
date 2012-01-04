@@ -1,5 +1,5 @@
 from vcdm.interfaces.blob import IBlob
-from libazure.azure_storage import BlobStorage
+from pyazure.blob import BlobStorage
 
 import urllib2
 from vcdm.config import get_config
