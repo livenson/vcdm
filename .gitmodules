@@ -1,9 +1,9 @@
 [submodule "libsrc/libcdmi-python"]
 	path = libsrc/libcdmi-python
-	url = git@github.com:livenson/libcdmi-python.git
+	url = git://github.com/livenson/libcdmi-python.git
 [submodule "libsrc/boto"]
 	path = libsrc/boto
-	url = git@github.com:boto/boto.git
-[submodule "libsrc/winazurestroage"]
-	path = libsrc/winazurestroage
-	url = git@github.com:livenson/winazurestorage.git
+	url = git://github.com/boto/boto.git
+[submodule "libsrc/pyazure"]
+	path = libsrc/pyazure
+	url = git://github.com/livenson/pyazure.git
