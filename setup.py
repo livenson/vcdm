@@ -10,9 +10,9 @@ setup(
     packages = find_packages(where='src'),
     package_dir = {'': 'src'},
     install_requires = ['zope.interface', 'Twisted', 'CouchDB', 'pyOpenSSL'],
-    data_files = [('/etc/cdmiproxy', ['vcdm.conf', 'vcdm.conf.template',
+    data_files = [('etc/cdmiproxy', ['vcdm.conf', 'vcdm.conf.template',
                                       'users.db', 'users.db.md5']),
-                  ('/opt/vcdmdata', [])
+                  ('opt/vcdmdata', [])
                   ]
     #entry_points = {'console_scripts': ['cdmipd = :run vcdm.proxy.start ']}
 )
