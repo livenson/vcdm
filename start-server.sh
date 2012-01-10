@@ -9,4 +9,4 @@ done
 PYTHONPATH=src:$PYTHONPATH
 export PYTHONPATH
 
-python src/vcdm/server.py
+python src/vcdm/daemon.py
