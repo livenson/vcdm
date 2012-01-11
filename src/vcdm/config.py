@@ -14,7 +14,8 @@ def get_config():
 
 
 class VCDMConfig(ConfigParser):
-    __default_files__ = ['./vcdm.conf', '/etc/cdmiproxy/vcdm.conf', '~/.vcdm.conf']
+    __default_files__ = ['./etc/cdmiproxy/vcdm-defaults.conf', '/etc/cdmiproxy/vcdm.conf', 
+                         './vcdm-defaults.conf', './vcdm.conf', '~/.vcdm.conf']
 
     def __init__(self, config_filenames=__default_files__):
         ConfigParser.__init__(self)
