@@ -80,8 +80,8 @@ def main():
     
     # 1-way SSL for production
     from twisted.internet import ssl
-    sslContext = ssl.DefaultOpenSSLContextFactory('server_credentials/key.pem',
-                                                  'server_credentials/cert.pem')
+    sslContext = ssl.DefaultOpenSSLContextFactory(vcdm.config.get('general', 'server.credentials.key'),
+                                                  vcdm.config.get('general', 'server.credentials.cert'))
     reactor.listenSSL(int(vcdm.config.get('general', 'server.endpoint').split(":")[1]),
                       server.Site(resource=wrapper), contextFactory = sslContext)
 
