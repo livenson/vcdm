@@ -12,6 +12,8 @@ class POSIXBlob(IBlob):
     def __init__(self, backend_name): 
         self.backend_name = backend_name
         self.location = c(backend_name, 'blob.datadir')
+        if not os.path.exists(self.location):
+            os.mkdir(self.location)
 
     def create(self, fnm, content):
         """Write the content to a file"""
@@ -33,7 +35,6 @@ class POSIXBlob(IBlob):
     def delete(self, fnm):
         """Delete a specified file"""
         os.remove(self.location + os.sep + fnm)
-        
 
     def move_to_tre_server(self, fnm):
         source = os.path.join(c(self.backend_name, 'blob.datadir'), fnm)
