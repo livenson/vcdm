@@ -3,3 +3,8 @@
 /.settings
 /*.pyc
 /vcdm.log
+/accounting.log
+/build
+/dist
+/src/*.egg-info
+/docs/_build
