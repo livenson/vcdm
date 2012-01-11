@@ -19,6 +19,8 @@ setup(
 
     data_files = [(os.path.join(base_path, 'etc', 'cdmiproxy'), ['vcdm.conf', 'vcdm-defaults.conf',
                                       'users.db', 'users.db.md5']),
+                  (os.path.join(base_path, 'etc', 'cdmiproxy', 'server_credentials'), 
+                                    ['server_credentials/cert.pem', 'server_credentials/key.pem']),
                   (os.path.join(base_path, 'opt', 'vcdmdata'), [])],
 
     entry_points = {'console_scripts': ['cdmipd = vcdm.daemon:main ']}
