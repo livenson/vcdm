@@ -1,10 +1,9 @@
 import time
-import vcdm
 
-from vcdm import container
 from twisted.python import log
-from vcdm.container import _append_child, _remove_child
-from vcdm.server.cdmi.generic import get_parent
+
+import vcdm
+from vcdm.utils import check_path
 
 from httplib import NOT_FOUND, CREATED, OK, CONFLICT, NO_CONTENT, FORBIDDEN, UNAUTHORIZED,\
     NOT_IMPLEMENTED, FOUND
@@ -13,6 +12,7 @@ from vcdm.authz import authorize
 
 def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
     """ Write or update content of a blob. """
+    from vcdm.server.cdmi.generic import get_parent
     parent_container = get_parent(fullpath)
     
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type = 'blob', 
@@ -25,7 +25,7 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
 
     # assert we can write to the defined path
     # TODO: expensive check for consistency, make optional 
-    if not container.check_path(container_path):
+    if not check_path(container_path):
         log.err("Writing to a container is not allowed. Container path: %s" % '/'.join(container_path))
         return (FORBIDDEN, uid)
     
@@ -66,6 +66,7 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
                         'backend_name': blob_backend.backend_name},
                         uid)
         # update the parent container as well
+        from vcdm.container import _append_child
         _append_child(parent_container, uid, name)
         blob_backend.create(uid, content)
         log.msg(type='accounting', avatar=avatar, amount=int(content[1]), acc_type='blob_creation')
@@ -133,6 +134,7 @@ def delete(avatar, fullpath):
             vcdm.env['blob'].delete(uid)
             vcdm.env['ds'].delete(uid)
             # find parent container and update its children range
+            from vcdm.container import _remove_child
             _remove_child(vals['parent_container'], uid)
             log.msg(type='accounting', avatar=avatar, amount=1, acc_type='blob_delete')
             return NO_CONTENT

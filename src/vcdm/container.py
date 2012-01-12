@@ -113,23 +113,6 @@ def delete(avatar, fullpath):
 
 ####### Support functions dealing with container logic #########
 
-def check_path(container_path):
-    # for a top-level container - all is good
-    if container_path == ['/']:
-        return True        
-    # XXX: probably not the best way to do the search, but seems to work
-    # construct all possible fullpaths of containers and do a search for them
-    all_paths = []
-    for i, value in enumerate(container_path):
-        if i == 0: # top-level
-            all_paths.append('/') 
-        else:
-            all_paths.append(all_paths[i-1].rstrip('/') + '/' + value) # concat with the previous + remove possible extra slash
-    
-    log.msg("Checking paths: %s" % all_paths)  
-    # XXX: better to embed len into the request 
-    return len(vcdm.env['ds'].find_path_uids(all_paths)) == len(container_path)        
-
 def _append_child(container_path, child_uid, child_name):    
     log.msg("Appending child %s:%s to a container %s" %(child_uid, child_name, container_path))    
     

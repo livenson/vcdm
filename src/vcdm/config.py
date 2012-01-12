@@ -14,13 +14,15 @@ def get_config():
 
 
 class VCDMConfig(ConfigParser):
+    """CDMI-Proxy configuration loader"""
+
     __default_files__ = ['./etc/cdmiproxy/vcdm-defaults.conf', '/etc/cdmiproxy/vcdm.conf', 
                          './vcdm-defaults.conf', './vcdm.conf', '~/.vcdm.conf']
 
     def __init__(self, config_filenames=__default_files__):
         ConfigParser.__init__(self)
         self.read([os.path.expanduser(i) for i in config_filenames])
-
+        
     def getboolean(self, section, option, default=False):
         try:
             return ConfigParser.getboolean(self, section, option)

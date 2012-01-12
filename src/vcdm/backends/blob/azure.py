@@ -1,8 +1,12 @@
 from vcdm.interfaces.blob import IBlob
-from pyazure.blob import BlobStorage
+from vcdm.config import get_config
+
+try:
+    from pyazure.blob import BlobStorage
+except ImportError:
+    print "Azure blob plugin missing"
 
 import urllib2
-from vcdm.config import get_config
 
 config = get_config()
 

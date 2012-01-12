@@ -1,11 +1,11 @@
 from  twisted.web import resource
 from twisted.python import log
 
-from  vcdm import container
+from vcdm import container
 from vcdm.server.cdmi.cdmi_content_types import CDMI_CONTAINER
-from vcdm.server.cdmi.root import CDMI_SERVER_HEADER
 from vcdm.server.cdmi.generic import parse_path, set_common_headers,\
-    get_common_body
+    get_common_body, CDMI_SERVER_HEADER
+
 from httplib import OK
 
 try:

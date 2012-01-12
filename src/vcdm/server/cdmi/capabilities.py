@@ -7,10 +7,9 @@ except ImportError:
     import simplejson as json
 
 from vcdm.server.cdmi.cdmi_content_types import CDMI_CAPABILITY
-from vcdm.server.cdmi.root import CDMI_VERSION
+from vcdm.server.cdmi.generic import CDMI_VERSION
 from vcdm.server.cdmi.generic import parse_path, get_common_body
 from vcdm.server.cdmi import current_capabilities
-from vcdm import c
 
 capability_objects = {'system': current_capabilities.system,
                       'dataobject': current_capabilities.dataobject,

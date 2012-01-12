@@ -2,7 +2,6 @@
 Venus-C Data Management module
 """
 
-# XXX this is needed for legacy config system
 from vcdm.config import get_config
 config = get_config()
 

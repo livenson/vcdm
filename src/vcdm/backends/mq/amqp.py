@@ -1,6 +1,9 @@
 from vcdm.interfaces.mq import IMessageQueue
 
-from amqplib import client_0_8 as amqp
+try:
+    from amqplib import client_0_8 as amqp
+except ImportError:
+    print "AMQP plugin missing"
 
 from vcdm import c
 

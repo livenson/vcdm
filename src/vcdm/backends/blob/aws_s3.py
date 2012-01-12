@@ -6,11 +6,13 @@ from vcdm.interfaces.blob import IBlob
 
 from twisted.python import log
 
-import boto
-from boto.s3.key import Key
-from boto.s3.connection import Location
-from boto.exception import S3CreateError
-
+try:
+    import boto
+    from boto.s3.key import Key
+    from boto.s3.connection import Location
+    from boto.exception import S3CreateError
+except ImportError:
+    print "AWS blob plugin missing"
 
 class S3Blob(IBlob):
 

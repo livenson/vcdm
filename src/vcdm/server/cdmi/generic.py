@@ -1,5 +1,5 @@
-#TODO: handle cdmi_objectid requests
-from vcdm.server.cdmi.root import CDMI_SERVER_HEADER, CDMI_VERSION
+CDMI_VERSION = '1.0.1'
+CDMI_SERVER_HEADER = "CDMI-Proxy/" + CDMI_VERSION
 
 from itertools import groupby
 

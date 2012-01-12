@@ -4,17 +4,16 @@ Process blob-specific CDMI request.
 
 from twisted.web import resource
 from twisted.python import log
+from twisted.web.server import NOT_DONE_YET
+from twisted.web.static import NoRangeStaticProducer
 
 from vcdm import blob
 from vcdm import c
 from vcdm.server.cdmi.cdmi_content_types import CDMI_OBJECT
 
 from vcdm.server.cdmi.generic import set_common_headers, parse_path,\
-    get_common_body
-from vcdm.server.cdmi.root import CDMI_SERVER_HEADER
+    get_common_body, CDMI_SERVER_HEADER
 from httplib import OK, CREATED, FOUND
-from twisted.web.server import NOT_DONE_YET
-from twisted.web.static import NoRangeStaticProducer
 from StringIO import StringIO
 import sys
 
@@ -22,6 +21,7 @@ try:
     import json
 except ImportError:
     import simplejson as json
+
 
 class Blob(resource.Resource):
     isLeaf = True # data items cannot be nested

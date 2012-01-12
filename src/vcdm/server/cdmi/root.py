@@ -2,11 +2,9 @@ from twisted.web import resource
 from twisted.python import log
 from vcdm.server.cdmi.cdmi_content_types import CDMI_CAPABILITY
 
-CDMI_VERSION = '1.0.1'
-CDMI_SERVER_HEADER = "CDMI-Proxy/" + CDMI_VERSION
-
 import blob, queue, container, capabilities
 from cdmi_content_types import CDMI_QUEUE, CDMI_CONTAINER, CDMI_OBJECT
+from vcdm.server.cdmi.generic import CDMI_VERSION
 
 cdmi_objects = {CDMI_QUEUE: queue.Queue,
                 CDMI_OBJECT: blob.Blob,

@@ -2,7 +2,7 @@
 import sys
 import os
 
-from twisted.python.log import FileLogObserver
+from twisted.python import log
 from twisted.python import util
 
 
@@ -28,10 +28,10 @@ def print_memory_stats(location_tag = "undef"):
         print "psutil module not available"
 
 
-class AccountingLogObserver(FileLogObserver):
+class AccountingLogObserver(log.FileLogObserver):
     
     def __init__(self, f):
-        FileLogObserver.__init__(self, f)
+        log.FileLogObserver.__init__(self, f)
     
     def emit(self, eventDict):
         if eventDict.get('type') == 'accounting':
@@ -42,3 +42,22 @@ class AccountingLogObserver(FileLogObserver):
             msg = "%s %s %s %s\n" %(timeStr, avatar, acc_type, amount)
             util.untilConcludes(self.write, msg)
             util.untilConcludes(self.flush)
+
+
+def check_path(container_path):
+    # for a top-level container - all is good
+    if container_path == ['/']:
+        return True        
+    # XXX: probably not the best way to do the search, but seems to work
+    # construct all possible fullpaths of containers and do a search for them
+    all_paths = []
+    for i, value in enumerate(container_path):
+        if i == 0: # top-level
+            all_paths.append('/') 
+        else:
+            all_paths.append(all_paths[i-1].rstrip('/') + '/' + value) # concat with the previous + remove possible extra slash
+    
+    log.msg("Checking paths: %s" % all_paths)  
+    # XXX: better to embed len into the request 
+    import vcdm
+    return len(vcdm.env['ds'].find_path_uids(all_paths)) == len(container_path)
