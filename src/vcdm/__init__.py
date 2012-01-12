@@ -46,28 +46,28 @@ except ImportError:
 mq_backends = {}
 
 if config.getboolean('general', 'support_mq') and \
-        c('general', 'mq.backend') == 'local':
+        config.get('general', 'mq.backend') == 'local':
     from vcdm.backends.mq.amqp import AMQPMQ
     mq_backends['amqp'] = AMQPMQ
 
 if config.getboolean('general', 'support_mq') and \
-        c('general', 'mq.backend') == 'cdmi':
+        config.get('general', 'mq.backend') == 'cdmi':
     from vcdm.backends.mq.cdmi import CDMIQueue
     mq_backends['cdmi'] = CDMIQueue
 
 if config.getboolean('general', 'support_mq') and \
-        c('general', 'mq.backend') == 'aws':
+        config.get('general', 'mq.backend') == 'aws':
     from vcdm.backends.mq.aws_sqs import AWSSQSMessageQueue
     mq_backends['aws'] = AWSSQSMessageQueue
 
 if config.getboolean('general', 'support_mq') and \
-        c('general', 'mq.backend') == 'azure':
+        config.get('general', 'mq.backend') == 'azure':
     from vcdm.backends.mq.azure import AzureQueue
     mq_backends['azure'] = AzureQueue
 
 # datastore backends
 datastore_backends = {}
-if c('general', 'ds.backend') == 'couchdb':
+if config.get('general', 'ds.backend') == 'couchdb':
     from vcdm.backends.datastore.couchdb_store import CouchDBStore
     datastore_backends['couchdb'] = CouchDBStore  
 
