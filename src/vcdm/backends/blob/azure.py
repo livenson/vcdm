@@ -20,7 +20,6 @@ class AzureBlob(IBlob):
         self.conn = BlobStorage(config.get(backend_name, 'credentials.blob_url'),
                                  config.get(backend_name, 'credentials.account'), 
                                  config.get(backend_name, 'credentials.password'))
-        # TODO: validate in real life        
         self.conn.create_container(self.cdmi_bucket_name)
 
     def read(self, fnm):
