@@ -4,13 +4,14 @@ from twisted.python import log
 from twisted.internet import reactor
 from twisted.web import server, resource, guard
 from twisted.cred.portal import IRealm, Portal
-from twisted.cred.checkers import FilePasswordDB 
+from twisted.cred.checkers import FilePasswordDB
 from twisted.internet import task
 
 import vcdm
 from vcdm.server.cdmi.root import RootCDMIResource
 from vcdm.server.cdmi import current_capabilities
 from vcdm.utils import AccountingLogObserver
+
 
 class SimpleRealm(object):
     """

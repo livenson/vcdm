@@ -24,10 +24,10 @@ except ImportError:
 
 
 class Blob(resource.Resource):
-    isLeaf = True # data items cannot be nested
-    allowedMethods = ('PUT','GET','DELETE', 'HEAD') # commands we support for the data items
-    
-    def __init__(self, avatar = None):        
+    isLeaf = True  # data items cannot be nested
+    allowedMethods = ('PUT', 'GET', 'DELETE', 'HEAD')
+
+    def __init__(self, avatar=None):
         resource.Resource.__init__(self)
         self.avatar = avatar
 
@@ -35,17 +35,18 @@ class Blob(resource.Resource):
         """GET operation corresponds to reading of the blob object"""
         # process path and extract potential containers/fnm
         _, __, fullpath = parse_path(request.path)
-        tre_header = request.getHeader('tre-enabled') 
-        tre_request = tre_header is not None and (tre_header == 'true' or tre_header =='True')
+        tre_header = request.getHeader('tre-enabled')
+        tre_request = tre_header is not None and tre_header.lower() == 'true'
         log.msg("Request for TRE-enabled download received.")
         # perform operation on ADT
         status, vals = blob.read(self.avatar, fullpath, tre_request)
         # construct response
         request.setResponseCode(status)
-        
+
         request.setHeader('Content-Type', CDMI_OBJECT)
         if tre_request and status == FOUND:
-            request.setHeader('Location', "/".join([c('general', 'tre_server'), str(vals['uid'])]))
+            request.setHeader('Location', "/".join([c('general', 'tre_server'),
+                                                    str(vals['uid'])]))
             request.setLastModified(float(vals['mtime']))
 
         set_common_headers(request)
@@ -57,12 +58,13 @@ class Blob(resource.Resource):
             # construct body
             response_body = {
                              'completionStatus': 'Complete',
-                             'mimetype': vals['mimetype'], 
+                             'mimetype': vals['mimetype'],
                              'metadata': vals['metadata'],
-                             'value': content, 
+                             'value': content,
                              'capabilitiesURI': '/cdmi_capabilities/dataobject'
                              }
-            response_body.update(get_common_body(request, str(vals['uid']), fullpath))
+            response_body.update(get_common_body(request, str(vals['uid']),
+                                                 fullpath))
             return json.dumps(response_body)
         else:
             return ''
@@ -77,11 +79,11 @@ class Blob(resource.Resource):
         # process json encoded request body
         body = json.loads(request.content.read(length))
         # default values of mimetype and metadata
-        mimetype = body.get('mimetype', 'text/plain') 
+        mimetype = body.get('mimetype', 'text/plain')
         metadata = body.get('metadata', {})
 
         content = (StringIO(body['value']), sys.getsizeof(body['value']))
-        status, uid = blob.write(self.avatar, name, container_path, fullpath, 
+        status, uid = blob.write(self.avatar, name, container_path, fullpath,
                                  mimetype, metadata, content)
         request.setResponseCode(status)
         request.setHeader('Content-Type', CDMI_OBJECT)
@@ -109,8 +111,8 @@ class Blob(resource.Resource):
 
 
 class NonCDMIBlob(resource.Resource):
-    isLeaf = True # data items cannot be nested
-    allowedMethods = ('PUT','GET','DELETE', 'HEAD') # commands we support for the data items
+    isLeaf = True
+    allowedMethods = ('PUT', 'GET', 'DELETE', 'HEAD')
 
     def makeProducer(self, request, content_object):
         request.setResponseCode(OK)
@@ -119,7 +121,7 @@ class NonCDMIBlob(resource.Resource):
         # TODO: For non-local backends twisted.web.Proxy approach should be reused.
         return NoRangeStaticProducer(request, content_object)
 
-    def __init__(self, avatar = None):
+    def __init__(self, avatar=None):
         resource.Resource.__init__(self)
         self.avatar = avatar
 
@@ -128,17 +130,18 @@ class NonCDMIBlob(resource.Resource):
         # process path and extract potential containers/fnm
         _, __, fullpath = parse_path(request.path)
         log.msg("Getting blob (non-cdmi) %s" % fullpath)
-        tre_header = request.getHeader('tre-enabled') 
-        tre_request = tre_header is not None and (tre_header == 'true' or tre_header =='True')
+        tre_header = request.getHeader('tre-enabled')
+        tre_request = tre_header is not None and tre_header.lower() == 'true'
         # perform operation on ADT
         status, vals = blob.read(self.avatar, fullpath, tre_request)
         # construct response
         request.setResponseCode(status)
         if tre_request and status == FOUND:
-            request.setHeader('Location', "/".join([c('general', 'tre_server'), str(vals['uid'])]))
-        
+            request.setHeader('Location', "/".join([c('general', 'tre_server'),
+                                                    str(vals['uid'])]))
+
         if status is OK:
-            # XXX: hack - some-why the response just hangs if to simply path 
+            # XXX: hack - some-why the response just hangs if to simply path
             # mimetype as a content_object type
             mimetype = vals['mimetype']
             actual_type = 'text/plain' if mimetype == 'text/plain' else str(mimetype)
@@ -164,7 +167,8 @@ class NonCDMIBlob(resource.Resource):
         mimetype = request.getHeader('Content-Type') \
                     if request.getHeader('Content-Type') is not None \
                     else 'text/plain'
-        status, _ = blob.write(self.avatar, name, container_path, fullpath, mimetype, {}, content)
+        status, _ = blob.write(self.avatar, name, container_path, fullpath,
+                               mimetype, {}, content)
         request.setResponseCode(status)
         return ''
 
@@ -175,4 +179,3 @@ class NonCDMIBlob(resource.Resource):
         request.setResponseCode(status)
         request.setHeader('Server', CDMI_SERVER_HEADER)
         return ''
-

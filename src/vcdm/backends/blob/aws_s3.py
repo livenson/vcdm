@@ -14,6 +14,7 @@ try:
 except ImportError:
     print "AWS blob plugin missing"
 
+
 class S3Blob(IBlob):
 
     conn = None
@@ -27,20 +28,21 @@ class S3Blob(IBlob):
         self.cdmi_bucket_name = c(backend_name, 'aws.bucket_name')
         # change to Location.USWest for the corresponding zone
         try:
-            self.conn.create_bucket(self.cdmi_bucket_name, location = Location.EU)
+            self.conn.create_bucket(self.cdmi_bucket_name,
+                                    location=Location.EU)
         except S3CreateError:
             log.msg("S3 bucket already created. Using it.")
 
-    def read(self, fnm):        
+    def read(self, fnm):
         b = self.conn.get_bucket(self.cdmi_bucket_name)
-        k = Key(b)    
+        k = Key(b)
         k.key = fnm
         # read in the content to a temporary file on disk
-        fp = NamedTemporaryFile(prefix="aws_s3", 
+        fp = NamedTemporaryFile(prefix="aws_s3",
                                suffix=".buffer",
-                               delete=True)        
+                               delete=True)
         k.get_contents_to_file(fp)
-        fp.seek(0) # roll back to start
+        fp.seek(0)  # roll back to start
         return fp
 
     def create(self, fnm, content):
@@ -56,18 +58,18 @@ class S3Blob(IBlob):
 
     def delete(self, fnm):
         b = self.conn.get_bucket(self.cdmi_bucket_name)
-        k = Key(b)    
+        k = Key(b)
         k.key = fnm
         k.delete()
 
     def move_to_tre_server(self, fnm):
         b = self.conn.get_bucket(self.cdmi_bucket_name)
-        k = Key(b)    
+        k = Key(b)
         k.key = fnm
         # read in the content to a temporary file on disk
-        fp = NamedTemporaryFile(prefix="aws_s3", 
+        fp = NamedTemporaryFile(prefix="aws_s3",
                                suffix=".buffer",
-                               delete=False)        
+                               delete=False)
         k.get_contents_to_file(fp)
 
         source = os.path.join(c(self.backend_name, 'blob.datadir'), fp.name)

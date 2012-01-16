@@ -20,7 +20,7 @@ capability_objects = {'system': current_capabilities.system,
 class Capability(resource.Resource):
     isLeaf = True
 
-    def __init__(self, avatar = None):
+    def __init__(self, avatar=None):
         resource.Resource.__init__(self)
         self.avatar = avatar
 
@@ -28,7 +28,6 @@ class Capability(resource.Resource):
         # for now only support top-level capabilities
         _, __, fullpath = parse_path(request.path)
 
-        # TODO: how to handle the missing UID? Perhaps, store capabilities in datastore?
         body = get_common_body(request, None, fullpath)
         # is it request for a system-level capability?
         if fullpath == '/cdmi_capabilities':

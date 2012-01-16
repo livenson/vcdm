@@ -1,17 +1,16 @@
 system = {
-        
+
         "cdmi_domains": False,
         "cdmi_notification": False,
         "cdmi_query": False,
         "cdmi_queues": False,
-            
-        # export protocols        
+
+        # export protocols
         "cdmi_export_webdav": False,
         "cdmi_export_cifs": False,
 
-        "cdmi_security_https_transport": True,        
+        "cdmi_security_https_transport": True,
 
-        
         # Storage System Metadata Capabilities
         "cdmi_size": True,
         "cdmi_ctime": True,
@@ -36,7 +35,7 @@ dataobject = {
 
 mq = {
 
-        "cdmi_read_value": True,        
+        "cdmi_read_value": True,
         "cdmi_read_metadata": True,
         "cdmi_modify_value": True,
         "cdmi_modify_metadata": True,
@@ -50,7 +49,7 @@ container = {
         "cdmi_modify_metadata": True,
         "cdmi_snapshot": False,
         "cdmi_create_dataobject": True,
-        "cdmi_post_dataobject": False, 
+        "cdmi_post_dataobject": False,
         "cdmi_create_container": True,
         "cdmi_delete_container": True,
         "cdmi_move_container": False,

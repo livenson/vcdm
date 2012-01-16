@@ -10,15 +10,16 @@ import urllib2
 
 config = get_config()
 
+
 class AzureBlob(IBlob):
-    
+
     backend_name = 'azure'
     conn = None
 
     def __init__(self, backend_name):
         self.cdmi_bucket_name = config.get(backend_name, 'azure.bucket_name')
         self.conn = BlobStorage(config.get(backend_name, 'credentials.blob_url'),
-                                 config.get(backend_name, 'credentials.account'), 
+                                 config.get(backend_name, 'credentials.account'),
                                  config.get(backend_name, 'credentials.password'))
         self.conn.create_container(self.cdmi_bucket_name)
 
