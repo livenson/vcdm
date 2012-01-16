@@ -1,15 +1,12 @@
 CDMI-Proxy
 ----------
 
-CDMI-Proxy is an implementation of a CDMI-compatible (v 1.0.1h) server that can be 
+CDMI-Proxy is an implementation of a CDMI-compatible (v 1.0.1) server that can be 
 used to store data both using local infrastructure and public cloud services.
 
 Implementation supports:
 - Blobs
 - Multi-level containers (also for single-level backends, e.g. AWS or Azure)
-
-Authentication is done over HTTP digest. See ''users.db'' for a list of allowed users. 
-Default authorization mechanism allows to modify resource subtrees only to their creators.
 
 SETUP
 =====
@@ -46,5 +43,8 @@ corresponding libraries (and put them on the PYTHONPATH or into $vcdm/libsrc:
 	- 2364: debugging access - no encryption or authN
 	- 8080: production access - encryption and authN
 
-The terms of use of the software are governed by the BSD license (3 clause).
+6) Building documentation using sphinx:
+    - install Sphinx: pip install Sphinx
+    - Run `make html`
 
+The terms of use of the software are governed by the BSD license (3 clause).
