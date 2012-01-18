@@ -52,11 +52,11 @@ Configuration
 
 CDMI-Proxy reads in its configuration from the files in the following order:
 
- 1. /etc/cdmiproxy/vcdm-defaults.conf'
- 1. /etc/cdmiproxy/vcdm.conf
- 1. /vcdm-defaults.conf
- 1. ./vcdm.conf (relative to pwd) 
- 1. ~/.vcdm.conf
+#. /etc/cdmiproxy/vcdm-defaults.conf'
+#. /etc/cdmiproxy/vcdm.conf
+#. /vcdm-defaults.conf
+#. ./vcdm.conf (relative to pwd) 
+#. ~/.vcdm.conf
 
 Configuration is additive, so you can overwrite separate settings in
 configuration files with higher priority.
@@ -127,17 +127,20 @@ environments.
 set of permissions on that object. 
 
 List of actions:
- 1. blob_read
- 1. blob_write
- 1. blob_delete
- 1. container_read
- 1. container_write
- 1. container_delete
+
+#. blob_read
+#. blob_write
+#. blob_delete
+#. container_read
+#. container_write
+#. container_delete
  
-List of permissions:
- 1. read
- 1. write
- 1. delete
+List of permissions (shortened version used for setting permissions through
+REST calls):
+
+#. read (r)
+#. write (w)
+#. delete (d)
 
 Setting or updating permissions is done through CDMI calls. We currently do not
 support the overly complicated NFSv4 ACL format defined by CDMI specification.
