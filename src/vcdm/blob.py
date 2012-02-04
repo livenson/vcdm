@@ -10,7 +10,8 @@ from httplib import NOT_FOUND, CREATED, OK, CONFLICT, NO_CONTENT, FORBIDDEN, \
     UNAUTHORIZED, NOT_IMPLEMENTED, FOUND
 
 
-def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
+def write(avatar, name, container_path, fullpath, mimetype, metadata, content,
+          on_behalf=None):
     """ Write or update content of a blob. """
     from vcdm.server.cdmi.generic import get_parent
     parent_container = get_parent(fullpath)
@@ -74,8 +75,8 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
         from vcdm.container import _append_child
         _append_child(parent_container, uid, name)
         blob_backend.create(uid, content)
-        log.msg(type='accounting', avatar=avatar, amount=int(content[1]),
-                acc_type='blob_creation')
+        log.msg(type='accounting', avatar=avatar if not on_behalf else on_behalf,
+                    amount=int(content[1]), acc_type='blob_creation')
         return (CREATED, uid)
     else:
         uid = vcdm.env['ds'].write({
@@ -88,13 +89,13 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content):
                         'backend_name': blob_backend.backend_name},
                         uid)
         blob_backend.update(uid, content)
-        log.msg(type='accounting', avatar=avatar, amount=int(content[1]),
-                acc_type='blob_update')
+        log.msg(type='accounting', avatar=avatar if not on_behalf else on_behalf,
+                amount=int(content[1]), acc_type='blob_update')
 
         return (OK, uid)
 
 
-def read(avatar, fullpath, tre_request=False):
+def read(avatar, fullpath, tre_request=False, on_behalf=None):
     """ Return contents of a blob.
     Returns:
     (HTTP_STATUS_CODE, dictionary_of_metadata)
@@ -115,8 +116,8 @@ def read(avatar, fullpath, tre_request=False):
                         'atime': str(time.time()),
                         },
                         uid)
-        log.msg(type='accounting', avatar=avatar, amount=vals['size'],
-                acc_type='blob_read')
+        log.msg(type='accounting', avatar=avatar if not on_behalf else on_behalf,
+                amount=vals['size'], acc_type='blob_read')
         vals['uid'] = uid
         # TRE-request?
         if tre_request:
@@ -129,7 +130,7 @@ def read(avatar, fullpath, tre_request=False):
         return (OK, vals)
 
 
-def delete(avatar, fullpath):
+def delete(avatar, fullpath, on_behalf=None):
     """ Delete a blob. """
     log.msg("Deleting %s" % fullpath)
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type='blob',
@@ -148,8 +149,8 @@ def delete(avatar, fullpath):
             # find parent container and update its children range
             from vcdm.container import _remove_child
             _remove_child(vals['parent_container'], uid)
-            log.msg(type='accounting', avatar=avatar, amount=1,
-                    acc_type='blob_delete')
+            log.msg(type='accounting', avatar=avatar if not on_behalf else on_behalf,
+                    amount=1, acc_type='blob_delete')
             return NO_CONTENT
         except:
             #TODO: - how do we handle failed delete?

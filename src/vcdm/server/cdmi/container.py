@@ -1,10 +1,10 @@
-from  twisted.web import resource
 from twisted.python import log
 
 from vcdm import container
 from vcdm.server.cdmi.cdmi_content_types import CDMI_CONTAINER
 from vcdm.server.cdmi.generic import parse_path, set_common_headers,\
     get_common_body, CDMI_SERVER_HEADER
+from vcdm.server.cdmi.root import StorageResource
 
 from httplib import OK
 
@@ -14,13 +14,9 @@ except ImportError:
     import simplejson as json
 
 
-class Container(resource.Resource):
+class Container(StorageResource):
     isLeaf = True
     allowMethods = ('PUT', 'GET', 'DELETE')
-
-    def __init__(self, avatarID=None):
-        resource.Resource.__init__(self)
-        self.avatarID = avatarID
 
     def render_GET(self, request):
         """GET operation corresponds to reading container's data"""
@@ -89,13 +85,9 @@ class Container(resource.Resource):
         return ""
 
 
-class NonCDMIContainer(resource.Resource):
+class NonCDMIContainer(StorageResource):
     isLeaf = True
     allowMethods = ('PUT', 'GET', 'DELETE')
-
-    def __init__(self, avatarID=None):
-        resource.Resource.__init__(self)
-        self.avatarID = avatarID
 
     def render_GET(self, request):
         """GET operation corresponds to reading a container's data."""

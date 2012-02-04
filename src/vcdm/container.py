@@ -10,7 +10,7 @@ from vcdm.utils import check_path
 from vcdm.authz import authorize
 
 
-def read(avatar, fullpath):
+def read(avatar, fullpath, on_behalf=None):
     """ Read a specified container."""
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type='container',
                                             fields=['children', 'metadata',
@@ -24,12 +24,13 @@ def read(avatar, fullpath):
         if not authorize(avatar, fullpath, 'read_container', acls):
             return (UNAUTHORIZED, None)
         vals['uid'] = uid
-        log.msg(type='accounting', avatar=avatar, amount=1,
-                acc_type='container_read')
+        log.msg(type='accounting', avatar=avatar if not on_behalf else on_behalf,
+                amount=1, acc_type='container_read')
         return (OK, vals)
 
 
-def create_or_update(avatar, name, container_path, fullpath, metadata=None):
+def create_or_update(avatar, name, container_path, fullpath, metadata=None,
+                     on_behalf=None):
     """Create or update a container."""
     log.msg("Container create/update: %s" % fullpath)
 
@@ -84,8 +85,8 @@ def create_or_update(avatar, name, container_path, fullpath, metadata=None):
         # update the parent container as well, unless it's a top-level container
         if fullpath != '/':
             _append_child(parent_container, uid, name + "/")
-        log.msg(type='accounting', avatar=avatar, amount=1,
-                acc_type='container_create')
+        log.msg(type='accounting', avatar=avatar if not on_behalf else on_behalf,
+                amount=1, acc_type='container_create')
         return (CREATED, vals)
     else:
         # update container
@@ -96,12 +97,12 @@ def create_or_update(avatar, name, container_path, fullpath, metadata=None):
                         'metadata': metadata,
                         'mtime': str(time.time())},
                         uid)
-        log.msg(type='accounting', avatar=avatar, amount=1,
-                acc_type='container_update')
+        log.msg(type='accounting', avatar=avatar if not on_behalf else on_behalf,
+                amount=1, acc_type='container_update')
         return (OK, vals)
 
 
-def delete(avatar, fullpath):
+def delete(avatar, fullpath, on_behalf=None):
     """ Delete a container."""
     log.msg("Deleting a container %s" % fullpath)
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type='container',
@@ -126,8 +127,8 @@ def delete(avatar, fullpath):
         if fullpath != '/':
             _remove_child(vals['parent_container'], uid)
         ## XXX: delete all children?
-        log.msg(type='accounting', avatar=avatar, amount=1,
-                acc_type='container_delete')
+        log.msg(type='accounting', avatar=avatar if not on_behalf else on_behalf,
+                amount=1, acc_type='container_delete')
         return NO_CONTENT
 
 ####### Support functions dealing with container logic #########

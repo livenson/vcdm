@@ -1,4 +1,3 @@
-from twisted.web import resource
 from httplib import OK
 
 try:
@@ -7,9 +6,10 @@ except ImportError:
     import simplejson as json
 
 from vcdm.server.cdmi.cdmi_content_types import CDMI_CAPABILITY
-from vcdm.server.cdmi.generic import CDMI_VERSION
-from vcdm.server.cdmi.generic import parse_path, get_common_body
+from vcdm.server.cdmi.generic import CDMI_VERSION, parse_path, get_common_body
 from vcdm.server.cdmi import current_capabilities
+from vcdm.server.cdmi.root import StorageResource
+
 
 capability_objects = {'system': current_capabilities.system,
                       'dataobject': current_capabilities.dataobject,
@@ -17,12 +17,8 @@ capability_objects = {'system': current_capabilities.system,
                       'container': current_capabilities.container}
 
 
-class Capability(resource.Resource):
+class Capability(StorageResource):
     isLeaf = True
-
-    def __init__(self, avatar=None):
-        resource.Resource.__init__(self)
-        self.avatar = avatar
 
     def render_GET(self, request):
         # for now only support top-level capabilities

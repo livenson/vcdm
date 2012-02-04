@@ -1,8 +1,6 @@
 """
 Process blob-specific CDMI request.
 """
-
-from twisted.web import resource
 from twisted.python import log
 from twisted.web.server import NOT_DONE_YET
 from twisted.web.static import NoRangeStaticProducer
@@ -10,9 +8,10 @@ from twisted.web.static import NoRangeStaticProducer
 from vcdm import blob
 from vcdm import c
 from vcdm.server.cdmi.cdmi_content_types import CDMI_OBJECT
-
 from vcdm.server.cdmi.generic import set_common_headers, parse_path,\
     get_common_body, CDMI_SERVER_HEADER
+from vcdm.server.cdmi.root import StorageResource
+
 from httplib import OK, CREATED, FOUND
 from StringIO import StringIO
 import sys
@@ -23,13 +22,9 @@ except ImportError:
     import simplejson as json
 
 
-class Blob(resource.Resource):
+class Blob(StorageResource):
     isLeaf = True  # data items cannot be nested
     allowedMethods = ('PUT', 'GET', 'DELETE', 'HEAD')
-
-    def __init__(self, avatar=None):
-        resource.Resource.__init__(self)
-        self.avatar = avatar
 
     def render_GET(self, request):
         """GET operation corresponds to reading of the blob object"""
@@ -91,7 +86,7 @@ class Blob(resource.Resource):
         if status == OK or status == CREATED:
             response_body = {
                              'completionStatus': 'Complete',
-                             'mimetype': mimetype, 
+                             'mimetype': mimetype,
                              'metadata': metadata,
                              }
             # add common elements
@@ -110,7 +105,7 @@ class Blob(resource.Resource):
         return ''
 
 
-class NonCDMIBlob(resource.Resource):
+class NonCDMIBlob(StorageResource):
     isLeaf = True
     allowedMethods = ('PUT', 'GET', 'DELETE', 'HEAD')
 
@@ -120,10 +115,6 @@ class NonCDMIBlob(resource.Resource):
         # TODO: twisted.web.static.File is a nice example for streaming
         # TODO: For non-local backends twisted.web.Proxy approach should be reused.
         return NoRangeStaticProducer(request, content_object)
-
-    def __init__(self, avatar=None):
-        resource.Resource.__init__(self)
-        self.avatar = avatar
 
     def render_GET(self, request):
         """GET returns contents of a blob"""
