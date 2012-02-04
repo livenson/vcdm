@@ -5,6 +5,7 @@ Venus-C Data Management module
 from vcdm.config import get_config
 config = get_config()
 
+
 def c(group, field):
     """Shorthand for getting configuration values"""
     return config.get(group, field)
@@ -34,7 +35,7 @@ try:
     blob_backends['azure'] = AzureBlob
 except ImportError:
     print "Azure back-end type not available"
-    
+
 try:
     from vcdm.backends.blob.cdmi import CDMIBlob
     blob_backends['cdmi'] = CDMIBlob
@@ -68,6 +69,6 @@ if config.getboolean('general', 'support_mq') and \
 datastore_backends = {}
 if config.get('general', 'ds.backend') == 'couchdb':
     from vcdm.backends.datastore.couchdb_store import CouchDBStore
-    datastore_backends['couchdb'] = CouchDBStore  
+    datastore_backends['couchdb'] = CouchDBStore
 
 env['tre_enabled'] = config.getboolean('general', 'tre_enabled')

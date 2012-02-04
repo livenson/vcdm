@@ -1,12 +1,13 @@
 import couchdb
 import time
 from uuid import uuid4
-from vcdm.interfaces.datastore import IDatastore
 
+from vcdm.interfaces.datastore import IDatastore
 from vcdm import c
 from vcdm.errors import InternalError
 
 from twisted.python import log
+
 
 class CouchDBStore(IDatastore):
 
@@ -18,7 +19,7 @@ class CouchDBStore(IDatastore):
             self.db = server.create('meta')
         else:
             # already created
-            self.db = server['meta'] 
+            self.db = server['meta']
         # make sure we have a top-level folder
         if self.find_by_path('/', 'container')[0] is None:
             self.write({
@@ -35,9 +36,9 @@ class CouchDBStore(IDatastore):
     def read(self, docid):
         return self.db[docid]
 
-    def write(self, data, docid = None):
+    def write(self, data, docid=None):
         doc = None
-        log.msg("Writing to CouchDB. UID: %s, data: %s" %(docid, data))
+        log.msg("Writing to CouchDB. UID: %s, data: %s" % (docid, data))
         if docid is None:
             docid = uuid4().hex
             data['_id'] = docid
@@ -67,7 +68,7 @@ class CouchDBStore(IDatastore):
 
         return list(self.db.query(dirn_fun))
 
-    def get_total_blob_size(self, avatar = 'Anonymous'):
+    def get_total_blob_size(self, avatar='Anonymous'):
         """ Return total size in GBs of all blobs indexed by the datastore. """
 
         dirn_fun = '''
@@ -89,13 +90,13 @@ class CouchDBStore(IDatastore):
            }
         }
         '''
-        reducer='''
+        reducer = '''
         function(keys, values) {
-            var a = [], l = keys.length;    
+            var a = [], l = keys.length;
             for(var i=0; i<l; i++) {
-                for(var j=i+1; j<l; j++)            
-                    if (keys[i][0] === keys[j][0]) j = ++i;        
-                    a.push(keys[i][0]);    
+                for(var j=i+1; j<l; j++)
+                    if (keys[i][0] === keys[j][0]) j = ++i;
+                    a.push(keys[i][0]);
             }
             return a;
         }
@@ -104,7 +105,7 @@ class CouchDBStore(IDatastore):
         res = list(self.db.query(dirn_fun, reduce_fun=reducer, options='group=true'))
         return res[0].value if res[0].value is not None else []
 
-    def find_by_path(self, path, object_type = None, fields = None):
+    def find_by_path(self, path, object_type=None, fields=None):
         """ Find an object at a given path.
         - object_type - optional filter by the type of an object (e.g. blob, container, ...)
         - fields - fields to retrieve from the database. By default only gets UID of an object
@@ -116,11 +117,11 @@ class CouchDBStore(IDatastore):
         if fields is not None:
             fields = '{' + ','.join([f + ': doc.' + f for f in fields]) + '}'
         else:
-            fields = 'null'    
+            fields = 'null'
 
         fnm_fun = '''function(doc) {
             if (doc.fullpath == '%s' && %s ) {
-                emit(doc.id, %s);            
+                emit(doc.id, %s);
             }
         }
         ''' % (path, comparision_string, fields)
@@ -133,7 +134,7 @@ class CouchDBStore(IDatastore):
         else:
             tmp_res = list(res)[0]
             return (tmp_res.id, tmp_res.value)
-        
+
     def find_path_uids(self, paths):
         """Return a list of IDs of container objects that correspond to the specified path."""
         comparision_string = ['doc.fullpath == "' + p + '"' for p in paths]
@@ -141,7 +142,7 @@ class CouchDBStore(IDatastore):
             if (doc.object == 'container' && (%s)) {
                 emit(doc.id, null);
             }
-        } 
+        }
         ''' % ' || '.join(comparision_string)
         res = self.db.query(fnm_fun)
         if len(res) == 0:

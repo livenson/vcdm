@@ -1,6 +1,8 @@
-import os
-from vcdm.interfaces.blob import IBlob
+from twisted.python import log
 
+import os
+
+from vcdm.interfaces.blob import IBlob
 from vcdm import c
 from vcdm.utils import copyStreamToStream
 
@@ -19,6 +21,7 @@ class POSIXBlob(IBlob):
     def create(self, fnm, content):
         """Write the content to a file"""
         input_stream, input_length = content
+        log.msg("Saving %s to a posix backend at %s" % (fnm, self.location))
         with open(self.location + os.sep + fnm, 'wb') as output_file:
             copyStreamToStream(input_stream, output_file, input_length)
             input_stream.close()
@@ -26,6 +29,7 @@ class POSIXBlob(IBlob):
     def read(self, fnm):
         """Read the contents of a file, possibly a certain byte range"""
         name = self.location + os.sep + fnm
+        log.msg("Reading %s from a posix backend at %s" % (fnm, self.location))
         return open(name, 'rb')
 
     def update(self, fnm, content):
@@ -35,6 +39,7 @@ class POSIXBlob(IBlob):
 
     def delete(self, fnm):
         """Delete a specified file"""
+        log.msg("Deleting %s from a posix backend at %s" % (fnm, self.location))
         os.remove(self.location + os.sep + fnm)
 
     def move_to_tre_server(self, fnm):
