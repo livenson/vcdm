@@ -1,11 +1,12 @@
 from twisted.web import resource
 from twisted.python import log
-from vcdm.server.cdmi.cdmi_content_types import CDMI_CAPABILITY
 
 import blob
 import queue
 import container
 import capabilities
+
+from vcdm.server.cdmi.cdmi_content_types import CDMI_CAPABILITY
 from cdmi_content_types import CDMI_QUEUE, CDMI_CONTAINER, CDMI_OBJECT
 from vcdm.server.cdmi.generic import CDMI_VERSION
 

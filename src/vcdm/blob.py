@@ -110,6 +110,7 @@ def read(avatar, fullpath, tre_request=False, on_behalf=None):
         # authorize call
         acls = vals['metadata'].get('cdmi_acl')
         if not authorize(avatar, fullpath, "read_blob", acls):
+            log.msg("Authorization failed for %s on %s (%s)" % (avatar, fullpath, acls))
             return (UNAUTHORIZED, None)
         # update access time
         vcdm.env['ds'].write({
