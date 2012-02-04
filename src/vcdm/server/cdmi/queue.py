@@ -1,22 +1,18 @@
-# TODO: refactor 
-
-from twisted.web import resource
-
 import cgi
-
-from vcdm import mq
 
 try:
     import json
 except ImportError:
     import simplejson as json
 
+from vcdm import mq
 from vcdm.server.cdmi.generic import set_common_headers, parse_path,\
     get_common_body
 from vcdm.server.cdmi.cdmi_content_types import CDMI_QUEUE
+from vcdm.server.cdmi.root import StorageResource
 
 
-class Queue(resource.Resource):
+class Queue(StorageResource):
     allowedMethods = ('PUT', 'GET', 'DELETE', 'POST')
     isLeaf = True
 
