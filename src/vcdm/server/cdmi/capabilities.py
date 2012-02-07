@@ -8,7 +8,7 @@ except ImportError:
 from vcdm.server.cdmi.cdmi_content_types import CDMI_CAPABILITY
 from vcdm.server.cdmi.generic import CDMI_VERSION, parse_path, get_common_body
 from vcdm.server.cdmi import current_capabilities
-from vcdm.server.cdmi.root import StorageResource
+from vcdm.server.cdmi.cdmiresource import StorageResource
 
 
 capability_objects = {'system': current_capabilities.system,

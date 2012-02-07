@@ -51,19 +51,9 @@ if config.getboolean('general', 'support_mq') and \
     mq_backends['amqp'] = AMQPMQ
 
 if config.getboolean('general', 'support_mq') and \
-        config.get('general', 'mq.backend') == 'cdmi':
-    from vcdm.backends.mq.cdmi import CDMIQueue
-    mq_backends['cdmi'] = CDMIQueue
-
-if config.getboolean('general', 'support_mq') and \
         config.get('general', 'mq.backend') == 'aws':
     from vcdm.backends.mq.aws_sqs import AWSSQSMessageQueue
     mq_backends['aws'] = AWSSQSMessageQueue
-
-if config.getboolean('general', 'support_mq') and \
-        config.get('general', 'mq.backend') == 'azure':
-    from vcdm.backends.mq.azure import AzureQueue
-    mq_backends['azure'] = AzureQueue
 
 # datastore backends
 datastore_backends = {}

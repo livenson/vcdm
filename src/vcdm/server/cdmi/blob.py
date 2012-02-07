@@ -10,7 +10,7 @@ from vcdm import c
 from vcdm.server.cdmi.cdmi_content_types import CDMI_OBJECT
 from vcdm.server.cdmi.generic import set_common_headers, parse_path,\
     get_common_body, CDMI_SERVER_HEADER
-from vcdm.server.cdmi.root import StorageResource
+from vcdm.server.cdmi.cdmiresource import StorageResource
 
 from httplib import OK, CREATED, FOUND
 from StringIO import StringIO

@@ -91,12 +91,3 @@ class RootCDMIResource(resource.Resource):
         log.err("Failed to decide which CDMI object to use: %s, %s"
                 % (content, accept))
         return self
-
-
-class StorageResource(resource.Resource):
-    """Common parent for all resources representing storage objects"""
-
-    def __init__(self, avatar='Anonymous', delegated_user=None):
-        resource.Resource.__init__(self)
-        self.avatar = avatar
-        self.delegated_user = delegated_user
