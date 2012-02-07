@@ -24,7 +24,7 @@ class Container(StorageResource):
         _, __, fullpath = parse_path(request.path)
 
         # contact the backend
-        status, vals = container.read(self.avatarID, fullpath)
+        status, vals = container.read(self.avatar, fullpath)
 
         # create a header
         request.setResponseCode(status)
@@ -58,7 +58,7 @@ class Container(StorageResource):
         metadata = {}
         if 'metadata' in body:
             metadata = body['metadata']
-        status, vals = container.create_or_update(self.avatarID, name,
+        status, vals = container.create_or_update(self.avatar, name,
                                                   container_path,
                                                   fullpath, metadata)
         children = vals['children'].values() if 'children' in vals else {}
@@ -79,7 +79,7 @@ class Container(StorageResource):
 
     def render_DELETE(self, request):
         _, __, fullpath = parse_path(request.path)
-        status = container.delete(self.avatarID, fullpath)
+        status = container.delete(self.avatar, fullpath)
         request.setResponseCode(status)
         request.setHeader('Server', CDMI_SERVER_HEADER)
         return ""
@@ -95,7 +95,7 @@ class NonCDMIContainer(StorageResource):
         _, __, fullpath = parse_path(request.path)
 
         # contact the backend
-        status, vals = container.read(self.avatarID, fullpath)
+        status, vals = container.read(self.avatar, fullpath)
         # create a header
         request.setResponseCode(status)
 
@@ -112,14 +112,14 @@ class NonCDMIContainer(StorageResource):
 
     def render_PUT(self, request):
         name, container_path, fullpath = parse_path(request.path)
-        status, _ = container.create_or_update(self.avatarID, name,
+        status, _ = container.create_or_update(self.avatar, name,
                                                container_path, fullpath, {})
         request.setResponseCode(status)
         return ""
 
     def render_DELETE(self, request):
         _, __, fullpath = parse_path(request.path)
-        status = container.delete(self.avatarID, fullpath)
+        status = container.delete(self.avatar, fullpath)
         request.setResponseCode(status)
         request.setHeader('Server', CDMI_SERVER_HEADER)
         return ""
