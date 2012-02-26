@@ -23,7 +23,7 @@ import vcdm
 import sphinx.apidoc
 import shutil
 shutil.rmtree('gen', True)
-sphinx.apidoc.main('sphinx-api -o gen src/vcdm'.split())
+sphinx.apidoc.main('sphinx-api -o gen ../src/vcdm'.split())
 
 # -- General configuration -----------------------------------------------------
 
