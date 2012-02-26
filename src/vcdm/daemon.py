@@ -11,6 +11,9 @@ import vcdm
 from vcdm.server.cdmi.root import RootCDMIResource
 from vcdm.server.cdmi import current_capabilities
 from vcdm.utils import AccountingLogObserver
+from vcdm.config import get_config
+
+config = get_config()
 
 
 class SimpleRealm(object):
@@ -24,11 +27,59 @@ class SimpleRealm(object):
             return resource.IResource, RootCDMIResource(avatarId), lambda: None
         raise NotImplementedError()
 
+
+
+def load_blob_backends():
+    # compulsory localdisk backend
+    from vcdm.backends.blob.localdisk import POSIXBlob
+    vcdm.blob_backends = {'local': POSIXBlob}
+    # optional backends, some require presence of additional plugins
+    try:
+        from vcdm.backends.blob.aws_s3 import S3Blob
+        vcdm.blob_backends['aws'] = S3Blob
+    except ImportError:
+        print "AWS back-end type not available"
+    try:
+        from vcdm.backends.blob.azure import AzureBlob
+        vcdm.blob_backends['azure'] = AzureBlob
+    except ImportError:
+        print "Azure back-end type not available"
+    try:
+        from vcdm.backends.blob.cdmi import CDMIBlob
+        vcdm.blob_backends['cdmi'] = CDMIBlob
+    except ImportError:
+        print "CDMI back-end type not available"
+
+
+def load_mq_backends():
+    if config.getboolean('general', 'support_mq') and \
+            config.get('general', 'mq.backend') == 'local':
+        from vcdm.backends.mq.amqp import AMQPMQ
+        vcdm.mq_backends['amqp'] = AMQPMQ
+
+    if config.getboolean('general', 'support_mq') and \
+            config.get('general', 'mq.backend') == 'aws':
+        from vcdm.backends.mq.aws_sqs import AWSSQSMessageQueue
+        vcdm.mq_backends['aws'] = AWSSQSMessageQueue
+
+
+def load_ds_backends():
+    # datastore backends
+    if config.get('general', 'ds.backend') == 'couchdb':
+        from vcdm.backends.datastore.couchdb_store import CouchDBStore
+        vcdm.datastore_backends['couchdb'] = CouchDBStore
+
+
 def main():
     # setup logging
     log.startLogging(open(vcdm.config.get('general', 'common_log'), 'a'), setStdout=False)
     acclog = AccountingLogObserver(open(vcdm.config.get('general', 'accounting_log'), 'a'))
     log.addObserver(acclog.emit)
+
+    # load backends
+    load_blob_backends()
+    load_mq_backends()
+    load_ds_backends()
 
     # initialize backends
     vcdm.env['ds'] = vcdm.datastore_backends[vcdm.config.get('general', 'ds.backend')]()

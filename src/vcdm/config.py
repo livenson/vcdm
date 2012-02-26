@@ -2,6 +2,7 @@
 
 from ConfigParser import ConfigParser, Error as ConfigKeyError
 import os
+import sys
 
 _config = None
 
@@ -18,7 +19,11 @@ class VCDMConfig(ConfigParser):
 
     __default_files__ = ['/etc/cdmiproxy/vcdm-defaults.conf',
                          '/etc/cdmiproxy/vcdm.conf',
-                         './vcdm-defaults.conf', './vcdm.conf', '~/.vcdm.conf']
+                         # a slightly hackish way to include configuration location on windows for msi installs
+                          os.path.join(sys.path[0], '..', 'cdmiproxy', 'vcdm-defaults.conf'),
+                          os.path.join(sys.path[0], '..', 'cdmiproxy', 'vcdm-win.conf'),
+                         './vcdm-defaults.conf', './vcdm.conf', '~/.vcdm.conf',
+                         ]
 
     def __init__(self, config_filenames=__default_files__):
         ConfigParser.__init__(self)
