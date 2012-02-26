@@ -1,6 +1,7 @@
 """ Set of common utilities """
 import sys
 import os
+import errno
 
 from twisted.python import log
 from twisted.python import util
@@ -63,3 +64,12 @@ def check_path(container_path):
     # XXX: better to embed len into the request
     import vcdm
     return len(vcdm.env['ds'].find_path_uids(all_paths)) == len(container_path)
+
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST:
+            pass
+        else: raise

@@ -4,7 +4,7 @@ import os
 
 from vcdm.interfaces.blob import IBlob
 from vcdm import c
-from vcdm.utils import copyStreamToStream
+from vcdm.utils import copyStreamToStream, mkdir_p
 
 
 class POSIXBlob(IBlob):
@@ -16,7 +16,7 @@ class POSIXBlob(IBlob):
         self.backend_name = backend_name
         self.location = c(backend_name, 'blob.datadir')
         if not os.path.exists(self.location):
-            os.mkdir(self.location)
+            mkdir_p(self.location)
 
     def create(self, fnm, content):
         """Write the content to a file"""
