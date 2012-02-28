@@ -99,7 +99,7 @@ def create_or_update(avatar, name, container_path, fullpath, metadata=None,
                         uid)
         log.msg(type='accounting', avatar=avatar if not on_behalf else on_behalf,
                 amount=1, acc_type='container_update')
-        return (OK, vals)
+        return (NO_CONTENT, vals)
 
 
 def delete(avatar, fullpath, on_behalf=None):
