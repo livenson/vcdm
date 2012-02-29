@@ -11,9 +11,8 @@ import vcdm
 from vcdm.server.cdmi.root import RootCDMIResource
 from vcdm.server.cdmi import current_capabilities
 from vcdm.utils import AccountingLogObserver
-from vcdm.config import get_config
 
-config = get_config()
+conf = vcdm.config.get_config()
 
 
 class SimpleRealm(object):
@@ -52,28 +51,28 @@ def load_blob_backends():
 
 
 def load_mq_backends():
-    if config.getboolean('general', 'support_mq') and \
-            config.get('general', 'mq.backend') == 'local':
+    if conf.getboolean('general', 'support_mq') and \
+            conf.get('general', 'mq.backend') == 'local':
         from vcdm.backends.mq.amqp import AMQPMQ
         vcdm.mq_backends['amqp'] = AMQPMQ
 
-    if config.getboolean('general', 'support_mq') and \
-            config.get('general', 'mq.backend') == 'aws':
+    if conf.getboolean('general', 'support_mq') and \
+            conf.get('general', 'mq.backend') == 'aws':
         from vcdm.backends.mq.aws_sqs import AWSSQSMessageQueue
         vcdm.mq_backends['aws'] = AWSSQSMessageQueue
 
 
 def load_ds_backends():
     # datastore backends
-    if config.get('general', 'ds.backend') == 'couchdb':
+    if conf.get('general', 'ds.backend') == 'couchdb':
         from vcdm.backends.datastore.couchdb_store import CouchDBStore
         vcdm.datastore_backends['couchdb'] = CouchDBStore
 
 
 def main():
     # setup logging
-    log.startLogging(open(vcdm.config.get('general', 'common_log'), 'a'), setStdout=False)
-    acclog = AccountingLogObserver(open(vcdm.config.get('general', 'accounting_log'), 'a'))
+    log.startLogging(open(conf.get('general', 'common_log'), 'a'), setStdout=False)
+    acclog = AccountingLogObserver(open(conf.get('general', 'accounting_log'), 'a'))
     log.addObserver(acclog.emit)
 
     # load backends
@@ -82,24 +81,26 @@ def main():
     load_ds_backends()
 
     # initialize backends
-    vcdm.env['ds'] = vcdm.datastore_backends[vcdm.config.get('general', 'ds.backend')]()
+    vcdm.env['ds'] = vcdm.datastore_backends[conf.get('general', 'ds.backend')]()
 
     # load all backends
-    for blob_backend in vcdm.config.get('general', 'blob.backends').split(','):
+    for blob_backend in conf.get('general', 'blob.backends').split(','):
         blob_backend = blob_backend.strip()
         log.msg("Activating %s backend." % blob_backend)
-        backend_type = vcdm.config.get(blob_backend, 'type')
+        backend_type = conf.get(blob_backend, 'type')
         vcdm.env['blobs'][blob_backend] = vcdm.blob_backends[backend_type](blob_backend)
 
     # set default
-    vcdm.env['blob'] = vcdm.env['blobs'][vcdm.config.get('general', 'blob.default.backend')]
+    def_backend = conf.get('general', 'blob.default.backend')
+    print "Setting default backend to %s (%s)" % (def_backend, conf.get(def_backend, 'type'))
+    vcdm.env['blob'] = vcdm.env['blobs'][def_backend]
     # initiate accounting logging
     task.LoopingCall(vcdm.blob.get_stored_size_all_avatars). \
-                    start(float(vcdm.config.get('general', 'accounting.total_frequency'))) #in seconds
+                    start(float(conf.get('general', 'accounting.total_frequency'))) #in seconds
     
     # do we want queue backend? just a single one at the moment
-    if vcdm.config.getboolean('general', 'support_mq'):
-        vcdm.env['mq'] = vcdm.mq_backends[vcdm.config.get('general', 'mq.backend')]()
+    if conf.getboolean('general', 'support_mq'):
+        vcdm.env['mq'] = vcdm.mq_backends[conf.get('general', 'mq.backend')]()
         current_capabilities.system['queues'] = True
     # for now just a small list of 
     def _hash(name, clearpsw, hashedpsw):
@@ -108,33 +109,35 @@ def main():
 
     used_checkers = []
     authn_methods = []
-    if vcdm.config.has_option('general', 'usersdb.plaintext'):
-        used_checkers.append(FilePasswordDB(vcdm.config.get('general', 'usersdb.plaintext'),
+    if conf.has_option('general', 'usersdb.plaintext'):
+        print "Using plaintext users DB from '%s'" % conf.get('general', 'usersdb.plaintext') 
+        used_checkers.append(FilePasswordDB(conf.get('general', 'usersdb.plaintext'),
                                             cache=True))
         authn_methods.append(guard.DigestCredentialFactory('md5', 
-                                            vcdm.config.get('general', 'server.endpoint')))
+                                            conf.get('general', 'server.endpoint')))
 
-    if vcdm.config.has_option('general', 'usersdb.md5'):
-        used_checkers.append(FilePasswordDB(vcdm.config.get('general', 'usersdb.md5'),
+    if conf.has_option('general', 'usersdb.md5'):
+        print "Using md5-hashed users DB from '%s'" % conf.get('general', 'usersdb.md5') 
+        used_checkers.append(FilePasswordDB(conf.get('general', 'usersdb.md5'),
                                                        hash=_hash, cache=True))
-        authn_methods.append(guard.BasicCredentialFactory(vcdm.config.get('general', 
+        authn_methods.append(guard.BasicCredentialFactory(conf.get('general', 
                                                                           'server.endpoint')))
 
     wrapper = guard.HTTPAuthSessionWrapper(Portal(SimpleRealm(), used_checkers),
                                            authn_methods)
 
     # unencrypted/unprotected connection for testing/development
-    if vcdm.config.getboolean('general', 'server.use_debug_port'):
-        reactor.listenTCP(vcdm.config.getint('general', 'server.debug_port', 2364),
+    if conf.getboolean('general', 'server.use_debug_port'):
+        reactor.listenTCP(conf.getint('general', 'server.debug_port', 2364),
                           server.Site(resource=RootCDMIResource()))
-        reactor.listenTCP(vcdm.config.getint('general', 'server.debug_port_authn', 2365), 
+        reactor.listenTCP(conf.getint('general', 'server.debug_port_authn', 2365), 
                           server.Site(resource=wrapper))
     
     # 1-way SSL for production
     from twisted.internet import ssl
-    sslContext = ssl.DefaultOpenSSLContextFactory(vcdm.config.get('general', 'server.credentials.key'),
-                                                  vcdm.config.get('general', 'server.credentials.cert'))
-    reactor.listenSSL(int(vcdm.config.get('general', 'server.endpoint').split(":")[1]),
+    sslContext = ssl.DefaultOpenSSLContextFactory(conf.get('general', 'server.credentials.key'),
+                                                  conf.get('general', 'server.credentials.cert'))
+    reactor.listenSSL(int(conf.get('general', 'server.endpoint', 'localhost:8080').split(":")[1]),
                       server.Site(resource=wrapper), contextFactory = sslContext)
 
     reactor.run()

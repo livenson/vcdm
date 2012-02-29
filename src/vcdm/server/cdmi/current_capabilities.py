@@ -14,10 +14,10 @@ system = {
         # Storage System Metadata Capabilities
         "cdmi_size": True,
         "cdmi_ctime": True,
-        "cdmi_atime": False,
-        "cdmi_mtime": False,
+        "cdmi_atime": True,
+        "cdmi_mtime": True,
         "cdmi_hash": False,
-        "cdmi_acl": False,
+        "cdmi_acl": True,
     }
 
 dataobject = {

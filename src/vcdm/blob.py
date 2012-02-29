@@ -6,8 +6,11 @@ import vcdm
 from vcdm.utils import check_path
 from vcdm.authz import authorize
 
-from httplib import NOT_FOUND, CREATED, OK, CONFLICT, NO_CONTENT, FORBIDDEN, \
-    UNAUTHORIZED, NOT_IMPLEMENTED, FOUND
+from httplib import NOT_FOUND, OK, CONFLICT, NO_CONTENT, FORBIDDEN, \
+    UNAUTHORIZED, NOT_IMPLEMENTED, FOUND, INTERNAL_SERVER_ERROR, CREATED
+
+
+config = vcdm.config.get_config()
 
 
 def write(avatar, name, container_path, fullpath, mimetype, metadata, content,
@@ -20,17 +23,18 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content,
                                             fields=['parent_container'])
     # assert that we have a consistency in case of an existig blob
     if uid is not None and parent_container != vals['parent_container']:
-        log.err("Inconsistent information! path: %s, parent_container in db: %s" %
+        log.err("ERROR: Inconsistent information! path: %s, parent_container in db: %s" %
                                                     (fullpath,
                                                      vals['parent_container']))
-        return (FORBIDDEN, uid)
+        return (INTERNAL_SERVER_ERROR, uid)
 
     # assert we can write to the defined path
     # TODO: expensive check for consistency, make optional
-    if not check_path(container_path):
-        log.err("Writing to a container is not allowed. Container path: %s" %
-                '/'.join(container_path))
-        return (FORBIDDEN, uid)
+    if config.getboolean('general', 'check_for_existing_parents'):
+        if not check_path(container_path):
+            log.err("Writing to a container is not allowed. Container path: %s" %
+                    '/'.join(container_path))
+            return (FORBIDDEN, uid)
 
     # authorize call, take parent permissions
     _, cvals = vcdm.env['ds'].find_by_path(parent_container,

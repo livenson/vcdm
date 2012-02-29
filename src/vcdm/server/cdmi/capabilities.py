@@ -33,13 +33,10 @@ class Capability(StorageResource):
                     'children': [
                             "dataobject/",
                             "container/",
-                            "mq/"
                         ]
                 })
         elif fullpath.startswith('/cdmi_capabilities/dataobject'):
             body['capabilities'] = capability_objects['dataobject']
-        elif fullpath.startswith('/cdmi_capabilities/mq'):
-            body['capabilities'] = capability_objects['mq']
         elif fullpath.startswith('/cdmi_capabilities/container'):
             body['capabilities'] = capability_objects['container']
 

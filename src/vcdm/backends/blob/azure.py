@@ -1,4 +1,3 @@
-from vcdm.interfaces.blob import IBlob
 from vcdm.config import get_config
 
 try:
@@ -11,7 +10,7 @@ import urllib2
 config = get_config()
 
 
-class AzureBlob(IBlob):
+class AzureBlob(object):
 
     backend_name = 'azure'
     conn = None

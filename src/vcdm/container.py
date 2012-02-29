@@ -16,7 +16,6 @@ def read(avatar, fullpath, on_behalf=None):
                                             fields=['children', 'metadata',
                                                       'mtime'])
     if uid is None:
-        # XXX refactor return of the result - raise error?
         return (NOT_FOUND, None)
     else:
         # authorize call
@@ -42,8 +41,7 @@ def create_or_update(avatar, name, container_path, fullpath, metadata=None,
     vals['uid'] = uid
     # XXX: duplication of checks with blob (vcdm). Refactor.
     if uid is not None and parent_container != vals['parent_container']:
-        log.err("Inconsistency! path: %s, parent_container in db: %s"
-                % (fullpath, vals['parent_container']))
+        log.err("Inconsistency! path: %s, parent_container in db: %s" % (fullpath, vals['parent_container']))
         return (FORBIDDEN, vals)
 
     # assert we can write to the defined path

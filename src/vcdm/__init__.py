@@ -3,12 +3,12 @@ Venus-C Data Management module
 """
 
 from vcdm.config import get_config
-config = get_config()
+conf = get_config()
 
 
 def c(group, field):
     """Shorthand for getting configuration values"""
-    return config.get(group, field)
+    return conf.get(group, field)
 
 
 # shared environment variables
@@ -24,4 +24,4 @@ blob_backends = {}
 mq_backends = {}
 datastore_backends = {}
 
-env['tre_enabled'] = config.getboolean('general', 'tre_enabled')
+env['tre_enabled'] = conf.getboolean('general', 'tre_enabled')

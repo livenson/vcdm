@@ -2,18 +2,18 @@ from twisted.web import resource
 from twisted.python import log
 
 import blob
-import queue
 import container
 import capabilities
 
 from vcdm.server.cdmi.cdmi_content_types import CDMI_CAPABILITY
-from cdmi_content_types import CDMI_QUEUE, CDMI_CONTAINER, CDMI_OBJECT
+from cdmi_content_types import CDMI_CONTAINER, CDMI_OBJECT
 from vcdm.server.cdmi.generic import CDMI_VERSION
 
-cdmi_objects = {CDMI_QUEUE: queue.Queue,
+cdmi_objects = {
                 CDMI_OBJECT: blob.Blob,
                 CDMI_CONTAINER: container.Container,
-                CDMI_CAPABILITY: capabilities.Capability}
+                CDMI_CAPABILITY: capabilities.Capability
+                }
 
 
 class RootCDMIResource(resource.Resource):
@@ -74,10 +74,6 @@ class RootCDMIResource(resource.Resource):
         if content == CDMI_OBJECT and accept == CDMI_OBJECT \
             or accept == CDMI_OBJECT and content is None:
             return cdmi_objects[CDMI_OBJECT](self.avatarID, self.delegated_user)
-
-        # for queues
-        if content == CDMI_QUEUE and accept == CDMI_QUEUE:
-            return cdmi_objects[CDMI_QUEUE](self.avatarID, self.delegated_user)
 
         # for containers
         if content == CDMI_CONTAINER or accept == CDMI_CONTAINER \

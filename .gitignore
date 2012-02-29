@@ -1,7 +1,7 @@
 /.project
 /.pydevproject
 /.settings
-/*.pyc
+*.pyc
 /vcdm.log
 /accounting.log
 /build
@@ -9,3 +9,4 @@
 /src/*.egg-info
 /docs/_build
 /docs/gen
+/data

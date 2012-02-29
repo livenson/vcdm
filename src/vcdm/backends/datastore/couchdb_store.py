@@ -2,14 +2,13 @@ import couchdb
 import time
 from uuid import uuid4
 
-from vcdm.interfaces.datastore import IDatastore
 from vcdm import c
 from vcdm.errors import InternalError
 
 from twisted.python import log
 
 
-class CouchDBStore(IDatastore):
+class CouchDBStore():
 
     db = None
 

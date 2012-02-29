@@ -2,12 +2,11 @@ from twisted.python import log
 
 import os
 
-from vcdm.interfaces.blob import IBlob
 from vcdm import c
 from vcdm.utils import copyStreamToStream, mkdir_p
 
 
-class POSIXBlob(IBlob):
+class POSIXBlob():
 
     backend_type = 'posix'
     location = None

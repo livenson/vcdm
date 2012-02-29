@@ -2,7 +2,6 @@ import os
 from tempfile import NamedTemporaryFile
 
 from vcdm import c
-from vcdm.interfaces.blob import IBlob
 
 from twisted.python import log
 
@@ -15,7 +14,7 @@ except ImportError:
     print "AWS blob plugin missing"
 
 
-class S3Blob(IBlob):
+class S3Blob(object):
 
     conn = None
     backend_name = 's3'
