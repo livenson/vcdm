@@ -14,7 +14,7 @@ from vcdm.server.cdmi.cdmiresource import StorageResource
 
 from httplib import OK, CREATED, FOUND
 from StringIO import StringIO
-import sys
+import base64
 
 try:
     import json
@@ -76,8 +76,9 @@ class Blob(StorageResource):
         # default values of mimetype and metadata
         mimetype = body.get('mimetype', 'text/plain')
         metadata = body.get('metadata', {})
-
-        content = (StringIO(body['value']), sys.getsizeof(body['value']))
+        valueencoding = body.get('valuetransferencoding', 'utf-8')
+        value = body['value'] if valueencoding == 'utf-8' else base64.b64decode(body['value'])
+        content = (StringIO(value), len(value))
         status, uid = blob.write(self.avatar, name, container_path, fullpath,
                                  mimetype, metadata, content)
         request.setResponseCode(status)
@@ -155,9 +156,7 @@ class NonCDMIBlob(StorageResource):
         length = int(request.getHeader('Content-Length'))
         content = (request.content, length)
         # default values of mimetype and metadata
-        mimetype = request.getHeader('Content-Type') \
-                    if request.getHeader('Content-Type') is not None \
-                    else 'text/plain'
+        mimetype = request.getHeader('Content-Type') if request.getHeader('Content-Type') is not None else 'text/plain'
         status, _ = blob.write(self.avatar, name, container_path, fullpath,
                                mimetype, {}, content)
         request.setResponseCode(status)
