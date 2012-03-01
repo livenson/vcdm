@@ -8,12 +8,15 @@ import capabilities
 from vcdm.server.cdmi.cdmi_content_types import CDMI_CAPABILITY
 from cdmi_content_types import CDMI_CONTAINER, CDMI_OBJECT
 from vcdm.server.cdmi.generic import CDMI_VERSION
+import vcdm
 
 cdmi_objects = {
                 CDMI_OBJECT: blob.Blob,
                 CDMI_CONTAINER: container.Container,
                 CDMI_CAPABILITY: capabilities.Capability
                 }
+
+conf = vcdm.config.get_config()
 
 
 class RootCDMIResource(resource.Resource):
@@ -27,14 +30,16 @@ class RootCDMIResource(resource.Resource):
         resource.Resource.__init__(self)
         self.avatarID = avatarID
         log.msg("User: %s" % avatarID)
+        self.delegated_user = None
 
     def getChild(self, path, request):
         log.msg("Request path received: %s, parameters: %s" %
                 (request.path, request.args))
         version = request.getHeader('x-cdmi-specification-version')
-        self.delegated_user = request.getHeader('onbehalf')
-        if self.delegated_user:
-            log.msg("Delegated user: %s" % self.delegated_user)
+        if conf.getboolean('general', 'use_delegated_user'):
+            self.delegated_user = request.getHeader('onbehalf')
+            if self.delegated_user:
+                log.msg("Delegated user: %s" % self.delegated_user)
 
         if version is not None and CDMI_VERSION not in version:
             return self
