@@ -1,4 +1,5 @@
 import time
+from uuid import uuid4
 
 from twisted.python import log
 
@@ -13,8 +14,7 @@ from httplib import NOT_FOUND, OK, CONFLICT, NO_CONTENT, FORBIDDEN, \
 config = vcdm.config.get_config()
 
 
-def write(avatar, name, container_path, fullpath, mimetype, metadata, content,
-          on_behalf=None):
+def write(avatar, name, container_path, fullpath, mimetype, metadata, content, on_behalf=None, desired_backend=None):
     """ Write or update content of a blob. """
     from vcdm.server.cdmi.generic import get_parent
     parent_container = get_parent(fullpath)
@@ -47,8 +47,7 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content,
     # ok, time for action
     # pick a blob back-end - if request_backend is specified in the metadata and
     # available in the system - use it. Else - resolve to default one.
-    blob_backend = vcdm.env['blobs'].get(metadata.get('desired_backend', None),
-                                         vcdm.env['blob'])
+    blob_backend = vcdm.env['blobs'].get(desired_backend, vcdm.env['blob'])
 
     # add default acls
     if avatar is None:
@@ -60,13 +59,16 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content,
 
     # if uid is None, create a new entry, update otherwise
     if uid is None:
-        uid = vcdm.env['ds'].write({
+        uid = uuid4().hex
+        actual_uri = blob_backend.create(uid, content)
+        vcdm.env['ds'].write({
                         'object': 'blob',
                         'owner': avatar,
                         'fullpath': fullpath,
                         'mimetype': mimetype,
                         'metadata': metadata,
                         'filename': name,
+                        'actual_uri': actual_uri,
                         'parent_container': parent_container,
                         'ctime': str(time.time()),
                         'mtime': str(time.time()),
@@ -78,21 +80,21 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content,
         # update the parent container as well
         from vcdm.container import _append_child
         _append_child(parent_container, uid, name)
-        blob_backend.create(uid, content)
         log.msg(type='accounting', avatar=avatar if not on_behalf else on_behalf,
                     amount=int(content[1]), acc_type='blob_creation')
         return (CREATED, uid)
     else:
+        actual_uri = blob_backend.update(uid, content)
         uid = vcdm.env['ds'].write({
                         'metadata': metadata,
                         'mimetype': mimetype,
                         'mtime': str(time.time()),
+                        'actual_uri': actual_uri,
                         'atime': str(time.time()),
                         'size': int(content[1]),  # length
                         'backend_type': blob_backend.backend_type,
                         'backend_name': blob_backend.backend_name},
                         uid)
-        blob_backend.update(uid, content)
         log.msg(type='accounting', avatar=avatar if not on_behalf else on_behalf,
                 amount=int(content[1]), acc_type='blob_update')
 
@@ -106,7 +108,7 @@ def read(avatar, fullpath, tre_request=False, on_behalf=None):
     """
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type='blob',
                                             fields=['metadata', 'mimetype',
-                                                      'mtime', 'size'])
+                                                      'mtime', 'size', 'actual_uri'])
     log.msg("Reading path %s, uid: %s" % (fullpath, uid))
     if uid is None:
         return (NOT_FOUND, None)
@@ -116,6 +118,7 @@ def read(avatar, fullpath, tre_request=False, on_behalf=None):
         if not authorize(avatar, fullpath, "read_blob", acls):
             log.msg("Authorization failed for %s on %s (%s)" % (avatar, fullpath, acls))
             return (UNAUTHORIZED, None)
+        vals['content'] = vcdm.env['blob'].read(uid)
         # update access time
         vcdm.env['ds'].write({
                         'atime': str(time.time()),
@@ -131,7 +134,6 @@ def read(avatar, fullpath, tre_request=False, on_behalf=None):
             # XXX only local blob backend supports that at the moment
             vcdm.env['blob'].move_to_tre_server(uid)
             return (FOUND, vals)
-        vals['content'] = vcdm.env['blob'].read(uid)
         return (OK, vals)
 
 

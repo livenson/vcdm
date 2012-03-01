@@ -5,8 +5,6 @@ from uuid import uuid4
 from vcdm import c
 from vcdm.errors import InternalError
 
-from twisted.python import log
-
 
 class CouchDBStore():
 
@@ -36,16 +34,15 @@ class CouchDBStore():
         return self.db[docid]
 
     def write(self, data, docid=None):
-        doc = None
-        log.msg("Writing to CouchDB. UID: %s, data: %s" % (docid, data))
         if docid is None:
             docid = uuid4().hex
-            data['_id'] = docid
-            self.db.save(data)
-        else:
+        if docid in self.db:
             doc = self.db[docid]
             doc.update(data)
             self.db.save(doc)
+        else:
+            data['_id'] = docid
+            self.db.save(data)
         return docid
 
     def exists(self, docid):

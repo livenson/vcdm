@@ -17,7 +17,7 @@ except ImportError:
 class S3Blob(object):
 
     conn = None
-    backend_name = 's3'
+    backend_type = 's3'
 
     def __init__(self, backend_name):
         self.backend_name = backend_name
@@ -51,15 +51,17 @@ class S3Blob(object):
         k.key = fnm
         k.set_contents_from_file(input_stream)
         input_stream.close()
+        return "http://%s/%s/%s" % (self.cdmi_bucket_name, fnm, self.conn.DefaultHost)
 
     def update(self, fnm, content):
-        self.create(fnm, content)
+        return self.create(fnm, content)
 
     def delete(self, fnm):
         b = self.conn.get_bucket(self.cdmi_bucket_name)
         k = Key(b)
         k.key = fnm
         k.delete()
+        return "http://%s/%s/%s" % (self.cdmi_bucket_name, fnm, self.conn.DefaultHost)
 
     def move_to_tre_server(self, fnm):
         b = self.conn.get_bucket(self.cdmi_bucket_name)

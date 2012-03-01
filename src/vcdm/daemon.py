@@ -27,7 +27,6 @@ class SimpleRealm(object):
         raise NotImplementedError()
 
 
-
 def load_blob_backends():
     # compulsory localdisk backend
     from vcdm.backends.blob.localdisk import POSIXBlob

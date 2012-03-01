@@ -2,8 +2,10 @@ from twisted.python import log
 
 import os
 
-from vcdm import c
+import vcdm
 from vcdm.utils import copyStreamToStream, mkdir_p
+
+conf = vcdm.config.get_config()
 
 
 class POSIXBlob():
@@ -13,37 +15,40 @@ class POSIXBlob():
 
     def __init__(self, backend_name):
         self.backend_name = backend_name
-        self.location = c(backend_name, 'blob.datadir')
+        self.location = conf.get(backend_name, 'blob.datadir')
         if not os.path.exists(self.location):
             mkdir_p(self.location)
 
-    def create(self, fnm, content):
+    def create(self, uid, content):
         """Write the content to a file"""
         input_stream, input_length = content
-        log.msg("Saving %s to a posix backend at %s" % (fnm, self.location))
-        with open(self.location + os.sep + fnm, 'wb') as output_file:
+        fnm = os.path.join(self.location, uid)
+        log.msg("Saving blob to %s" % fnm)
+        with open(fnm, 'wb') as output_file:
             copyStreamToStream(input_stream, output_file, input_length)
             input_stream.close()
+        return fnm
 
-    def read(self, fnm):
+    def read(self, uid):
         """Read the contents of a file, possibly a certain byte range"""
-        name = self.location + os.sep + fnm
-        log.msg("Reading %s from a posix backend at %s" % (fnm, self.location))
-        return open(name, 'rb')
+        fnm = os.path.join(self.location, uid)
+        log.msg("Reading a blob '%s'" % fnm)
+        return open(fnm, 'rb')
 
-    def update(self, fnm, content):
+    def update(self, uid, content):
         """Update contents of a file"""
-        # XXX: should it be different from write?
-        self.create(fnm, content)
+        return self.create(uid, content)
 
-    def delete(self, fnm):
+    def delete(self, uid):
         """Delete a specified file"""
-        log.msg("Deleting %s from a posix backend at %s" % (fnm, self.location))
-        os.remove(self.location + os.sep + fnm)
+        fnm = os.path.join(self.location, uid)
+        log.msg("Deleting '%s'" % fnm)
+        os.remove(fnm)
+        return fnm
 
     def move_to_tre_server(self, fnm):
-        source = os.path.join(c(self.backend_name, 'blob.datadir'), fnm)
-        target = os.path.join(c('general', 'tre_data_folder'), fnm)
+        source = os.path.join(conf.get(self.backend_name, 'blob.datadir'), fnm)
+        target = os.path.join(conf.get('general', 'tre_data_folder'), fnm)
         try:
             os.symlink(os.path.abspath(source), os.path.abspath(target))
         except OSError, ex:

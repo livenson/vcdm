@@ -12,10 +12,11 @@ config = get_config()
 
 class AzureBlob(object):
 
-    backend_name = 'azure'
+    backend_type = 'azure'
     conn = None
 
     def __init__(self, backend_name):
+        self.backend_name = backend_name
         self.cdmi_bucket_name = config.get(backend_name, 'azure.bucket_name')
         self.conn = BlobStorage(config.get(backend_name, 'credentials.blob_url'),
                                  config.get(backend_name, 'credentials.account'),
@@ -28,18 +29,18 @@ class AzureBlob(object):
     def create(self, fnm, content):
         input_stream, input_length = content
         self.conn.put_blob(self.cdmi_bucket_name, fnm, input_stream, input_length)
+        return "%s/%s/%s" % (self.conn.get_base_url(), self.cdmi_bucket_name, fnm)
 
     def update(self, fnm, content):
-        self.create(fnm, content)
+        return self.create(fnm, content)
 
     def delete(self, fnm):
         try:
             self.conn.delete_blob(self.cdmi_bucket_name, fnm)
+            return "%s/%s/%s" % (self.conn.get_base_url(), self.cdmi_bucket_name, fnm)
         except urllib2.HTTPError:
             # TODO: winazure lib seems to be passing also positive responses via exceptions. Need to clarify
             import sys
-            print "====================="
-            print "something happened:", sys.exc_info()[0]
+            print "Error:", sys.exc_info()[0]
             import traceback
             traceback.print_exc()
-            print "====================="

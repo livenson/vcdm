@@ -30,6 +30,7 @@ class Blob(StorageResource):
         """GET operation corresponds to reading of the blob object"""
         # process path and extract potential containers/fnm
         _, __, fullpath = parse_path(request.path)
+
         tre_header = request.getHeader('tre-enabled')
         tre_request = tre_header is not None and tre_header.lower() == 'true'
         log.msg("Request for TRE-enabled download received.")
@@ -56,6 +57,7 @@ class Blob(StorageResource):
                              'mimetype': vals['mimetype'],
                              'metadata': vals['metadata'],
                              'value': content,
+                             'actual_uri': vals.get('actual_uri'),
                              'capabilitiesURI': '/cdmi_capabilities/dataobject'
                              }
             response_body.update(get_common_body(request, str(vals['uid']),
@@ -76,11 +78,12 @@ class Blob(StorageResource):
         # default values of mimetype and metadata
         mimetype = body.get('mimetype', 'text/plain')
         metadata = body.get('metadata', {})
+        desired_backend = metadata.get('desired_backend') or request.getHeader('desired_backend')
         valueencoding = body.get('valuetransferencoding', 'utf-8')
         value = body['value'] if valueencoding == 'utf-8' else base64.b64decode(body['value'])
         content = (StringIO(value), len(value))
         status, uid = blob.write(self.avatar, name, container_path, fullpath,
-                                 mimetype, metadata, content)
+                                 mimetype, metadata, content, desired_backend)
         request.setResponseCode(status)
         request.setHeader('Content-Type', CDMI_OBJECT)
         set_common_headers(request)
@@ -157,8 +160,9 @@ class NonCDMIBlob(StorageResource):
         content = (request.content, length)
         # default values of mimetype and metadata
         mimetype = request.getHeader('Content-Type') if request.getHeader('Content-Type') is not None else 'text/plain'
+        desired_backend = request.getHeader('desired_backend')
         status, _ = blob.write(self.avatar, name, container_path, fullpath,
-                               mimetype, {}, content)
+                               mimetype, {}, content, desired_backend)
         request.setResponseCode(status)
         return ''
 
