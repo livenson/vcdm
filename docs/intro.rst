@@ -17,6 +17,15 @@ CDMI-Proxy is written using `Twisted network engine <http://twistedmatrix.com/>`
 in Python (v2.6+) and was seen working on a number of platforms: Linux, Windows
 and MacOS X.
 
+Dependencies
+------------
+
+In order to run, CouchDB service must be installed first. CDMI-Proxy requires `CouchDB <http://couchdb.apache.org/>`_ version 1+.Please, make sure that version
+requirement is met - many distributions contain older version, which will not work. You can get latest RPMs/DEBs from `Couchbase 
+<http://www.couchbase.com/downloads/couchbase-single-server/community>`_. Or use a `pipeline <https://github.com/iriscouch/build-couchdb>`_ for compiling CouchDB 
+from scratch.
+
+
 Windows installation shortcut
 -----------------------------
 
@@ -42,35 +51,21 @@ Windows installation shortcut
 
 8. Make sure CouchDB is running and start CDMI-Proxy by running "C:\\Python27\\Scripts\\cdmipd.exe" (modify for your Python installation path).
 
-Dependencies
-------------
 
-1. In order to run, CouchDB service must be installed first. CDMI-Proxy requires 
-`CouchDB <http://couchdb.apache.org/>`_ version 1+.Please, make sure that version
-requirement is met - many distributions contain older version, which will not 
-work. You can get latest RPMs/DEBs from `Couchbase 
-<http://www.couchbase.com/downloads/couchbase-single-server/community>`_. Or use a
-`pipeline <https://github.com/iriscouch/build-couchdb>`_ for compiling CouchDB 
-from scratch.
-
-2. In additiona, CDMI-Proxy requires several Python libraries. Using `pip installer
-<http://www.pip-installer.org/en/latest/installing.html>`_ the process looks
+Installation from packages
+--------------------------
+In additiona, CDMI-Proxy requires several Python libraries. Using `pip installer <http://www.pip-installer.org/en/latest/installing.html>`_ the process looks
 like this on all operating systems:
 
 .. code-block:: sh
 
   $ pip install zope.interface Twisted CouchDB pyOpenSSL
 
-Installation from packages
---------------------------
+You can get the latest CDMI-Proxy packages (RPM, DEB or MSI - depending on your distribution) from http://cdmi.pdc2.pdc.kth.se/downloads.
 
-You can get the latest CDMI-Proxy packages (RPM, DEB or MSI - depending on your
- distribution) from http://cdmi.pdc2.pdc.kth.se/downloads.
-
-Installing from Source
-----------------------
-You can get the code from https://github.com/livenson/vcdm . Follow README to
-get the CDMI-Proxy up and running.
+Source code
+-----------
+You can get the code from https://github.com/livenson/vcdm .
 
 
 Configuration
@@ -119,6 +114,23 @@ avoid namespace polution).
  credentials.table_url = table.core.windows.net
  credentials.queue_url = queue.core.windows.net
 
+Choosing a backend for storing a blob
+=====================================
+
+It is possible to configure more than one backend, where data gets stored, i.e. PUT on data object is called.
+For example, you can store datasets for specific experiments in the backends, which are closer to the planned execution
+site. When making a CDMI request, you can specify where the data should go to using either a metadata field
+'desired_backend' or by setting an HTTP header 'desired_backend'. In case both are specified, metadata field takes
+precedence.
+
+For example, if you have defined backends *home* and *remote_aws*, then a sample HTTP PUT looks like this:
+
+.. code-block:: sh
+
+  $ curl -v -u username:pass --digest \
+        -H 'desired_backend: remote_aws' \
+        --data @mylocalfile
+        -X PUT http://cdmiserver:2365/file_to_be_stored_in_aws
 
 Authentication
 ==============
@@ -138,6 +150,31 @@ configuration file to point to your users list.
 
 Using HTTP-Digest is very similar, only that the format is 
 "username:plaintext_password" and the setting name is *usersdb*.
+
+Delegated user for accounting
+=============================
+
+In some cases it might be desired to specify a user who should be accounted for a certain action. For example, when a
+single CDMI-Proxy account is shared between multiple users and they want to differentiate their usage.
+
+In order to do that in CDMI-Proxy, one needs to:
+
+1. Enable support for that in the configuration, by setting:
+
+.. code-block:: sh
+
+    [general] 
+    use_delegated_user = yes
+
+2. Define a special header *ONBEHALF* in the CDMI request.
+
+.. code-block:: sh
+
+  $ curl -v -u user_eve:pass --digest \
+        -H 'onbehalf: user_alice' \
+        --data @mylocalfile
+        -X PUT http://cdmiserver:2365/file_to_be_stored
+
 
 Authorization
 =============
@@ -208,7 +245,7 @@ cURL
 ----
 
 You can use `curl <http://curl.haxx.se/>`_ for constructing a valid CDMI request.
-For example:
+For example, to create a new container, run the following command:
 
 .. code-block:: sh
 
