@@ -12,6 +12,9 @@ Contents:
    :maxdepth: 2
 
    intro
+   configuration
+   examples
+   troubleshooting
    gen/modules
 
 Indices and tables
