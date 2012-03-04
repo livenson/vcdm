@@ -95,8 +95,8 @@ def main():
     vcdm.env['blob'] = vcdm.env['blobs'][def_backend]
     # initiate accounting logging
     task.LoopingCall(vcdm.blob.get_stored_size_all_avatars). \
-                    start(float(conf.get('general', 'accounting.total_frequency'))) #in seconds
-    
+                    start(conf.getfloat('general', 'accounting.total_frequency'))  #in seconds
+
     # do we want queue backend? just a single one at the moment
     if conf.getboolean('general', 'support_mq'):
         vcdm.env['mq'] = vcdm.mq_backends[conf.get('general', 'mq.backend')]()

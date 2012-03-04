@@ -64,16 +64,16 @@ class CouchDBStore():
 
         return list(self.db.query(dirn_fun))
 
-    def get_total_blob_size(self, avatar='Anonymous'):
+    def get_total_blob_size(self, start_time, end_time, avatar='Anonymous'):
         """ Return total size in GBs of all blobs indexed by the datastore. """
 
         dirn_fun = '''
         function(doc) {
-           if (doc.object == 'blob' && doc.owner == '%s') {
+           if (doc.ctime > %s && doc.ctime < %s && doc.object == 'blob' && doc.owner == '%s') {
                emit(doc.size, null);
            }
         }
-        ''' % avatar
+        ''' % (start_time, end_time, avatar)
 
         return sum([x.key for x in self.db.query(dirn_fun)])
 

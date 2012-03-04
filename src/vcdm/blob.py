@@ -169,8 +169,11 @@ def get_stored_size(avatar='Anonymous'):
     Emit into the accounting log total size of all registered blobs
     for an avatar.
     """
-    total_size = vcdm.env['ds'].get_total_blob_size(avatar)
-    log.msg(type='accounting', avatar=avatar, amount=total_size,
+    end_time = time.time()
+    start_time = end_time - vcdm.conf.getfloat('general', 'accounting.total_frequency')
+
+    total_size = vcdm.env['ds'].get_total_blob_size(start_time, end_time, avatar)
+    log.msg(type='accounting', avatar=avatar, amount=total_size, start_time=start_time, end_time=end_time,
             acc_type='blob_total_size')
 
 

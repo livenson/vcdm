@@ -2,9 +2,14 @@
 import sys
 import os
 import errno
+import datetime
 
-from twisted.python import log
-from twisted.python import util
+from twisted.python import log, util
+
+import vcdm
+from vcdm.accounting import send_ogf_ur_accounting
+
+conf = vcdm.config.get_config()
 
 
 def copyStreamToStream(streamFrom, streamTo, input_length=sys.maxint, offset=0,
@@ -32,19 +37,32 @@ def print_memory_stats(location_tag="undef"):
 
 
 class AccountingLogObserver(log.FileLogObserver):
+    """Observer for the accounting log events. Keeps track of a number of basic operations and dumps stats every
+    defined period to an accounting log and optionally UR server"""
 
     def __init__(self, f):
         log.FileLogObserver.__init__(self, f)
+        self.aggregated_operations = 0
 
     def emit(self, eventDict):
         if eventDict.get('type') == 'accounting':
-            timeStr = self.formatTime(eventDict['time'])
-            avatar = eventDict.get('avatar')
-            amount = eventDict.get('amount')
             acc_type = eventDict.get('acc_type')
-            msg = "%s %s %s %s\n" % (timeStr, avatar, acc_type, amount)
-            util.untilConcludes(self.write, msg)
-            util.untilConcludes(self.flush)
+            if acc_type != 'blob_total_size':
+                self.aggregated_operations += eventDict.get('amount')
+            else:
+                timeStr = datetime.datetime.fromtimestamp(eventDict['time']).isoformat()
+                avatar = eventDict.get('avatar')
+                amount = eventDict.get('amount')
+                acc_type = eventDict.get('acc_type')
+                start_time = datetime.datetime.fromtimestamp(eventDict.get('start_time', 0)).isoformat()
+                end_time = datetime.datetime.fromtimestamp(eventDict.get('end_time', 0)).isoformat()
+
+                msg = "%s %s %s %s %s %s\n" % (timeStr, start_time, end_time, avatar, amount, self.aggregated_operations)
+                if conf.getboolean('general', 'send_accounting_to_ur'):
+                    send_ogf_ur_accounting(start_time, end_time, avatar, amount, self.aggregated_operations)
+                util.untilConcludes(self.write, msg)
+                util.untilConcludes(self.flush)
+                self.aggregated_operations = 0
 
 
 def check_path(container_path):
@@ -62,11 +80,11 @@ def check_path(container_path):
 
     log.msg("Checking paths: %s" % all_paths)
     # XXX: better to embed len into the request
-    import vcdm
     return len(vcdm.env['ds'].find_path_uids(all_paths)) == len(container_path)
 
 
 def mkdir_p(path):
+    """Emulate mkdir -p in Python"""
     try:
         os.makedirs(path)
     except OSError as exc:  # Python >2.5
