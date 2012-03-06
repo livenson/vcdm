@@ -1,3 +1,5 @@
+import uuid
+
 from zope.interface import implements
 
 from twisted.python import log
@@ -61,11 +63,11 @@ def send_ogf_ur_accounting(start_time, end_time, avatar, total_storage, nr_of_op
     Headers(
         {
          'User-Agent': ['CDMI-Proxy'],
-         'Content-Type': ['text/plain']}),
+         'Content-Type': ['application/xml']}),
     body)
 
     def cbResponse(r):
-        log.err("Successfully updated UR with accounting info")
+        log.err("Accounting info sent to UR, response: %s %s" % (r.code, r.phrase))
     d.addCallback(cbResponse)
 
     def cbError(e):
