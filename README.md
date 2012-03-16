@@ -36,7 +36,7 @@ SETUP
 
     * AWS: http://code.google.com/p/boto/ 
     * CDMI: https://github.com/livenson/libcdmi-python
-    * Azure: https://github.com/livenson/winazurestorage
+    * Azure: https://github.com/livenson/pyazure
 
 LICENSE
 =======
