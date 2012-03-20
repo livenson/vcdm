@@ -1,4 +1,4 @@
-include vcdm.conf
+include vcdm-linux.conf
 include vcdm-defaults.conf
 include users.db
 include users.db.md5
