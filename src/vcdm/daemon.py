@@ -114,8 +114,7 @@ def main():
                                             cache=True))
         authn_methods.append(guard.DigestCredentialFactory('md5', 
                                             conf.get('general', 'server.endpoint')))
-
-    if conf.has_option('general', 'usersdb.md5'):
+    elif conf.has_option('general', 'usersdb.md5'):
         print "Using md5-hashed users DB from '%s'" % conf.get('general', 'usersdb.md5') 
         used_checkers.append(FilePasswordDB(conf.get('general', 'usersdb.md5'),
                                                        hash=_hash, cache=True))

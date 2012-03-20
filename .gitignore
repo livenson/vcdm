@@ -3,6 +3,7 @@
 /.settings
 *.pyc
 /vcdm.log
+/vcdm.conf
 /accounting.log
 /build
 /dist

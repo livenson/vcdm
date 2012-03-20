@@ -4,7 +4,10 @@ Configuration
 CDMI-Proxy reads in its configuration from the files in the following order:
 
 #. /etc/cdmiproxy/vcdm-defaults.conf'
+#. /etc/cdmiproxy/vcdm-linux.conf
 #. /etc/cdmiproxy/vcdm.conf
+# ../cdmiproxy/vcdm-defaults.conf
+# ../cdmiproxy/vcdm-win.conf
 #. /vcdm-defaults.conf
 #. ./vcdm.conf (relative to pwd) 
 #. ~/.vcdm.conf
@@ -65,7 +68,8 @@ For example, if you have defined backends *home* and *remote_aws*, then a sample
 Authentication
 ==============
 
-CDMI-Proxy supports two authentication schemes: HTTP-Basic and HTTP-Digest.
+CDMI-Proxy supports two authentication schemes: HTTP-Basic and HTTP-Digest. Only one schema is supported, i.e. if
+HTTP-Basic was enabled, HTTP-Digest is not and vice versa.
 
 In order to use use HTTP-Basic authentication scheme you need to create a
 file with a list of users in "username:md5hexdigest(password)" format, one entry

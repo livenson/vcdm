@@ -3,7 +3,7 @@ import platform
 import os
 
 
-data_files = [('/etc/cdmiproxy', ['vcdm.conf', 'vcdm-defaults.conf',
+data_files = [('/etc/cdmiproxy', ['vcdm-linux.conf', 'vcdm-defaults.conf',
                                   'users.db', 'users.db.md5']),
               ('/etc/cdmiproxy/server_credentials', 
                                 ['server_credentials/cert.pem', 'server_credentials/key.pem']),

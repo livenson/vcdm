@@ -18,6 +18,7 @@ class VCDMConfig(ConfigParser):
     """CDMI-Proxy configuration loader"""
 
     __default_files__ = ['/etc/cdmiproxy/vcdm-defaults.conf',
+                         '/etc/cdmiproxy/vcdm-linux.conf',
                          '/etc/cdmiproxy/vcdm.conf',
                          # a slightly hackish way to include configuration location on windows for msi installs
                           os.path.join(sys.path[0], '..', 'cdmiproxy', 'vcdm-defaults.conf'),
