@@ -8,7 +8,7 @@ from vcdm.utils import copyStreamToStream, mkdir_p
 conf = vcdm.config.get_config()
 
 
-class POSIXBlob():
+class POSIXBlob(object):
 
     backend_type = 'posix'
     location = None
