@@ -1,17 +1,36 @@
-import couchdb
+import socket
 import time
 from uuid import uuid4
+import sys
+from distutils.version import StrictVersion
 
-from vcdm import c
+import couchdb
+
+from vcdm.config import get_config
 from vcdm.errors import InternalError
 
 
-class CouchDBStore():
+config = get_config()
+
+
+class CouchDBStore(object):
 
     db = None
 
     def __init__(self):
-        server = couchdb.Server(c('couchdb', 'datastore.endpoint'))
+        server = couchdb.Server(config.get('couchdb', 'datastore.endpoint'))
+        # assure version is supported
+        try:
+            version = server.version()
+            assert StrictVersion(version) > '1.0'
+        except socket.error as e:
+            print "Failed to connect to a CouchDB instance at %s" % config.get('couchdb', 'datastore.endpoint')
+            print "[%s] %s" % (e.errno, e.strerror)
+            sys.exit(-1)
+        except AssertionError:
+            print "Couchdb server version '%s' is not supported. At least version 1.0 is required." % version
+            sys.exit(-1)
+
         if 'meta' not in server:
             self.db = server.create('meta')
         else:
