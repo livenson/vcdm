@@ -101,42 +101,44 @@ def main():
     if conf.getboolean('general', 'support_mq'):
         vcdm.env['mq'] = vcdm.mq_backends[conf.get('general', 'mq.backend')]()
         current_capabilities.system['queues'] = True
-    # for now just a small list of 
+
     def _hash(name, clearpsw, hashedpsw):
         import hashlib
         return  hashlib.md5(clearpsw).hexdigest()
 
     used_checkers = []
     authn_methods = []
+    interface_for_binding = conf.get('general', 'server.endpoint').split(":")[0]
+
     if conf.has_option('general', 'usersdb.plaintext'):
-        print "Using plaintext users DB from '%s'" % conf.get('general', 'usersdb.plaintext') 
+        print "Using plaintext users DB from '%s'" % conf.get('general', 'usersdb.plaintext')
         used_checkers.append(FilePasswordDB(conf.get('general', 'usersdb.plaintext'),
                                             cache=True))
-        authn_methods.append(guard.DigestCredentialFactory('md5', 
+        authn_methods.append(guard.DigestCredentialFactory('md5',
                                             conf.get('general', 'server.endpoint')))
     elif conf.has_option('general', 'usersdb.md5'):
-        print "Using md5-hashed users DB from '%s'" % conf.get('general', 'usersdb.md5') 
+        print "Using md5-hashed users DB from '%s'" % conf.get('general', 'usersdb.md5')
         used_checkers.append(FilePasswordDB(conf.get('general', 'usersdb.md5'),
                                                        hash=_hash, cache=True))
-        authn_methods.append(guard.BasicCredentialFactory(conf.get('general', 
-                                                                          'server.endpoint')))
+        authn_methods.append(guard.BasicCredentialFactory(conf.get('general', 'server.endpoint')))
 
     wrapper = guard.HTTPAuthSessionWrapper(Portal(SimpleRealm(), used_checkers),
                                            authn_methods)
 
+    print "Binding to interface %s" % interface_for_binding
     # unencrypted/unprotected connection for testing/development
     if conf.getboolean('general', 'server.use_debug_port'):
         reactor.listenTCP(conf.getint('general', 'server.debug_port', 2364),
-                          server.Site(resource=RootCDMIResource()))
-        reactor.listenTCP(conf.getint('general', 'server.debug_port_authn', 2365), 
-                          server.Site(resource=wrapper))
-    
+                          server.Site(resource=RootCDMIResource()), interface=interface_for_binding)
+        reactor.listenTCP(conf.getint('general', 'server.debug_port_authn', 2365),
+                          server.Site(resource=wrapper), interface=interface_for_binding)
+
     # 1-way SSL for production
     from twisted.internet import ssl
     sslContext = ssl.DefaultOpenSSLContextFactory(conf.get('general', 'server.credentials.key'),
                                                   conf.get('general', 'server.credentials.cert'))
-    reactor.listenSSL(int(conf.get('general', 'server.endpoint', 'localhost:8080').split(":")[1]),
-                      server.Site(resource=wrapper), contextFactory = sslContext)
+    reactor.listenSSL(int(conf.get('general', 'server.endpoint').split(":")[1]),
+                      server.Site(resource=wrapper), contextFactory=sslContext, interface=interface_for_binding)
 
     reactor.run()
 
