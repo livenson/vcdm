@@ -9,7 +9,7 @@ from vcdm import blob
 from vcdm import c
 from vcdm.server.cdmi.cdmi_content_types import CDMI_OBJECT
 from vcdm.server.cdmi.generic import set_common_headers, parse_path,\
-    get_common_body, CDMI_SERVER_HEADER
+    get_common_body, CDMI_SERVER_HEADER, set_common_headers_non_cdmi
 from vcdm.server.cdmi.cdmiresource import StorageResource
 
 from httplib import OK, CREATED, FOUND
@@ -131,6 +131,7 @@ class NonCDMIBlob(StorageResource):
         status, vals = blob.read(self.avatar, fullpath, tre_request)
         # construct response
         request.setResponseCode(status)
+        set_common_headers_non_cdmi(request)
         if tre_request and status == FOUND:
             request.setHeader('Location', "/".join([c('general', 'tre_server'),
                                                     str(vals['uid'])]))
@@ -152,18 +153,18 @@ class NonCDMIBlob(StorageResource):
         """PUT corresponds to a create/update operation on a blob"""
         # process path and extract potential containers/fnm
         name, container_path, fullpath = parse_path(request.path)
-        l = request.getHeader('Content-Length')
-        if l is None:
+        length = request.getHeader('Content-Length')
+        if length is None:
             request.setResponseCode(411)
             return ''
-        length = int(request.getHeader('Content-Length'))
-        content = (request.content, length)
+        content = (request.content, int(length))
         # default values of mimetype and metadata
         mimetype = request.getHeader('Content-Type') if request.getHeader('Content-Type') is not None else 'text/plain'
         desired_backend = request.getHeader('desired_backend')
         status, _ = blob.write(self.avatar, name, container_path, fullpath,
                                mimetype, {}, content, desired_backend)
         request.setResponseCode(status)
+        set_common_headers_non_cdmi(request)
         return ''
 
     def render_DELETE(self, request):
@@ -171,5 +172,5 @@ class NonCDMIBlob(StorageResource):
         _, __, fullpath = parse_path(request.path)
         status = blob.delete(self.avatar, fullpath)
         request.setResponseCode(status)
-        request.setHeader('Server', CDMI_SERVER_HEADER)
+        set_common_headers_non_cdmi(request)
         return ''

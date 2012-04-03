@@ -3,7 +3,7 @@ from twisted.python import log
 from vcdm import container
 from vcdm.server.cdmi.cdmi_content_types import CDMI_CONTAINER
 from vcdm.server.cdmi.generic import parse_path, set_common_headers,\
-    get_common_body, CDMI_SERVER_HEADER
+    get_common_body, CDMI_SERVER_HEADER, set_common_headers_non_cdmi
 from vcdm.server.cdmi.cdmiresource import StorageResource
 
 from httplib import OK
@@ -29,11 +29,11 @@ class Container(StorageResource):
         # create a header
         request.setResponseCode(status)
         request.setHeader('Content-Type', CDMI_CONTAINER)
-        request.setLastModified(float(vals['mtime']))
         set_common_headers(request)
 
         # and a body
         if status == OK:
+            request.setLastModified(float(vals['mtime']))
             children = vals['children'].values()
             response_body = {
                              'completionStatus': 'Complete',
@@ -54,7 +54,8 @@ class Container(StorageResource):
         req_length = int(request.getHeader('Content-Length'))
         request.content.seek(0, 0)
         # process json encoded request body
-        body = json.loads(request.content.read(req_length))
+        body = request.content.read(req_length)
+        body = json.loads(body)
         metadata = {}
         if 'metadata' in body:
             metadata = body['metadata']
@@ -81,7 +82,7 @@ class Container(StorageResource):
         _, __, fullpath = parse_path(request.path)
         status = container.delete(self.avatar, fullpath)
         request.setResponseCode(status)
-        request.setHeader('Server', CDMI_SERVER_HEADER)
+        set_common_headers(request)
         return ""
 
 
@@ -98,9 +99,10 @@ class NonCDMIContainer(StorageResource):
         status, vals = container.read(self.avatar, fullpath)
         # create a header
         request.setResponseCode(status)
-
+        set_common_headers_non_cdmi(request)
         if status == OK:
             request.setHeader('Content-Type', 'application/json')
+            request.setLastModified(float(vals['mtime']))
             children = None if not 'children' in vals else vals['children'].values()
             response_body = {
                              'metadata': vals['metadata'],
@@ -115,11 +117,12 @@ class NonCDMIContainer(StorageResource):
         status, _ = container.create_or_update(self.avatar, name,
                                                container_path, fullpath, {})
         request.setResponseCode(status)
+        set_common_headers_non_cdmi(request)
         return ""
 
     def render_DELETE(self, request):
         _, __, fullpath = parse_path(request.path)
         status = container.delete(self.avatar, fullpath)
         request.setResponseCode(status)
-        request.setHeader('Server', CDMI_SERVER_HEADER)
+        set_common_headers_non_cdmi(request)
         return ""

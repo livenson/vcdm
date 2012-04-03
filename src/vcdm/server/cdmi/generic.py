@@ -7,6 +7,33 @@ from itertools import groupby
 def set_common_headers(request):
     request.setHeader('X-CDMI-Specification-Version', CDMI_VERSION)
     request.setHeader('Server', CDMI_SERVER_HEADER)
+    if request.code == 401:
+        gen_www_authn(request)
+
+
+def set_common_headers_non_cdmi(request):
+    request.setHeader('Server', CDMI_SERVER_HEADER)
+    if request.code == 401:
+        gen_www_authn(request)
+
+
+def gen_www_authn(request):
+    def generateWWWAuthenticate(scheme, challenge):
+        l = []
+        for k, v in challenge.iteritems():
+            l.append("%s=%s" % (k, quoteString(v)))
+        return "%s %s" % (scheme, ", ".join(l))
+
+    def quoteString(s):
+        return '"%s"' % (s.replace('\\', '\\\\').replace('"', '\\"'),)
+
+    from vcdm import daemon
+    authn_methods, _ = daemon.get_authn_conf()
+    for fact in authn_methods:
+        challenge = fact.getChallenge(request)
+        request.responseHeaders.addRawHeader(
+            'www-authenticate',
+            generateWWWAuthenticate(fact.scheme, challenge))
 
 
 def parse_path(path):
