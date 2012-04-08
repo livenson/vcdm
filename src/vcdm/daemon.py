@@ -4,11 +4,10 @@ from twisted.python import log
 from twisted.internet import reactor
 from twisted.web import server, resource, guard
 from twisted.cred.portal import IRealm, Portal
-from twisted.cred.checkers import FilePasswordDB
+from twisted.cred.checkers import FilePasswordDB, AllowAnonymousAccess
 from twisted.internet import task
 
-import vcdm
-from vcdm.server.cdmi.root import RootCDMIResource
+import vcdm.blob
 from vcdm.server.cdmi import current_capabilities
 from vcdm.utils import AccountingLogObserver
 
@@ -22,6 +21,9 @@ class SimpleRealm(object):
     implements(IRealm)
 
     def requestAvatar(self, avatarId, mind, *interfaces):
+        from vcdm.server.cdmi.root import RootCDMIResource
+        if avatarId == ():
+            avatarId = 'Anonymous'
         if resource.IResource in interfaces:
             return resource.IResource, RootCDMIResource(avatarId), lambda: None
         raise NotImplementedError()
@@ -68,6 +70,29 @@ def load_ds_backends():
         vcdm.datastore_backends['couchdb'] = CouchDBStore
 
 
+def _hash(name, clearpsw, hashedpsw):
+    import hashlib
+    return  hashlib.md5(clearpsw).hexdigest()
+
+
+def load_authn_conf():
+    _used_checkers = []
+    _authn_methods = []
+    if conf.has_option('general', 'usersdb.plaintext'):
+        print "Using plaintext users DB from '%s'" % conf.get('general', 'usersdb.plaintext')
+        _used_checkers.append(FilePasswordDB(conf.get('general', 'usersdb.plaintext'),
+                                            cache=True))
+        _authn_methods.append(guard.DigestCredentialFactory('md5',
+                                            conf.get('general', 'server.endpoint')))
+    elif conf.has_option('general', 'usersdb.md5'):
+        print "Using md5-hashed users DB from '%s'" % conf.get('general', 'usersdb.md5')
+        _used_checkers.append(FilePasswordDB(conf.get('general', 'usersdb.md5'),
+                                                       hash=_hash, cache=True))
+        _authn_methods.append(guard.BasicCredentialFactory(conf.get('general', 'server.endpoint')))
+    _used_checkers.append(AllowAnonymousAccess())
+    vcdm.env['authn_methods'] = (_authn_methods, _used_checkers)
+
+
 def main():
     # setup logging
     log.startLogging(open(conf.get('general', 'common_log'), 'a'), setStdout=False)
@@ -78,6 +103,7 @@ def main():
     load_blob_backends()
     load_mq_backends()
     load_ds_backends()
+    load_authn_conf()
 
     # initialize backends
     vcdm.env['ds'] = vcdm.datastore_backends[conf.get('general', 'ds.backend')]()
@@ -102,32 +128,16 @@ def main():
         vcdm.env['mq'] = vcdm.mq_backends[conf.get('general', 'mq.backend')]()
         current_capabilities.system['queues'] = True
 
-    def _hash(name, clearpsw, hashedpsw):
-        import hashlib
-        return  hashlib.md5(clearpsw).hexdigest()
-
-    used_checkers = []
-    authn_methods = []
     interface_for_binding = conf.get('general', 'server.endpoint').split(":")[0]
 
-    if conf.has_option('general', 'usersdb.plaintext'):
-        print "Using plaintext users DB from '%s'" % conf.get('general', 'usersdb.plaintext')
-        used_checkers.append(FilePasswordDB(conf.get('general', 'usersdb.plaintext'),
-                                            cache=True))
-        authn_methods.append(guard.DigestCredentialFactory('md5',
-                                            conf.get('general', 'server.endpoint')))
-    elif conf.has_option('general', 'usersdb.md5'):
-        print "Using md5-hashed users DB from '%s'" % conf.get('general', 'usersdb.md5')
-        used_checkers.append(FilePasswordDB(conf.get('general', 'usersdb.md5'),
-                                                       hash=_hash, cache=True))
-        authn_methods.append(guard.BasicCredentialFactory(conf.get('general', 'server.endpoint')))
-
+    authn_methods, used_checkers = vcdm.env['authn_methods']
     wrapper = guard.HTTPAuthSessionWrapper(Portal(SimpleRealm(), used_checkers),
                                            authn_methods)
 
     print "Binding to interface %s" % interface_for_binding
     # unencrypted/unprotected connection for testing/development
     if conf.getboolean('general', 'server.use_debug_port'):
+        from vcdm.server.cdmi.root import RootCDMIResource
         reactor.listenTCP(conf.getint('general', 'server.debug_port', 2364),
                           server.Site(resource=RootCDMIResource()), interface=interface_for_binding)
         reactor.listenTCP(conf.getint('general', 'server.debug_port_authn', 2365),
@@ -139,7 +149,6 @@ def main():
                                                   conf.get('general', 'server.credentials.cert'))
     reactor.listenSSL(int(conf.get('general', 'server.endpoint').split(":")[1]),
                       server.Site(resource=wrapper), contextFactory=sslContext, interface=interface_for_binding)
-
     reactor.run()
 
 if __name__ == '__main__':

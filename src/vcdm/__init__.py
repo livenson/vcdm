@@ -16,7 +16,8 @@ global env
 env = {'ds': None,
        'blob': None,
        'mq': None,
-       'blobs': {}
+       'blobs': {},
+       'authn_methods': None
        }
 
 blob_backends = {}
