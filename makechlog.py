@@ -82,7 +82,7 @@ for line in fin:
     if authorFound & dateFound & messageFound & filesFound:
         # First the author line, only outputted if it is the first for that
         # author on this day
-        authorLine = date + "  " + author
+        authorLine = date
         if len(prevAuthorLine) == 0:
             fout.write(authorLine + "\n")
         elif authorLine == prevAuthorLine:
