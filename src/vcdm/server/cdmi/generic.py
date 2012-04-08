@@ -1,19 +1,18 @@
+from itertools import groupby
+
+from twisted.python import log
+from httplib import UNAUTHORIZED
+
 CDMI_VERSION = '1.0.1'
 CDMI_SERVER_HEADER = "CDMI-Proxy/" + CDMI_VERSION
 
-from itertools import groupby
 
-
-def set_common_headers(request):
-    request.setHeader('X-CDMI-Specification-Version', CDMI_VERSION)
+def set_common_headers(request, cdmi_type=True):
+    if cdmi_type:
+        request.setHeader('X-CDMI-Specification-Version', CDMI_VERSION)
     request.setHeader('Server', CDMI_SERVER_HEADER)
-    if request.code == 401:
-        gen_www_authn(request)
-
-
-def set_common_headers_non_cdmi(request):
-    request.setHeader('Server', CDMI_SERVER_HEADER)
-    if request.code == 401:
+    if request.code == UNAUTHORIZED:
+        log.msg("User was not authorized to access resource '%s'")
         gen_www_authn(request)
 
 
@@ -27,8 +26,8 @@ def gen_www_authn(request):
     def quoteString(s):
         return '"%s"' % (s.replace('\\', '\\\\').replace('"', '\\"'),)
 
-    from vcdm import daemon
-    authn_methods, _ = daemon.get_authn_conf()
+    import vcdm
+    authn_methods, _ = vcdm.env['authn_methods']
     for fact in authn_methods:
         challenge = fact.getChallenge(request)
         request.responseHeaders.addRawHeader(

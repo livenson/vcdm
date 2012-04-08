@@ -9,7 +9,7 @@ from vcdm import blob
 from vcdm import c
 from vcdm.server.cdmi.cdmi_content_types import CDMI_OBJECT
 from vcdm.server.cdmi.generic import set_common_headers, parse_path,\
-    get_common_body, CDMI_SERVER_HEADER, set_common_headers_non_cdmi
+    get_common_body
 from vcdm.server.cdmi.cdmiresource import StorageResource
 
 from httplib import OK, CREATED, FOUND
@@ -131,7 +131,7 @@ class NonCDMIBlob(StorageResource):
         status, vals = blob.read(self.avatar, fullpath, tre_request)
         # construct response
         request.setResponseCode(status)
-        set_common_headers_non_cdmi(request)
+        set_common_headers(request, False)
         if tre_request and status == FOUND:
             request.setHeader('Location', "/".join([c('general', 'tre_server'),
                                                     str(vals['uid'])]))
@@ -164,7 +164,7 @@ class NonCDMIBlob(StorageResource):
         status, _ = blob.write(self.avatar, name, container_path, fullpath,
                                mimetype, {}, content, desired_backend)
         request.setResponseCode(status)
-        set_common_headers_non_cdmi(request)
+        set_common_headers(request, False)
         return ''
 
     def render_DELETE(self, request):
@@ -172,5 +172,5 @@ class NonCDMIBlob(StorageResource):
         _, __, fullpath = parse_path(request.path)
         status = blob.delete(self.avatar, fullpath)
         request.setResponseCode(status)
-        set_common_headers_non_cdmi(request)
+        set_common_headers(request, False)
         return ''

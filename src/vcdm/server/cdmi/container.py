@@ -3,7 +3,7 @@ from twisted.python import log
 from vcdm import container
 from vcdm.server.cdmi.cdmi_content_types import CDMI_CONTAINER
 from vcdm.server.cdmi.generic import parse_path, set_common_headers,\
-    get_common_body, CDMI_SERVER_HEADER, set_common_headers_non_cdmi
+    get_common_body
 from vcdm.server.cdmi.cdmiresource import StorageResource
 
 from httplib import OK
@@ -99,7 +99,7 @@ class NonCDMIContainer(StorageResource):
         status, vals = container.read(self.avatar, fullpath)
         # create a header
         request.setResponseCode(status)
-        set_common_headers_non_cdmi(request)
+        set_common_headers(request, False)
         if status == OK:
             request.setHeader('Content-Type', 'application/json')
             request.setLastModified(float(vals['mtime']))
@@ -117,12 +117,12 @@ class NonCDMIContainer(StorageResource):
         status, _ = container.create_or_update(self.avatar, name,
                                                container_path, fullpath, {})
         request.setResponseCode(status)
-        set_common_headers_non_cdmi(request)
+        set_common_headers(request, False)
         return ""
 
     def render_DELETE(self, request):
         _, __, fullpath = parse_path(request.path)
         status = container.delete(self.avatar, fullpath)
         request.setResponseCode(status)
-        set_common_headers_non_cdmi(request)
+        set_common_headers(request, False)
         return ""

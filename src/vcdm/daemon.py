@@ -22,7 +22,6 @@ class SimpleRealm(object):
 
     def requestAvatar(self, avatarId, mind, *interfaces):
         from vcdm.server.cdmi.root import RootCDMIResource
-
         if avatarId == ():
             avatarId = 'Anonymous'
         if resource.IResource in interfaces:
@@ -70,28 +69,29 @@ def load_ds_backends():
         from vcdm.backends.datastore.couchdb_store import CouchDBStore
         vcdm.datastore_backends['couchdb'] = CouchDBStore
 
-_authn_methods = []
-_used_checkers = []
 
-def get_authn_conf():
-    global _authn_methods
-    global _used_checkers
-    print len(_authn_methods), len(_used_checkers)
-    if len(_authn_methods) == 0 or len(_used_checkers) == 0:
-        if conf.has_option('general', 'usersdb.plaintext'):
-            print "Using plaintext users DB from '%s'" % conf.get('general', 'usersdb.plaintext')
-            _used_checkers.append(FilePasswordDB(conf.get('general', 'usersdb.plaintext'),
-                                                cache=True))
-            _authn_methods.append(guard.DigestCredentialFactory('md5',
-                                                conf.get('general', 'server.endpoint')))
-        elif conf.has_option('general', 'usersdb.md5'):
-            print "Using md5-hashed users DB from '%s'" % conf.get('general', 'usersdb.md5')
-            _used_checkers.append(FilePasswordDB(conf.get('general', 'usersdb.md5'),
-                                                           hash=_hash, cache=True))
-            _authn_methods.append(guard.BasicCredentialFactory(conf.get('general', 'server.endpoint')))
-    
-        _used_checkers.append(AllowAnonymousAccess())
-    return (_authn_methods, _used_checkers)
+def _hash(name, clearpsw, hashedpsw):
+    import hashlib
+    return  hashlib.md5(clearpsw).hexdigest()
+
+
+def load_authn_conf():
+    _used_checkers = []
+    _authn_methods = []
+    if conf.has_option('general', 'usersdb.plaintext'):
+        print "Using plaintext users DB from '%s'" % conf.get('general', 'usersdb.plaintext')
+        _used_checkers.append(FilePasswordDB(conf.get('general', 'usersdb.plaintext'),
+                                            cache=True))
+        _authn_methods.append(guard.DigestCredentialFactory('md5',
+                                            conf.get('general', 'server.endpoint')))
+    elif conf.has_option('general', 'usersdb.md5'):
+        print "Using md5-hashed users DB from '%s'" % conf.get('general', 'usersdb.md5')
+        _used_checkers.append(FilePasswordDB(conf.get('general', 'usersdb.md5'),
+                                                       hash=_hash, cache=True))
+        _authn_methods.append(guard.BasicCredentialFactory(conf.get('general', 'server.endpoint')))
+    _used_checkers.append(AllowAnonymousAccess())
+    vcdm.env['authn_methods'] = (_authn_methods, _used_checkers)
+
 
 def main():
     # setup logging
@@ -103,6 +103,7 @@ def main():
     load_blob_backends()
     load_mq_backends()
     load_ds_backends()
+    load_authn_conf()
 
     # initialize backends
     vcdm.env['ds'] = vcdm.datastore_backends[conf.get('general', 'ds.backend')]()
@@ -127,13 +128,9 @@ def main():
         vcdm.env['mq'] = vcdm.mq_backends[conf.get('general', 'mq.backend')]()
         current_capabilities.system['queues'] = True
 
-    def _hash(name, clearpsw, hashedpsw):
-        import hashlib
-        return  hashlib.md5(clearpsw).hexdigest()
-
     interface_for_binding = conf.get('general', 'server.endpoint').split(":")[0]
 
-    authn_methods, used_checkers = get_authn_conf()
+    authn_methods, used_checkers = vcdm.env['authn_methods']
     wrapper = guard.HTTPAuthSessionWrapper(Portal(SimpleRealm(), used_checkers),
                                            authn_methods)
 
