@@ -1,4 +1,4 @@
-import uuid
+import base64
 
 from zope.interface import implements
 
@@ -57,11 +57,19 @@ def send_ogf_ur_accounting(start_time, end_time, avatar, total_storage, nr_of_op
             'nr_of_operations': nr_of_operations,
             'total_storage': total_storage
     })
+
+    # add Basic HTTP authn headers
+    username = conf.get('general', 'ur_username')
+    password = conf.get('general', 'ur_password')
+    basicAuth = base64.encodestring("%s:%s" % (username, password))
+    authHeader = "Basic " + basicAuth.strip()
+
     d = agent.request(
     'POST',
     conf.get('general', 'ur_server'),
     Headers(
         {
+         'Authorization': [authHeader],
          'User-Agent': ['CDMI-Proxy'],
          'Content-Type': ['application/xml']}),
     body)
