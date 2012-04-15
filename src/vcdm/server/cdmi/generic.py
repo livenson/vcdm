@@ -12,7 +12,7 @@ def set_common_headers(request, cdmi_type=True):
         request.setHeader('X-CDMI-Specification-Version', CDMI_VERSION)
     request.setHeader('Server', CDMI_SERVER_HEADER)
     if request.code == UNAUTHORIZED:
-        log.msg("User was not authorized to access resource '%s'")
+        log.msg("User was not authorized to access the resource.")
         gen_www_authn(request)
 
 
