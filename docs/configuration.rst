@@ -137,6 +137,14 @@ object, whose ):
 There is a special user "Anonymous", which corresponds to public access.
 
 
+Encryption
+==========
+
+CDMI-Proxy can be configured to store data in the local backend in an encrypted form. To enable that, one needs to define
+additional parameter of the 'local' backend - 'encryption_key'. Encryption key's size should be a multiple of 16.
+Encryption method is AES (CBC mode).
+
+
 Accounting
 ==========
 
