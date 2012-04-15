@@ -4,6 +4,8 @@ import os
 
 import vcdm
 from vcdm.utils import copyStreamToStream, mkdir_p
+from vcdm.encryption import encrypt_file, decrypt_file
+from tempfile import NamedTemporaryFile
 
 conf = vcdm.config.get_config()
 
@@ -24,8 +26,16 @@ class POSIXBlob(object):
         input_stream, input_length = content
         fnm = os.path.join(self.location, uid)
         log.msg("Saving blob to %s" % fnm)
+        key = None
+        try:
+            key = conf.get(self.backend_name, 'encryption_key').strip()
+        except:
+            pass
         with open(fnm, 'wb') as output_file:
-            copyStreamToStream(input_stream, output_file, input_length)
+            if not key:
+                copyStreamToStream(input_stream, output_file, input_length)
+            else:
+                encrypt_file(key, input_stream, output_file, input_length)
             input_stream.close()
         return fnm
 
@@ -33,7 +43,21 @@ class POSIXBlob(object):
         """Read the contents of a file, possibly a certain byte range"""
         fnm = os.path.join(self.location, uid)
         log.msg("Reading a blob '%s'" % fnm)
-        return open(fnm, 'rb')
+        key = None
+        try:
+            key = conf.get(self.backend_name, 'encryption_key').strip()
+        except:
+            pass
+        if not key:
+            return open(fnm, 'rb')
+        else:
+            tmp_file = NamedTemporaryFile(prefix="lb_dec",
+                                          suffix=".buffer",
+                                          delete=True)
+            decrypt_file(key, fnm, tmp_file)
+            tmp_file.seek(0)
+
+            return tmp_file
 
     def update(self, uid, content):
         """Update contents of a file"""
