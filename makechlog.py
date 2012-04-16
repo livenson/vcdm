@@ -5,6 +5,11 @@
 
 import string, re, os
 
+
+MAJOR_RELEASE = {'2011-11-03': '1.0', 
+                 '2012-03-20': '1.5', 
+                 '2012-04-16': '2.0'}
+
 # Execute git log with the desired command line options.
 fin = os.popen('git log --summary --stat --no-merges --date=short', 'r')
 # Create a ChangeLog file in the current directory.
@@ -80,9 +85,14 @@ for line in fin:
                 files = fileList[0].strip()
     # All of the parts of the commit have been found - write out the entry
     if authorFound & dateFound & messageFound & filesFound:
+        # if date matches the date of the major release:
+        if date in MAJOR_RELEASE.keys():
+            authorLine = "================= Release v%s =================\n\n%s" % (MAJOR_RELEASE[date], date)
+        else:
+            authorLine = date
+
         # First the author line, only outputted if it is the first for that
         # author on this day
-        authorLine = date
         if len(prevAuthorLine) == 0:
             fout.write(authorLine + "\n")
         elif authorLine == prevAuthorLine:
