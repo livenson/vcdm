@@ -14,7 +14,8 @@ from httplib import NOT_FOUND, OK, CONFLICT, NO_CONTENT, FORBIDDEN, \
 config = vcdm.config.get_config()
 
 
-def write(avatar, name, container_path, fullpath, mimetype, metadata, content, on_behalf=None, desired_backend=None):
+def write(avatar, name, container_path, fullpath, mimetype, metadata, content,
+          valueencoding, on_behalf=None, desired_backend=None):
     """ Write or update content of a blob. """
     from vcdm.server.cdmi.generic import get_parent
     parent_container = get_parent(fullpath)
@@ -67,6 +68,7 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content, o
                         'fullpath': fullpath,
                         'mimetype': mimetype,
                         'metadata': metadata,
+                        'valuetransferencoding': valueencoding,
                         'filename': name,
                         'actual_uri': actual_uri,
                         'parent_container': parent_container,
@@ -108,7 +110,8 @@ def read(avatar, fullpath, tre_request=False, on_behalf=None):
     """
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type='blob',
                                             fields=['metadata', 'mimetype',
-                                                      'mtime', 'size', 'actual_uri'])
+                                                      'mtime', 'size', 'actual_uri',
+							'valuetransferencoding'])
     log.msg("Reading path %s, uid: %s" % (fullpath, uid))
     if uid is None:
         return (NOT_FOUND, None)

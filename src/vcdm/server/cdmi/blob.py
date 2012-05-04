@@ -47,15 +47,19 @@ class Blob(StorageResource):
 
         set_common_headers(request)
         if status == OK:
-            # for content we want to read in the full object into memory
             request.setLastModified(float(vals['mtime']))
             if not bodyless:
-                content = vals['content'].read()
+                valueencoding = vals['valuetransferencoding']
+                # for content we want to read in the full object into memory
+                content = (vals['content'].read() if valueencoding == 'utf-8' else
+                          base64.b64encode(vals['content'].read()))
+
                 # construct body
                 response_body = {
                                  'completionStatus': 'Complete',
                                  'mimetype': vals['mimetype'],
                                  'metadata': vals['metadata'],
+                                 'valuetransferencoding': valueencoding,
                                  'value': content,
                                  'actual_uri': vals.get('actual_uri'),
                                  'capabilitiesURI': '/cdmi_capabilities/dataobject'
@@ -63,9 +67,7 @@ class Blob(StorageResource):
                 response_body.update(get_common_body(request, str(vals['uid']),
                                                      fullpath))
                 return json.dumps(response_body)
-            return ''  # empty body for bodyless requests
-        else:
-            return ''
+        return ''
 
     def render_PUT(self, request):
         """PUT corresponds to a create/update operation on a blob"""
@@ -79,12 +81,15 @@ class Blob(StorageResource):
         # default values of mimetype and metadata
         mimetype = body.get('mimetype', 'text/plain')
         metadata = body.get('metadata', {})
-        desired_backend = metadata.get('desired_backend') or request.getHeader('desired_backend')
+        desired_backend = (metadata.get('desired_backend') or
+                           request.getHeader('desired_backend'))
         valueencoding = body.get('valuetransferencoding', 'utf-8')
-        value = body['value'] if valueencoding == 'utf-8' else base64.b64decode(body['value'])
+        value = (body['value'] if valueencoding == 'utf-8' else
+                                  base64.b64decode(body['value']))
         content = (StringIO(value), len(value))
         status, uid = blob.write(self.avatar, name, container_path, fullpath,
-                                 mimetype, metadata, content, desired_backend)
+                                 mimetype, metadata, content, valueencoding,
+                                 desired_backend)
         request.setResponseCode(status)
         request.setHeader('Content-Type', CDMI_OBJECT)
         set_common_headers(request)
@@ -169,8 +174,13 @@ class NonCDMIBlob(StorageResource):
         # default values of mimetype and metadata
         mimetype = request.getHeader('Content-Type') if request.getHeader('Content-Type') is not None else 'text/plain'
         desired_backend = request.getHeader('desired_backend')
+        if ((len(mimetype) == 2 and mimetype[1] == 'utf-8')):
+            valueencoding = 'utf-8'
+        else:
+            valueencoding = 'base64'
         status, _ = blob.write(self.avatar, name, container_path, fullpath,
-                               mimetype, {}, content, desired_backend)
+                               mimetype, {}, content, valueencoding,
+                               desired_backend)
         request.setResponseCode(status)
         set_common_headers(request, False)
         return ''
