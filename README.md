@@ -1,44 +1,46 @@
 CDMI-Proxy
 ----------
 
-CDMI-Proxy is an implementation of a CDMI-compatible (v 1.0.1) server that can be 
-used to store data both using local infrastructure and public cloud services.
+CDMI-Proxy is an implementation of a CDMI-compatible (v 1.0.1) server that can be used to store data both using local infrastructure and public cloud services. Multiplatform.
 
-See http://cdmi.pdc2.pdc.kth.se/docs/ for documentation.
+Read more [documentation](http://resources.venus-c.eu/cdmiproxy/docs/index.html) or proceed to the short setup guide below.
 
-Implementation supports:
+Currently supported CDMI objects are:
  * Blobs
  * Multi-level containers (also for single-level backends, e.g. AWS or Azure)
 
+Currently supported backends:
+ * Local disk
+ * AWS S3
+ * Azure Blob
+
 SETUP
 =====
- 1. Get the code: 
 
-    * `git clone git://github.com/livenson/vcdm.git`
+### Get the code
+ * git clone git://github.com/livenson/vcdm.git
 
- 1. Get dependencies:
+### Get dependencies
+ * pip install -r requirements.txt
+ * install [CouchDB](http://couchdb.apache.org/)  (at least version 1) 
 
-    * `pip install -r requirements.txt`
-    * install CouchDB: http://couchdb.apache.org/  (at least version 1) 
-      * Couchbase offers latest versions:  http://www.couchbase.com/downloads/couchbase-single-server/community
+### Run
+Run _start-server.sh_/_start-server.bat_. By default, ports 2365 (plain) and 8080 (tls) will be listening for CDMI calls.
 
- 1. Run start-server.sh/start-server.bat.
-    * by default, ports 2364 and 8080 will be accessible.
-    * 2364: debugging access - no encryption or authN
-    * 8080: production access - encryption and authN
+### Build documentation
+* pip install Sphinx
+* makedoc.sh
 
- 1. Building documentation using sphinx:
-    * install Sphinx: `pip install Sphinx`
-    * run `makedoc.sh`
-
- 1. There are several backends available at the moment. If you are planning to use them, you also need to get the
- corresponding libraries (and put them on the PYTHONPATH or into $vcdm/libsrc):
-
-    * AWS: http://code.google.com/p/boto/ 
-    * CDMI: https://github.com/livenson/libcdmi-python
-    * Azure: https://github.com/livenson/pyazure
+### Add backends
+There are several backends available at the moment. If you are planning to use them, you also need to get the
+corresponding libraries (and put them on the _PYTHONPATH_ or into _libsrc_ folder):
+ * [AWS](http://code.google.com/p/boto/)
+ * [CDMI](https://github.com/livenson/libcdmi-python)
+ * [Azure](https://github.com/livenson/pyazure)
 
 LICENSE
 =======
 
 The terms of use of the software are governed by the BSD license (3 clause).
+
+(c) [Ilja Livenson](mailto:ilja.livenson@gmail.com)
