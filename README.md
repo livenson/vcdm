@@ -41,6 +41,6 @@ corresponding libraries (and put them on the _PYTHONPATH_ or into _libsrc_ folde
 LICENSE
 =======
 
-The terms of use of the software are governed by the BSD license (3 clause).
+The terms of use of the software are governed by the Apache 2 license.
 
 (c) [Ilja Livenson](mailto:ilja.livenson@gmail.com)
