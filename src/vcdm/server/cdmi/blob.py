@@ -26,7 +26,7 @@ class Blob(StorageResource):
     isLeaf = True  # data items cannot be nested
     allowedMethods = ('PUT', 'GET', 'DELETE', 'HEAD')
 
-    def render_GET(self, request):
+    def render_GET(self, request, bodyless=False):
         """GET operation corresponds to reading of the blob object"""
         # process path and extract potential containers/fnm
         _, __, fullpath = parse_path(request.path)
@@ -48,21 +48,22 @@ class Blob(StorageResource):
         set_common_headers(request)
         if status == OK:
             # for content we want to read in the full object into memory
-            content = vals['content'].read()
             request.setLastModified(float(vals['mtime']))
-
-            # construct body
-            response_body = {
-                             'completionStatus': 'Complete',
-                             'mimetype': vals['mimetype'],
-                             'metadata': vals['metadata'],
-                             'value': content,
-                             'actual_uri': vals.get('actual_uri'),
-                             'capabilitiesURI': '/cdmi_capabilities/dataobject'
-                             }
-            response_body.update(get_common_body(request, str(vals['uid']),
-                                                 fullpath))
-            return json.dumps(response_body)
+            if not bodyless:
+                content = vals['content'].read()
+                # construct body
+                response_body = {
+                                 'completionStatus': 'Complete',
+                                 'mimetype': vals['mimetype'],
+                                 'metadata': vals['metadata'],
+                                 'value': content,
+                                 'actual_uri': vals.get('actual_uri'),
+                                 'capabilitiesURI': '/cdmi_capabilities/dataobject'
+                                 }
+                response_body.update(get_common_body(request, str(vals['uid']),
+                                                     fullpath))
+                return json.dumps(response_body)
+            return ''  # empty body for bodyless requests
         else:
             return ''
 
@@ -108,6 +109,10 @@ class Blob(StorageResource):
         set_common_headers(request)
         return ''
 
+    def render_HEAD(self, request):
+        """Custom HEAD operation - Twisted's automatic body swallowing is failing on certain requests"""
+        return self.render_GET(request, bodyless=True)
+
 
 class NonCDMIBlob(StorageResource):
     isLeaf = True
@@ -120,7 +125,7 @@ class NonCDMIBlob(StorageResource):
         # TODO: For non-local backends twisted.web.Proxy approach should be reused.
         return NoRangeStaticProducer(request, content_object)
 
-    def render_GET(self, request):
+    def render_GET(self, request, bodyless=False):
         """GET returns contents of a blob"""
         # process path and extract potential containers/fnm
         _, __, fullpath = parse_path(request.path)
@@ -142,11 +147,14 @@ class NonCDMIBlob(StorageResource):
             mimetype = vals['mimetype']
             actual_type = 'text/plain' if mimetype == 'text/plain' else str(mimetype)
             request.setHeader('Content-Type', actual_type)
-            request.setHeader('Content-Length', str(vals['size']))
             request.setLastModified(float(vals['mtime']))
-            producer = self.makeProducer(request, vals['content'])
-            producer.start()
-            return NOT_DONE_YET
+            if not bodyless:
+                request.setHeader('Content-Length', str(vals['size']))
+                producer = self.makeProducer(request, vals['content'])
+                producer.start()
+                return NOT_DONE_YET
+            else:
+                return ''
         return ''
 
     def render_PUT(self, request):
@@ -174,3 +182,7 @@ class NonCDMIBlob(StorageResource):
         request.setResponseCode(status)
         set_common_headers(request, False)
         return ''
+
+    def render_HEAD(self, request):
+        """Custom HEAD operation - Twisted's automatic body swallowing is failing on certain requests"""
+        return self.render_GET(request, bodyless=True)
