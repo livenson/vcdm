@@ -51,7 +51,12 @@ class Container(StorageResource):
     def render_PUT(self, request):
         name, container_path, fullpath = parse_path(request.path)
         log.msg("Creating container %s" % fullpath)
-        req_length = int(request.getHeader('Content-Length'))
+        req_length = request.getHeader('Content-Length')
+        if req_length is None:
+            request.setResponseCode(411)
+            return ''
+
+        req_length = int(req_length)
         request.content.seek(0, 0)
         # process json encoded request body
         body = request.content.read(req_length)
