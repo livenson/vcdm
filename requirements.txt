@@ -2,3 +2,4 @@ zope.interface
 Twisted
 CouchDB
 pyOpenSSL
+pycrypto
