@@ -111,7 +111,7 @@ def read(avatar, fullpath, tre_request=False, on_behalf=None):
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type='blob',
                                             fields=['metadata', 'mimetype',
                                                       'mtime', 'size', 'actual_uri',
-							'valuetransferencoding'])
+                                                    'valuetransferencoding'])
     log.msg("Reading path %s, uid: %s" % (fullpath, uid))
     if uid is None:
         return (NOT_FOUND, None)
