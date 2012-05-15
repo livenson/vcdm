@@ -39,7 +39,9 @@ Windows installation shortcut
 
 5. Install `Setup tools <http://pypi.python.org/packages/2.7/s/setuptools/setuptools-0.6c11.win32-py2.7.exe#md5=57e1e64f6b7c7f1d2eddfc9746bbaf20>`_.
 
-6. Open Command line (Start -> Run: cmd)
+6. Install `PyCrypto <http://www.voidspace.org.uk/downloads/pycrypto-2.3.win32-py2.7.zip`_ .
+
+7. Open Command line (Start -> Run: cmd)
 
 .. code-block:: bat
 
@@ -47,9 +49,9 @@ Windows installation shortcut
   > easy_install CouchDB
   > easy_install pyOpenSSL
 
-7. Install `CDMI-Proxy <http://resources.venus-c.eu/cdmiproxy/msi/cdmiproxy-0.1-latest.msi>`_.
+8. Install `CDMI-Proxy <http://resources.venus-c.eu/cdmiproxy/msi/cdmiproxy-0.1-latest.msi>`_.
 
-8. Make sure CouchDB is running and start CDMI-Proxy by running "C:\\Python27\\Scripts\\cdmipd.exe" (modify for your Python installation path).
+9. Make sure CouchDB is running and start CDMI-Proxy by running "C:\\Python27\\Scripts\\cdmipd.exe" (modify for your Python installation path).
 
 
 Installation from packages
@@ -64,7 +66,7 @@ the process looks like this on all operating systems:
 
 .. code-block:: sh
 
-  $ pip install zope.interface Twisted CouchDB pyOpenSSL
+  $ pip install zope.interface Twisted CouchDB pyOpenSSL pycrypto
 
 
 Source code
