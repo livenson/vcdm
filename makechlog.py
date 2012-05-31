@@ -8,7 +8,8 @@ import string, re, os
 
 MAJOR_RELEASE = {'2011-11-03': '1.0', 
                  '2012-03-20': '1.5', 
-                 '2012-04-16': '2.0'}
+                 '2012-04-16': '2.0',
+                 '2012-05-31': '2.0.1'}
 
 # Execute git log with the desired command line options.
 fin = os.popen('git log --summary --stat --no-merges --date=short', 'r')
