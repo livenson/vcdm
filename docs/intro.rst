@@ -10,6 +10,12 @@ data several backends are available:
 
 Metadata of the stored elements is kept in a CouchDB server.
 
+Credits
+=======
+The research leading to these results has received funding from the European Union Seventh Framework Programme
+(FP7/2007 - 2013) under grant agreement no. 261565.
+
+
 Quick Start
 ===========
 
