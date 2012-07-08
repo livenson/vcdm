@@ -74,7 +74,7 @@ class Container(StorageResource):
         req_length = int(req_length)
         request.content.seek(0, 0)
         # process json encoded request body
-        body = request.content.read(req_length)
+        body = request.content.read(req_length) if req_length > 0 else '{}'  # a workaround for a buggy curl behavior
         body = json.loads(body)
         metadata = {}
         if 'metadata' in body:
