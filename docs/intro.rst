@@ -74,6 +74,7 @@ the process looks like this on all operating systems:
 
   $ pip install zope.interface Twisted CouchDB pyOpenSSL pycrypto
 
+On Debian you might need to install additional package: _apt-get install python-setuptools_ .
 
 Source code
 -----------
