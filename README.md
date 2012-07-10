@@ -43,4 +43,15 @@ LICENSE
 
 The terms of use of the software are governed by the Apache 2 license.
 
+CDMI Clients
+=======
+
+ * [libcdmi (java)](https://github.com/livenson/libcdmi-java): SDK for running CDMI calls 
+ * [libcdmi (python)](https://github.com/livenson/libcdmi-python): SDK for running CDMI calls
+ * [cdmifs](https://github.com/koenbollen/cdmifs): FUSE based file system using the CDMI standard (v1.0).
+ * [r2ad](http://r2ad.net/): demo clients for OCCI and CDMI
+ * TCS CDMI Automated Test Suite(CATS): validation test suite for CDMI (contact: nishi.g@tcs.com)
+ * [Scality Droplet](https://github.com/scality/Droplet) - a library from Scality with support for CDMI
+
 (c) [Ilja Livenson](mailto:ilja.livenson@gmail.com)
+
