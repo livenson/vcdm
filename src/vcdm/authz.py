@@ -46,7 +46,7 @@ def strict(avatar, resource, action, acls):
     log.msg("Strict authorization of %s to perform %s on %s. ACLs: %s" %
             (avatar, action, resource, acls))
     if resource == '/':
-        return True  # allow everything for the root folder
+        return avatar != 'Anonymous'  # for / resource we expect a real user name
     if acls is None:
         return False  # disallowed by default
     for prefix in ['read', 'write', 'delete']:
