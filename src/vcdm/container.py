@@ -1,6 +1,6 @@
 ##
 # Copyright 2002-2012 Ilja Livenson, PDC KTH
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,6 +14,7 @@
 # limitations under the License.
 ##
 import time
+import re
 from httplib import NOT_FOUND, OK, CREATED, NO_CONTENT, CONFLICT, FORBIDDEN, \
             UNAUTHORIZED
 
@@ -25,11 +26,19 @@ from vcdm.utils import check_path
 from vcdm.authz import authorize
 
 
-def read(avatar, fullpath, on_behalf=None):
+def read(avatar, requested_path, on_behalf=None):
     """ Read a specified container."""
-    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type='container',
-                                            fields=['children', 'metadata',
-                                                      'mtime'])
+    expected_fields = ['children', 'metadata', 'mtime']
+    unique_request = re.match('/cdmi_objectid/\w+$', requested_path)
+    if unique_request is not None:
+        requested_uid = unique_request.group(0).split('/')[2]
+        uid, vals = vcdm.env['ds'].find_by_uid(requested_uid, object_type='container',
+                                            fields=expected_fields + ['fullpath'])
+        fullpath = vals['fullpath']
+    else:
+        fullpath = requested_path
+        uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type='container',
+                                                fields=expected_fields)
     if uid is None:
         return (NOT_FOUND, None)
     else:

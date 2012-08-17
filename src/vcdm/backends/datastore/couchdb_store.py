@@ -135,8 +135,8 @@ class CouchDBStore(object):
         res = list(self.db.query(dirn_fun, reduce_fun=reducer, options='group=true'))
         return res[0].value if res[0].value is not None else []
 
-    def find_by_path(self, path, object_type=None, fields=None):
-        """ Find an object at a given path.
+    def find_by_property(self, property_name, property_value, object_type=None, fields=None):
+        """ Find an object by a given property.
         - object_type - optional filter by the type of an object (e.g. blob, container, ...)
         - fields - fields to retrieve from the database. By default only gets UID of an object
         """
@@ -150,11 +150,11 @@ class CouchDBStore(object):
             fields = 'null'
 
         fnm_fun = '''function(doc) {
-            if (doc.fullpath == '%s' && %s ) {
+            if (doc.%s == '%s' && %s ) {
                 emit(doc.id, %s);
             }
         }
-        ''' % (path, comparision_string, fields)
+        ''' % (property_name, property_value, comparision_string, fields)
         res = self.db.query(fnm_fun)
         if len(res) == 0:
             return (None, {})
@@ -164,6 +164,20 @@ class CouchDBStore(object):
         else:
             tmp_res = list(res)[0]
             return (tmp_res.id, tmp_res.value)
+
+    def find_by_path(self, path, object_type=None, fields=None):
+        """ Find an object at a given path.
+        - object_type - optional filter by the type of an object (e.g. blob, container, ...)
+        - fields - fields to retrieve from the database. By default only gets UID of an object
+        """
+        return self.find_by_property('fullpath', path, object_type, fields)
+
+    def find_by_uid(self, uid, object_type=None, fields=None):
+        """ Find an object with a given UID.
+        - object_type - optional filter by the type of an object (e.g. blob, container, ...)
+        - fields - fields to retrieve from the database. By default only gets UID of an object
+        """
+        return self.find_by_property('_id', uid, object_type, fields)
 
     def find_path_uids(self, paths):
         """Return a list of IDs of container objects that correspond to the specified path."""

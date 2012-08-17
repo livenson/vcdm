@@ -15,6 +15,7 @@
 ##
 import time
 from uuid import uuid4
+import re
 
 from twisted.python import log
 
@@ -123,10 +124,20 @@ def read(avatar, fullpath, tre_request=False, on_behalf=None):
     Returns:
     (HTTP_STATUS_CODE, dictionary_of_metadata)
     """
-    uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type='blob',
-                                            fields=['metadata', 'mimetype',
-                                                      'mtime', 'size', 'actual_uri',
-                                                    'valuetransferencoding'])
+    # if the object was requested with a 'cdmi_objectid/' prefix, we query for that
+    expected_fields = ['metadata', 'mimetype',
+                       'mtime', 'size', 'actual_uri',
+                       'valuetransferencoding']
+    unique_request = re.match('/cdmi_objectid/\w+$', fullpath)
+    if unique_request is not None:
+        log.msg('Looking up a blob  by a unique key.')
+        requested_uid = unique_request.group(0).split('/')[2]
+        uid, vals = vcdm.env['ds'].find_by_uid(requested_uid, object_type='blob',
+                                            fields=expected_fields)
+    else:
+        uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type='blob',
+                                            fields=expected_fields)
+
     log.msg("Reading path %s, uid: %s" % (fullpath, uid))
     if uid is None:
         return (NOT_FOUND, None)
