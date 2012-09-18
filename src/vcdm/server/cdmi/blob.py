@@ -99,8 +99,9 @@ class Blob(StorageResource):
         desired_backend = (metadata.get('desired_backend') or
                            request.getHeader('desired_backend'))
         valueencoding = body.get('valuetransferencoding', 'utf-8')
-        value = (body['value'] if valueencoding == 'utf-8' else
-                                  base64.b64decode(body['value']))
+        body_value = body.get('value', '')
+        value = (body_value if valueencoding == 'utf-8' else
+                                  base64.b64decode(body_value))
         content = (StringIO(value), len(value))
         status, uid = blob.write(self.avatar, name, container_path, fullpath,
                                  mimetype, metadata, content, valueencoding,
