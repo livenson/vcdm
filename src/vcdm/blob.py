@@ -116,7 +116,7 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content,
         log.msg(type='accounting', avatar=avatar if not on_behalf else on_behalf,
                 amount=int(content[1]), acc_type='blob_update')
 
-        return (OK, uid)
+        return (NO_CONTENT, uid)
 
 
 def read(avatar, fullpath, tre_request=False, on_behalf=None):
