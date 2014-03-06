@@ -37,7 +37,7 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content,
     parent_container = get_parent(fullpath)
 
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type='blob',
-                                            fields=['parent_container'])
+                                            fields=['parent_container','backend_name'])
     # assert that we have a consistency in case of an existig blob
     if uid is not None and parent_container != vals['parent_container']:
         log.err("ERROR: Inconsistent information! path: %s, parent_container in db: %s" %
@@ -53,17 +53,32 @@ def write(avatar, name, container_path, fullpath, mimetype, metadata, content,
                     '/'.join(container_path))
             return (FORBIDDEN, uid)
 
-    # authorize call, take parent permissions
-    _, cvals = vcdm.env['ds'].find_by_path(parent_container,
+    # authorize call
+    if uid is None:
+        # the new file
+        # take parent permissions
+        _, cvals = vcdm.env['ds'].find_by_path(parent_container,
                                            object_type='container',
                                            fields=['metadata'])
+    else:
+        # updating the file
+        # take file permissions
+        _, cvals = vcdm.env['ds'].find_by_path(fullpath,
+                                           object_type='blob',
+                                           fields=['metadata'])
+    
     acl = cvals['metadata'].get('cdmi_acl', {})
+    
     if not authorize(avatar, parent_container, "write_blob", acl):
         return (UNAUTHORIZED, uid)
 
     # ok, time for action
-    # pick a blob back-end - if request_backend is specified in the metadata and
-    # available in the system - use it. Else - resolve to default one.
+    # pick a blob back-end
+    # if file going to be updated take backend_name from metadata 
+    # otherwise use backend is specified in the request 
+    # if it is not available in the system - resolve to default one.
+    if uid is not None:
+        desired_backend=vals['backend_name']
     blob_backend = vcdm.env['blobs'].get(desired_backend, vcdm.env['blob'])
 
     # add default acls
@@ -127,7 +142,7 @@ def read(avatar, fullpath, tre_request=False, on_behalf=None):
     # if the object was requested with a 'cdmi_objectid/' prefix, we query for that
     expected_fields = ['metadata', 'mimetype',
                        'mtime', 'size', 'actual_uri',
-                       'valuetransferencoding']
+                       'valuetransferencoding','backend_name']
     unique_request = re.match('/cdmi_objectid/\w+$', fullpath)
     if unique_request is not None:
         log.msg('Looking up a blob  by a unique key.')
@@ -147,7 +162,11 @@ def read(avatar, fullpath, tre_request=False, on_behalf=None):
         if not authorize(avatar, fullpath, "read_blob", acls):
             log.msg("Authorization failed for %s on %s (%s)" % (avatar, fullpath, acls))
             return (UNAUTHORIZED, None)
-        vals['content'] = vcdm.env['blob'].read(uid)
+        
+        
+        # read the content from the corresponding backend
+        vals['content'] = vcdm.env['blobs'][vals['backend_name']].read(uid)
+        
         # update access time
         vcdm.env['ds'].write({
                         'atime': str(time.time()),
@@ -171,7 +190,7 @@ def delete(avatar, fullpath, on_behalf=None):
     log.msg("Deleting %s" % fullpath)
     uid, vals = vcdm.env['ds'].find_by_path(fullpath, object_type='blob',
                                             fields=['parent_container',
-                                                    'metadata'])
+                                                    'metadata','backend_name'])
     if uid is None:
         return NOT_FOUND
     else:
@@ -180,7 +199,7 @@ def delete(avatar, fullpath, on_behalf=None):
             acls = vals['metadata'].get('cdmi_acl', None)
             if not authorize(avatar, fullpath, "delete_blob", acls):
                 return UNAUTHORIZED
-            vcdm.env['blob'].delete(uid)
+            vcdm.env['blobs'][vals['backend_name']].delete(uid)
             vcdm.env['ds'].delete(uid)
             # find parent container and update its children range
             from vcdm.container import _remove_child

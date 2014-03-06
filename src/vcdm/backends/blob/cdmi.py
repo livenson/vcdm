@@ -20,11 +20,15 @@ try:
 except ImportError:
     print "CDMI blob backend missing"
 
+import base64
+import tempfile
+import os
 
 class CDMIBlob(object):
     """Implementation of the backend for blob operations on CDMI-compliant servers"""
 
     backend_name = 'cdmi'
+    backend_type = 'cdmi'
     conn = None
 
     def __init__(self, backend_name):
@@ -32,15 +36,44 @@ class CDMIBlob(object):
         self.conn = CDMIConnection(get_config().get(backend_name, 'cdmi.endpoint'),
                                    {'user': get_config().get(backend_name, 'credentials.username'),
                                     'password': get_config().get(backend_name, 'credentials.password')})
-
+        
     def create(self, fnm, content):
-        self.conn.create_blob(content, fnm)
+        body, length=content
+        encoded_body = base64.b64encode(body.getvalue())
+        local_file = tempfile.NamedTemporaryFile(prefix="cdmi_intm",
+                                          suffix=".tmp",
+                                          delete=False)
+        local_file.write(encoded_body)
+        local_file.close()
+        self.conn.blob_proxy.create(local_file.name, fnm)
+        os.unlink(local_file.name)
+        
 
     def read(self, fnm, rng=None):
-        return self.conn.read_blob(fnm)
+        """ Read the content from the remote blob and return file object with content """
+        json_obj=self.conn.blob_proxy.read(fnm)
+        
+        # read in the content to a temporary file on disk
+        fp = tempfile.NamedTemporaryFile(prefix="cdmi",
+                               suffix=".buffer",
+                               delete=True)
+        content=base64.b64decode(json_obj['value'])
+        fp.write(content)
+        fp.seek(0)
+        return fp
 
     def update(self, fnm, content):
-        self.conn.update_blob(content, fnm)
+        body, length=content
+        encoded_body = base64.b64encode(body.getvalue())
+        local_file = tempfile.NamedTemporaryFile(prefix="cdmi_intm",
+                                          suffix=".tmp",
+                                          delete=False)
+        local_file.write(encoded_body)
+        local_file.close()
+        # CHECK: remote CDMI service returns empty response even in the case
+        # of CDMI access  therefore, using Non-CDMI call here
+        self.conn.blob_proxy.update(local_file.name, fnm)
+        os.unlink(local_file.name)
 
     def delete(self, fnm):
-        self.conn.delete_blob(fnm)
+        self.conn.blob_proxy.delete(fnm)

@@ -105,7 +105,7 @@ class Blob(StorageResource):
         content = (StringIO(value), len(value))
         status, uid = blob.write(self.avatar, name, container_path, fullpath,
                                  mimetype, metadata, content, valueencoding,
-                                 desired_backend)
+                                 desired_backend=desired_backend)
         request.setResponseCode(status)
         request.setHeader('Content-Type', CDMI_OBJECT)
         set_common_headers(request)
